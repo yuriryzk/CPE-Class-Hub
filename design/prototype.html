@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Class Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Neo-brutalist: thick ink outlines, hard offset shadows, flat bright fills. The chrome is black and white so
+   colour always means a course: nine hues spread round the wheel, each light enough to carry black text (6:1 or
+   better). Headings in Bricolage Grotesque, everything you read in Figtree, sentence case throughout. */
+:root{--bg:#efefef;--card:#fff;--ink:#111;--muted:#4d4d4d;--soft:#e9e8e3;--r:10px;--bw:2.5px;--sh:4px 4px 0 var(--ink);--pad:32px;--gap:24px;
+--head:"Bricolage Grotesque","Arial Black",sans-serif;color-scheme:light;box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 Figtree,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #2f6bff;outline-offset:3px}
+.box{background:var(--card);border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh)}
+
+/* Header */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;background:var(--card);border-bottom:3px solid var(--ink);height:68px;padding:0 var(--pad)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none}
+.mark i{display:grid;grid-template-columns:repeat(3,8px);gap:2px;padding:4px;background:var(--ink);border-radius:6px}
+.mark i b{width:8px;height:8px;border-radius:2px}
+.mark span{font:800 22px/1 var(--head);letter-spacing:-.02em}
+.nav{display:flex;gap:6px}
+.nav a{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;text-decoration:none;font-weight:600;border:var(--bw) solid transparent}
+.nav a:hover{border-color:var(--ink)}
+.nav a[aria-current=page]{background:var(--ink);color:#fff}
+.top .end{margin-left:auto}
+
+main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
+.title{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 24px;margin-bottom:var(--gap)}
+.title h1{font:800 44px/1 var(--head);letter-spacing:-.03em}
+.title .sub{flex-basis:100%;order:3;font-size:17px;color:var(--muted)}
+.title .act{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 18px;border:var(--bw) solid var(--ink);border-radius:var(--r);background:var(--card);box-shadow:3px 3px 0 var(--ink);cursor:pointer;text-decoration:none;font-weight:700;white-space:nowrap;color:var(--ink)}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.p{background:var(--ink);color:#fff}
+.btn.p:hover{background:#333}
+.btn.s{height:34px;padding:0 12px;font-size:14px;box-shadow:2px 2px 0 var(--ink)}
+.btn[disabled]{box-shadow:none;color:var(--muted);background:var(--soft);cursor:default;transform:none}
+.seg{display:flex;border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:3px 3px 0 var(--ink);overflow:hidden;background:var(--card)}
+.seg button{height:37px;padding:0 16px;border:0;background:none;cursor:pointer;font-weight:700}
+.seg button+button{border-left:var(--bw) solid var(--ink)}
+.seg button:hover{background:var(--soft)}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+/* A course's colour travels with it as --c */
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border:2px solid var(--ink);border-radius:6px;background:var(--c);font-size:13px;font-weight:700;flex:none;white-space:nowrap}
+.sw{width:22px;height:22px;border:2px solid var(--ink);border-radius:6px;background:var(--c);flex:none}
+
+/* Week */
+.band{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--gap);margin-bottom:var(--gap)}
+.next{background:var(--c,#fff);padding:22px 24px;display:flex;flex-direction:column;gap:6px}
+.next .lbl{font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center}
+.next .lbl span{background:var(--ink);color:#fff;border-radius:999px;padding:2px 12px;font-size:14px}
+.next h2{font:800 34px/1.05 var(--head);letter-spacing:-.02em;margin-top:6px}
+.next p{font-size:17px;font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.stats div{padding:20px;border-left:var(--bw) solid var(--ink);display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.stats div:first-child{border-left:0}
+.stats span{font-size:15px;font-weight:600;color:var(--muted);line-height:1.25}
+.stats b{font:800 44px/1 var(--head)}
+
+.wk{display:grid;grid-template-columns:270px minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:40px}
+.courses{padding:8px}
+.courses h2{font:800 20px/1 var(--head);padding:12px 12px 10px}
+.courses button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:2px solid transparent;border-radius:8px;background:none;cursor:pointer;text-align:left}
+.courses button:hover{background:var(--soft)}
+.courses button[aria-pressed=true]{border-color:var(--ink);background:var(--soft)}
+.courses button .nm{flex:1;min-width:0;line-height:1.25}
+.courses button .nm b{display:block;font-size:14px;font-weight:700}
+.courses button .nm small{display:block;font-size:13px;color:var(--muted)}
+.courses button .n{font-weight:700;font-size:14px;min-width:20px;text-align:right}
+.courses .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)} /* the nine course colours as one swatch */
+
+.calhd{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;margin-bottom:12px}
+.calhd h2{font:800 26px/1 var(--head);letter-spacing:-.02em}
+.key{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{width:26px;height:16px;border-radius:4px;background:#fff;border:2px solid var(--ink)}
+.calw{overflow-x:auto;padding:0 4px 4px 0}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1060px;overflow:hidden}
+.day{display:flex;flex-direction:column;border-left:var(--bw) solid var(--ink);min-height:420px}
+.day:first-child{border-left:0}
+.day.we{background:#f7f7f4}
+.dn{padding:10px 12px;border-bottom:var(--bw) solid var(--ink);display:flex;align-items:baseline;gap:8px}
+.dn b{font:800 30px/1 var(--head)}
+.dn span{font-weight:600;font-size:15px}
+.day.t .dn{background:var(--ink);color:#fff}
+.day.t .dn em{font-style:normal;margin-left:auto;background:#fff;color:var(--ink);border-radius:999px;padding:0 8px;font-size:13px;font-weight:700}
+.its{display:flex;flex-direction:column;gap:8px;padding:10px 8px;flex:1}
+.none{color:var(--muted);font-size:14px;padding:4px}
+.ev{display:block;background:#fff;border:2px solid var(--ink);border-left:8px solid var(--c);border-radius:8px;padding:7px 9px;text-decoration:none;color:var(--ink);font-size:14px;line-height:1.3}
+.ev .tag{height:20px;font-size:12px;padding:0 6px;margin-bottom:5px}
+.ev b{display:block;font-weight:700}
+.ev small{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:3px}
+.ev small i{font-style:normal;font-weight:700;color:var(--ink)}
+.k-Test small i,.k-Due small i{border-radius:4px;padding:0 5px}
+.k-Test{background:var(--ink);color:#fff;border-color:var(--ink);border-left-color:var(--c)}
+.k-Test small{color:#d6d6d6}.k-Test small i{background:#fff;color:var(--ink)}
+.k-Due{border-style:dashed;border-left-style:solid}
+.k-Due small i{background:var(--ink);color:#fff}
+.k-Holiday{background:repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 8px)}
+.k-Note{border-style:solid;background:#fffef7}
+.k-Note:hover b{text-decoration:underline}
+.ev.nx{box-shadow:3px 3px 0 var(--ink);transform:translate(-2px,-2px)}
+
+.posted h2,.sec{font:800 26px/1 var(--head);letter-spacing:-.02em;margin:0 0 14px;display:flex;align-items:center;gap:12px}
+.sec a,.posted h2 a{margin-left:auto;font:700 15px/1 Figtree,sans-serif;text-underline-offset:3px}
+
+/* Notice cards */
+.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:var(--gap)}
+.note{display:flex;flex-direction:column;overflow:hidden}
+.note .hd{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--c);border-bottom:var(--bw) solid var(--ink);font-weight:700}
+.note .hd small{margin-left:auto;font-weight:600;font-size:14px}
+.note .bd{padding:16px}
+.note h3{font:800 22px/1.15 var(--head);letter-spacing:-.01em}
+.note p{margin-top:8px;font-size:16px;white-space:pre-wrap}
+.pin{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px;font-weight:700}
+.empty{padding:20px;color:var(--muted)}
+
+/* Courses filter as chips, used on Notices and Files */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--gap)}
+.chips button{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 6px;border:2px solid var(--ink);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;font-size:14px}
+.chips button .sw{width:24px;height:24px;border-radius:999px;border-width:1.5px}
+.chips button:hover{background:var(--soft)}
+.chips button[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:2px 2px 0 #888}
+.chips .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)}
+
+/* Course tabs: folder tabs sitting on the panel below; the chosen one takes its course colour */
+.ctabs{display:flex;gap:6px;overflow-x:auto;align-items:flex-end;padding-right:6px;position:relative;z-index:1;margin-bottom:-2.5px}
+.ctabs button{flex:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:10px 10px 0 0;background:#fff;cursor:pointer;font-weight:700;font-size:15px}
+.ctabs button small{font-size:13px;font-weight:600;color:var(--muted)}
+.ctabs button .sw{width:18px;height:18px;border-radius:5px;border-width:1.5px}
+.ctabs .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)}
+.ctabs button:hover{background:var(--soft)}
+.ctabs button[aria-selected=true]{height:52px;background:var(--c);border-bottom-color:var(--c)}
+.ctabs button.all[aria-selected=true]{background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
+.ctabs button[aria-selected=true] small{color:inherit}
+.tabpanel{border-top-left-radius:0;overflow:hidden}
+.tph{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 20px;background:var(--c,var(--ink));color:var(--ink);border-bottom:var(--bw) solid var(--ink)}
+.tph:not([style]){color:#fff}
+.tph h2{font:800 26px/1.1 var(--head);letter-spacing:-.02em}
+.tph p{font-weight:600;margin-top:2px}
+.tph .btn{margin-left:auto}
+.tph:not([style]) .btn{background:#fff;color:var(--ink);box-shadow:3px 3px 0 #888}
+.tpb{padding:20px}
+/* Files table */
+.tw{overflow:hidden}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:14px;font-weight:700;padding:12px 16px;background:var(--soft);border-bottom:var(--bw) solid var(--ink)}
+.tbl td{padding:14px 16px;border-top:1.5px solid #cfcfca;vertical-align:middle}
+.tbl tbody tr:first-child td{border-top:0}
+.tbl td:first-child{font-weight:700;border-left:8px solid var(--c)}
+.tbl .m{color:var(--muted)}
+.tbl a{font-weight:700;text-underline-offset:3px}
+
+/* Admin */
+.adm{display:grid;grid-template-columns:470px minmax(0,1fr);gap:var(--gap);align-items:start}
+.adm .seg{margin-bottom:16px;display:flex}
+.adm .seg button{flex:1;padding:0 8px}
+.panel{padding:22px}
+.panel h2{font:800 26px/1.1 var(--head);letter-spacing:-.02em}
+.hint{color:var(--muted);margin-top:4px}
+label{display:block;font-size:15px;font-weight:700;margin:16px 0 0}
+label>select,label>input,label>textarea{margin-top:6px}
+select,input,textarea{width:100%;height:44px;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:0 12px;font-size:15px;font-weight:400}
+textarea{height:auto;padding:10px 12px;resize:vertical}
+input[type=checkbox]{width:20px;height:20px;margin:0;accent-color:var(--ink)}
+input[type=file]{padding:9px 10px}
+label.c{display:flex;gap:10px;align-items:center;font-weight:500}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel .btn{margin-top:24px;width:100%}
+.crow{display:grid;grid-template-columns:24px 1fr 112px;gap:10px;align-items:center;margin-top:10px}
+.crow input{height:40px}
+.proto{font-size:14px;color:var(--muted);margin-top:18px}
+.rows{overflow:hidden}
+.rows .rh{display:flex;align-items:center;padding:14px 18px;background:var(--soft);border-bottom:var(--bw) solid var(--ink);font:800 20px/1 var(--head)}
+.rows .rh span{margin-left:auto;font:600 15px/1 Figtree,sans-serif;color:var(--muted)}
+.reset{margin-top:var(--gap)}
+/* Admin lists: fixed columns so codes, titles and actions line up whatever the code's length (8 characters at most) */
+.row{display:grid;grid-template-columns:100px minmax(0,1fr) 220px;gap:16px;align-items:center;padding:12px 18px;border-top:1.5px solid #cfcfca}
+.rows .rh+.row,.rows .dayhd+.row{border-top:0}
+.row .tag{width:100%;justify-content:center}
+.row b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{display:block;color:var(--muted);font-size:14px}
+.row .acts{display:flex;gap:8px;justify-content:flex-end}
+.row.past b,.row.past small{color:#6a6a6a}
+.row.past .tag{filter:grayscale(1);opacity:.6}
+.st{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:999px;background:#ddd;color:#333;font-size:12px;font-weight:700;margin-left:6px;vertical-align:1px}
+.dayhd{padding:10px 18px;background:#f7f7f4;border-top:var(--bw) solid var(--ink);border-bottom:1.5px solid #cfcfca;font:800 17px/1 var(--head)}
+.rows .rh+.dayhd{border-top:0}
+.editing{outline:3px solid #2f6bff;outline-offset:-3px}
+/* Notice form: optional calendar link */
+.calopt{border:2px solid var(--ink);border-radius:8px;padding:6px 14px 14px;margin:18px 0 0}
+.calopt legend{font-weight:700;padding:0 6px}
+.radio{display:flex;gap:10px;align-items:center;font-weight:500;margin-top:8px}
+.radio input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+.opt-link,.opt-new{display:none}
+#fa:has(input[name=cal][value=link]:checked) .opt-link,#fa:has(input[name=cal][value=new]:checked) .opt-new{display:block}
+.slotf .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.cancel{display:block;margin:12px auto 0;background:none;border:0;font-weight:700;text-decoration:underline;cursor:pointer}
+/* Calendar cards open a details panel */
+button.ev{width:100%;text-align:left;font:inherit;cursor:pointer}
+.ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+button.ev:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+.ev.cx{background:#f3f3f0;border-style:dashed}
+.ev.cx b{text-decoration:line-through;color:#666}
+.ev .nb{border:1.5px solid currentColor;border-radius:4px;padding:0 4px;font-size:12px;font-weight:700}
+.note.past{filter:grayscale(1);opacity:.6}
+.note .lk{display:inline-block;margin-top:10px;padding:0;border:0;background:none;font:inherit;font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.dlg{padding:0;border:var(--bw) solid var(--ink);border-radius:14px;box-shadow:6px 6px 0 var(--ink);width:min(580px,calc(100vw - 32px));max-height:calc(100vh - 48px);color:var(--ink)}
+.dlg::backdrop{background:rgba(17,17,17,.5)}
+.dlg .dh{background:var(--c);padding:18px 20px;border-bottom:var(--bw) solid var(--ink);display:flex;gap:12px;align-items:flex-start}
+.dlg .dh .tag{background:#fff}
+.dlg .dh p{font-weight:700}
+.dlg .dh h2{font:800 28px/1.1 var(--head);letter-spacing:-.02em;margin-top:6px}
+.dlg .x{margin-left:auto;flex:none;width:40px;height:40px;border:var(--bw) solid var(--ink);border-radius:10px;background:#fff;font-size:22px;line-height:1;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.dlg .db{padding:18px 20px 22px;display:grid;gap:16px}
+.dlg dl{display:grid;grid-template-columns:110px 1fr;gap:8px 16px;margin:0}
+.dlg dt{font-weight:700}.dlg dd{margin:0}
+.dlg h3{font:800 18px/1.2 var(--head);margin-bottom:6px}
+.dlg .lnote{border:2px solid var(--ink);border-radius:10px;padding:12px 14px;background:#fffef7}
+.dlg .lnote p{margin-top:4px}
+.dlg ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.dlg li a{font-weight:700;text-underline-offset:3px}
+.dlg li span{color:var(--muted)}
+@media(max-width:900px){
+.row{grid-template-columns:84px minmax(0,1fr)}
+.row .acts{grid-column:2;justify-content:flex-start}
+.slotf .f3{grid-template-columns:1fr 1fr}
+.dlg dl{grid-template-columns:90px 1fr}
+}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#ffd93d;border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);padding:12px 18px;z-index:60;max-width:90vw;font-weight:700}
+
+@media(max-width:1180px){
+.band{grid-template-columns:minmax(0,1fr)}
+.wk{grid-template-columns:minmax(0,1fr)}
+.courses{display:flex;gap:6px;overflow-x:auto;padding:8px}
+.courses h2{display:none}
+.courses button{width:auto;flex:none;padding:6px 10px}
+.courses button .nm small{display:none}
+.adm{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+:root{--pad:16px;--gap:18px}
+.top{height:56px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(64px + env(safe-area-inset-bottom,0px));padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:#fff;border-top:3px solid var(--ink);gap:4px}
+.nav a{flex:1;justify-content:center;padding:0;font-size:14px}
+.top .btn{height:36px;padding:0 12px;font-size:14px}
+main{padding-top:22px;padding-bottom:100px}
+.title h1{font-size:34px}
+.title .act{margin-left:0;flex-basis:100%}
+.title .act>*{flex:1 1 auto}
+.seg button{flex:1}.lg{display:none}
+.next h2{font-size:28px}
+.stats{grid-template-columns:1fr 1fr}
+.stats div:nth-child(3){border-left:0}
+.stats div:nth-child(n+3){border-top:var(--bw) solid var(--ink)}
+.stats b{font-size:36px}
+.calw{scroll-snap-type:x mandatory}
+.cal{--n:3;grid-template-columns:repeat(7,calc((100vw - 2*var(--pad) - 9px) / var(--n)));min-width:0}
+.day{scroll-snap-align:start;min-height:300px}
+.chips{flex-wrap:nowrap;overflow-x:auto;margin:0 calc(-1*var(--pad)) var(--gap);padding:0 var(--pad) 6px}
+.chips button{flex:none}
+.notes{grid-template-columns:1fr}.tpb{padding:14px}.tph .btn{margin-left:0;flex-basis:100%}
+.tbl thead{display:none}
+.tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:auto}
+.tbl tr{border-top:1.5px solid #cfcfca;border-left:8px solid var(--c);padding:12px 14px}
+.tbl tbody tr:first-child{border-top:0}
+.tbl td{border:0!important;padding:0;display:inline}
+.tbl td:first-child{display:block}
+.tbl td:nth-child(n+3):before{content:" · "}
+.tbl td.nw{display:none}
+.tbl td:last-child{display:block;margin-top:4px}
+.tbl td:last-child:before{content:none}
+.toast{bottom:88px}
+}
+@media(max-width:560px){.cal{--n:2}.top .bell{display:none}
+.courses{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;overflow:visible}
+.courses button{flex-direction:column;gap:4px;padding:6px 2px;align-items:center;text-align:center}
+.courses button .nm b{font-size:13px}.courses .all .nm b{font-size:0}.courses .all .nm b:after{content:"All";font-size:13px}
+.courses button .n{display:none}}
+@media(prefers-reduced-motion:no-preference){.btn,.ev,.courses button,.chips button{transition:transform .08s,box-shadow .08s,background-color .1s}}
+</style></head>
+<body>
+<header class="top">
+<a class="mark" href="#week" aria-label="Class Hub, home"><i aria-hidden="true" id="markdots"></i><span>Class Hub</span></a>
+<nav class="nav" aria-label="Main">
+<a href="#week">Week</a><a href="#announcements">Notices</a><a href="#resources">Files</a><a href="#admin">Admin</a>
+</nav>
+<div class="end"><button class="btn s bell" type="button">Turn on notifications</button></div>
+</header>
+<main id="app"></main>
+<dialog id="dlg" class="dlg"></dialog>
+<script>
+const $=s=>document.querySelector(s),KEY='classhub-v3';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const dt=s=>new Date(s+'T00:00');
+const addD=(s,n)=>{const d=dt(s);d.setDate(d.getDate()+n);return iso(d)};
+const mon=s=>addD(s,-((dt(s).getDay()+6)%7));
+const today=iso(new Date());
+const fmt=(s,o)=>dt(s).toLocaleDateString('en-GB',o||{day:'numeric',month:'short',year:'numeric'});
+const uid=()=>Math.random().toString(36).slice(2,9);
+// One-off calendar items. Regular classes come from the weekly schedule (S.slots), so "Lesson" here is an extra or make-up class
+const KINDS=['Test','Due','Holiday','Lesson'];
+const KLABEL={Lesson:'Extra class',Test:'Quiz/exam',Due:'Due',Holiday:'No class'};
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const CODE_MAX=8;
+// Nine course colours, one per slot, each 6:1 or better against black text
+const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#2ec4d6','#5b8cff','#a78bfa','#ff7ec7'];
+let S,weekStart=mon(today),fc='all',adm='ann',editSlot=null;
+
+// Sample semester: placeholder course names (renamed under Admin → Courses), a weekly timetable and this week's one-offs
+function seed(){const m=mon(today),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
+sl=(course,day,start,end,room)=>({id:uid(),course,day,start,end,room}),
+it=(course,kind,title,d,time,notes)=>({id:uid(),course,kind,title,date:addD(m,d),time:time||'',notes:notes||''});
+const sched=[
+it('os','Test','Process scheduling quiz',1,'1:00 PM','During class. Covers FCFS, SJF and round robin.'),
+it('mpu','Due','Lab 3 report',2,'5:00 PM','Submit the PDF to the course page.'),
+it('net','Test','Subnetting quiz',3,'9:00 AM','Uses Packet Tracer on your own laptop.'),
+it('ddc','Test','Midterm exam',4,'8:00 AM','Modules 1 to 4. Bring a scientific calculator.'),
+it('fcs','Holiday','No class',4,'','Faculty meeting. Read chapter 5 instead.'),
+it('res','Due','Proposal draft',4,'11:59 PM','Use the proposal template in Files.'),
+it('swd','Due','Sprint 1 demo video',5,'11:59 PM','Three minutes at most.'),
+it('mpu','Test','Midterm exam',8,'7:30 AM',''),
+it('emg','Due','Gantt chart',9,'5:00 PM',''),
+it('emb','Lesson','Make-up lab',10,'1:00 PM','Replaces the lab missed in week 2.')];
+const byT=t=>sched.find(x=>x.title===t);
+return{
+courses:[c('mpu','Microprocessors','MPU',0),c('emb','Embedded Systems','EMB',1),c('net','Computer Networks and Security','NET',2),c('ddc','Data and Digital Communications','DDC',3),c('os','Operating Systems','OS',4),c('fcs','Feedback and Control Systems','FCS',5),c('swd','Software Design','SWD',6),c('res','Methods of Research','RES',7),c('emg','Engineering Management','EMG',8)],
+slots:[
+sl('mpu',0,'7:30 AM','9:00 AM','Room 304'),sl('net',0,'10:30 AM','12:00 PM','Comp Lab 2'),sl('res',0,'1:00 PM','2:30 PM','Room 210'),
+sl('emb',1,'8:00 AM','11:00 AM','Lab 1'),sl('ddc',1,'11:00 AM','12:30 PM','Room 305'),sl('os',1,'1:00 PM','2:30 PM','Room 306'),
+sl('fcs',2,'7:30 AM','9:00 AM','Room 304'),sl('swd',2,'10:30 AM','12:00 PM','Comp Lab 3'),sl('mpu',2,'1:00 PM','4:00 PM','Lab 2'),
+sl('net',3,'9:00 AM','10:30 AM','Comp Lab 2'),sl('emg',3,'1:00 PM','2:30 PM','Room 210'),sl('os',3,'3:00 PM','4:30 PM','Room 306'),
+sl('ddc',4,'8:00 AM','9:30 AM','Room 305'),sl('emb',4,'10:30 AM','12:00 PM','Lab 1'),sl('fcs',4,'1:00 PM','2:30 PM','Room 304'),sl('emg',4,'3:00 PM','4:30 PM','Room 210'),
+sl('swd',5,'8:00 AM','11:00 AM','Comp Lab 3'),sl('res',5,'1:00 PM','2:30 PM','Room 210')],
+sched,
+ann:[
+{id:uid(),course:'mpu',title:'Lab 3 moved to Wednesday',body:'The 8086 interfacing lab is now on Wednesday. The lab report is due the same day.',date:addD(m,0),pin:true,done:false,item:byT('Lab 3 report').id},
+{id:uid(),course:'net',title:'Bring your laptops on Thursday',body:'The subnetting quiz uses Packet Tracer. Install it before class.',date:addD(m,1),pin:false,done:false,item:byT('Subnetting quiz').id},
+{id:uid(),course:'ddc',title:'Midterm covers modules 1 to 4',body:'Friday’s midterm covers modules 1 to 4. Bring a scientific calculator.',date:addD(m,2),pin:false,done:false,item:byT('Midterm exam').id},
+{id:uid(),course:'res',title:'Proposal template posted',body:'Use the template in Files for your research proposal draft due Friday.',date:addD(m,2),pin:false,done:false,item:null},
+{id:uid(),course:'os',title:'Quiz on process scheduling',body:'Tuesday’s quiz covers FCFS, SJF and round robin.',date:addD(m,0),pin:false,done:true,item:null},
+{id:uid(),course:'emg',title:'Groups for the term project',body:'Form groups of four and send the list to your class officer by next week.',date:addD(m,3),pin:false,done:false,item:null}],
+res:[
+{id:uid(),course:'mpu',title:'8086 instruction set',cat:'Slides',week:'Week 3',file:'8086-instructions.pdf',url:''},
+{id:uid(),course:'emb',title:'Arduino lab manual',cat:'Lab manual',week:'',file:'arduino-lab-manual.pdf',url:''},
+{id:uid(),course:'net',title:'Packet Tracer download',cat:'Link',week:'',file:'',url:'https://www.netacad.com'},
+{id:uid(),course:'ddc',title:'Modules 1 to 4 reviewer',cat:'Reviewer',week:'Week 4',file:'ddc-reviewer.pdf',url:''},
+{id:uid(),course:'os',title:'Scheduling exercises',cat:'Worksheet',week:'Week 3',file:'scheduling-exercises.docx',url:''},
+{id:uid(),course:'fcs',title:'Course syllabus',cat:'Syllabus',week:'',file:'fcs-syllabus.pdf',url:''},
+{id:uid(),course:'swd',title:'Sprint 1 brief',cat:'Brief',week:'Week 3',file:'sprint-1-brief.pdf',url:''},
+{id:uid(),course:'res',title:'Proposal template',cat:'Template',week:'Week 4',file:'proposal-template.docx',url:''},
+{id:uid(),course:'emg',title:'Gantt chart example',cat:'Example',week:'',file:'gantt-example.xlsx',url:''}]}}
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!S)S=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+load();
+const C=id=>S.courses.find(c=>c.id===id)||{name:'Course',code:'—',color:'#ddd'};
+const cn=id=>C(id).name;
+const cv=id=>`--c:${C(id).color}`;
+const tag=id=>`<span class="tag" style="${cv(id)}" title="${esc(cn(id))}">${esc(C(id).code)}</span>`;
+const sw=id=>`<span class="sw" style="${cv(id)}" aria-hidden="true"></span>`;
+const opts=sel=>S.courses.map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(c.code)} · ${esc(c.name)}</option>`).join('');
+const inFc=x=>fc==='all'||x.course===fc;
+function toast(t){const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),3200)}
+const plural=(n,a,b)=>n+' '+(n===1?a:b);
+// "7:30 AM" → minutes after midnight, so a day sorts in time order; no time sorts first
+const mins=t=>{const m=/(\d+):(\d+)\s*(AM|PM)?/i.exec(t||'');if(!m)return-1;let h=+m[1]%12;if(/pm/i.test(m[3]||''))h+=12;return h*60+ +m[2]};
+const when=d=>{const n=Math.round((dt(d)-dt(today))/864e5);return n===0?'Today':n===1?'Tomorrow':n<7&&n>0?'In '+n+' days':fmt(d,{weekday:'long',day:'numeric',month:'short'})};
+const dLong=d=>fmt(d,{weekday:'long',day:'numeric',month:'long'});
+const dShort=d=>fmt(d,{weekday:'short',day:'numeric',month:'short'});
+const span=(a,b)=>a&&b?`${a.replace(/ (AM|PM)$/,m=>a.slice(-2)===b.slice(-2)?'':m)}–${b}`:a||'';
+const dayIdx=d=>(dt(d).getDay()+6)%7;
+
+// Notices: linked to a calendar item through notice.item. A notice is past when an officer marked it done,
+// or when its linked item's date has gone by
+const itemOf=a=>a.item?S.sched.find(x=>x.id===a.item):null;
+const noteOf=x=>S.ann.find(a=>a.item===x.id);
+const isPast=a=>a.done||(!!itemOf(a)&&itemOf(a).date<today);
+const bySort=l=>[...l].sort((a,b)=>(isPast(a)-isPast(b))||(b.pin-a.pin)||b.date.localeCompare(a.date));
+
+// Everything on one date: that weekday's regular classes (struck through when a "No class" item covers the course),
+// the one-off items, and notices that are not tied to an item
+function dayItems(d){const off=S.sched.filter(x=>x.date===d&&x.kind==='Holiday').map(x=>x.course);
+const cls=S.slots.filter(s=>s.day===dayIdx(d)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
+const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:mins(x.time)}));
+const nts=S.ann.filter(a=>a.date===d&&!itemOf(a)).map(a=>({t:'note',a,course:a.course,m:1e4}));
+return[...cls,...one,...nts].filter(inFc).sort((p,q)=>p.m-q.m)}
+
+const nextItem=()=>S.sched.filter(e=>e.date>=today&&['Test','Due'].includes(e.kind)&&inFc(e)).sort((a,b)=>a.date.localeCompare(b.date)||mins(a.time)-mins(b.time))[0];
+function nextUp(){const l=nextItem();
+if(!l)return`<section class="box next" aria-label="Next up"><p class="lbl">Next up</p><h2>Nothing due or tested from today on</h2></section>`;
+return`<section class="box next" style="${cv(l.course)}" aria-label="Next up"><p class="lbl">Next up: ${esc(KLABEL[l.kind])} <span>${when(l.date)}</span></p><h2>${esc(l.title)}</h2><p>${esc(cn(l.course))} · ${dLong(l.date)}${l.time?' at '+esc(l.time):''}</p><button type="button" class="lk" data-open="item:${l.id}" style="padding:0;border:0;background:none;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;text-align:left;margin-top:4px">See details</button></section>`}
+
+function card(o,d,nx){
+if(o.t==='slot'){const s=o.s;return`<button type="button" class="ev k-Lesson${o.cx?' cx':''}" style="${cv(s.course)}" data-open="slot:${s.id}:${d}">${tag(s.course)}<b>${esc(cn(s.course))}</b><small><i>${o.cx?'Cancelled':'Class'}</i>${esc(span(s.start,s.end))}</small><small>${esc(s.room)}</small></button>`}
+if(o.t==='item'){const x=o.x,n=noteOf(x);return`<button type="button" class="ev k-${x.kind}${nx&&x.id===nx.id?' nx':''}" style="${cv(x.course)}" data-open="item:${x.id}">${tag(x.course)}<b>${esc(x.title)}</b><small><i>${KLABEL[x.kind]}</i>${x.time?esc(x.time):''}${n?'<span class="nb">Notice</span>':''}</small></button>`}
+const a=o.a;return`<button type="button" class="ev k-Note${isPast(a)?' cx':''}" style="${cv(a.course)}" data-open="note:${a.id}">${tag(a.course)}<b>${esc(a.title)}</b><small><i>Notice</i></small></button>`}
+
+function vWeek(){const days=[...Array(7)].map((_,i)=>addD(weekStart,i)),end=days[6],nx=nextItem();
+const all=days.map(d=>dayItems(d));
+const cols=days.map((d,i)=>`<div class="day${i>4?' we':''}${d===today?' t':''}"><div class="dn"><b>${fmt(d,{day:'numeric'})}</b><span>${fmt(d,{weekday:'short'})}</span>${d===today?'<em>Today</em>':''}</div><div class="its">${all[i].map(o=>card(o,d,nx)).join('')||'<p class="none">Free day</p>'}</div></div>`).join('');
+const flat=all.flat(),cnt=f=>flat.filter(f).length;
+const an=S.ann.filter(a=>a.date>=weekStart&&a.date<=end&&inFc(a));
+// Per-course counts ignore the course filter so the list always shows every course's load
+const fcWas=fc;fc='all';const every=days.flatMap(d=>dayItems(d));fc=fcWas;
+const per=id=>every.filter(o=>o.course===id).length;
+const list=`<nav class="box courses" aria-label="Your courses"><h2>Your courses</h2><button type="button" class="all" data-fc="all" aria-pressed="${fc==='all'}"><span class="sw" aria-hidden="true"></span><span class="nm"><b>All courses</b><small>${S.courses.length} this semester</small></span><span class="n">${every.length}</span></button>${S.courses.map(c=>`<button type="button" data-fc="${c.id}" aria-pressed="${fc===c.id}">${sw(c.id)}<span class="nm"><b>${esc(c.code)}</b><small>${esc(c.name)}</small></span><span class="n" title="Items this week">${per(c.id)}</span></button>`).join('')}</nav>`;
+const key=`<div class="key"><span><i style="background:#fff"></i>Class</span><span><i style="background:#f3f3f0;border-style:dashed"></i>Cancelled</span><span><i style="background:#111"></i>Quiz or exam</span><span><i style="border-style:dashed"></i>Due</span><span><i style="background:repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 6px)"></i>No class</span><span><i style="background:#fffef7"></i>Notice</span><span>Tap any card for details</span></div>`;
+return`<div class="title"><h1>${weekStart===mon(today)?'This week':'Week of '+fmt(weekStart,{day:'numeric',month:'short'})}</h1><p class="sub">${dLong(weekStart)} to ${fmt(end,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${fc==='all'?'':' · showing '+esc(cn(fc))}</p><div class="act"><div class="seg"><button data-wk="-7" type="button">← Last<span class="lg"> week</span></button><button data-wk="0" type="button" aria-pressed="${weekStart===mon(today)}">This week</button><button data-wk="7" type="button">Next<span class="lg"> week</span> →</button></div><a class="btn p" href="#admin" data-goadm="ann">Post a notice</a></div></div>
+<div class="band">${nextUp()}<section class="box stats" aria-label="This week in numbers"><div><span>Classes</span><b>${cnt(o=>o.t==='slot'&&!o.cx||o.t==='item'&&o.x.kind==='Lesson')}</b></div><div><span>Quizzes and exams</span><b>${cnt(o=>o.t==='item'&&o.x.kind==='Test')}</b></div><div><span>Things due</span><b>${cnt(o=>o.t==='item'&&o.x.kind==='Due')}</b></div><div><span>New notices</span><b>${an.length}</b></div></section></div>
+<div class="wk">${list}<section aria-label="Calendar"><div class="calhd"><h2>Day by day</h2>${key}</div><div class="calw" tabindex="0"><div class="box cal">${cols}</div></div></section></div>
+<section class="posted"><div class="sec"><h2 style="font:inherit">Posted this week</h2><a href="#announcements">See all ${S.ann.length} notices</a></div><div class="notes">${bySort(an).slice(0,3).map(noteCard).join('')||'<p class="box empty">Nothing posted this week.</p>'}</div></section>`}
+
+function noteCard(a){const x=itemOf(a),p=isPast(a);return`<article class="box note${p?' past':''}" style="${cv(a.course)}"><div class="hd">${esc(C(a.course).code)} · ${esc(cn(a.course))}<small>${fmt(a.date,{weekday:'short',day:'numeric',month:'short'})}</small></div><div class="bd">${a.pin&&!p?'<span class="pin">Pinned</span> ':''}${p?`<span class="pin" style="background:#555">${a.done?'Done':'Passed'}</span> `:''}<h3${a.pin||p?' style="margin-top:8px"':''}>${esc(a.title)}</h3><p>${esc(a.body)}</p>${x?`<button type="button" class="lk" data-open="item:${x.id}">On the calendar: ${KLABEL[x.kind]}, ${dShort(x.date)}${x.time?' at '+esc(x.time):''}</button>`:''}</div></article>`}
+// Course tabs for Notices and Files: All first, then the nine courses in their fixed order, each with its count
+const ctabs=(l,label)=>`<div class="ctabs" role="tablist" aria-label="${label}"><button type="button" role="tab" class="all" data-fc="all" aria-selected="${fc==='all'}"><span class="sw" aria-hidden="true"></span>All <small>${l.length}</small></button>${S.courses.map(c=>`<button type="button" role="tab" data-fc="${c.id}" aria-selected="${fc===c.id}" style="${cv(c.id)}" title="${esc(c.name)}">${sw(c.id)}${esc(c.code)} <small>${l.filter(x=>x.course===c.id).length}</small></button>`).join('')}</div>`;
+const tabHead=(n,one,many,act)=>`<div class="tph"${fc==='all'?'':` style="${cv(fc)}"`}><div><h2>${fc==='all'?'All courses':esc(cn(fc))}</h2><p>${plural(n,one,many)}${fc==='all'?' across '+S.courses.length+' courses':''}</p></div>${act}</div>`;
+function vAnn(){const l=bySort(S.ann).filter(inFc);
+const h=l.length?`<div class="notes tpb">${l.map(noteCard).join('')}</div>`:`<p class="empty">No notices for ${fc==='all'?'any course':esc(cn(fc))} yet. Post one from Admin.</p>`;
+return`<div class="title"><h1>Notices</h1><p class="sub">Newest first, pinned on top. Finished notices are greyed out at the end.</p></div>${ctabs(S.ann,'Notices by course')}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'notice','notices','<a class="btn p" href="#admin" data-goadm="ann">Post a notice</a>')}${h}</section>`}
+
+const fileCell=r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">Open link ↗</a>`:`<span class="m">${esc(r.file||'No file attached')}</span>`;
+const cIdx=id=>S.courses.findIndex(c=>c.id===id);
+function vRes(){const l=S.res.filter(inFc).sort((a,b)=>cIdx(a.course)-cIdx(b.course)||a.title.localeCompare(b.title));
+const body=l.map(r=>`<tr style="${cv(r.course)}"><td>${esc(r.title)}</td><td>${tag(r.course)}</td><td>${esc(r.cat)}</td><td class="m${r.week?'':' nw'}">${r.week?esc(r.week):'—'}</td><td>${fileCell(r)}</td></tr>`).join('');
+return`<div class="title"><h1>Files</h1><p class="sub">Slides, readings, templates and links, sorted by course.</p></div>${ctabs(S.res,'Files by course')}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'file or link','files and links','<a class="btn p" href="#admin" data-goadm="res">Add a file</a>')}
+${l.length?`<table class="tbl"><thead><tr><th scope="col">What it is</th><th scope="col">Course</th><th scope="col">Type</th><th scope="col">Week</th><th scope="col">Open</th></tr></thead><tbody>${body}</tbody></table>`:`<p class="empty">No files for ${fc==='all'?'any course':esc(cn(fc))} yet. Add one from Admin.</p>`}</section>`}
+
+// Details panel for a regular class, a one-off item or a notice
+function openDetail(key){const[t,id,d]=key.split(':');let course,kind,title,rows=[],note=null,extra='';
+if(t==='slot'){const s=S.slots.find(x=>x.id===id);if(!s)return;const off=S.sched.find(x=>x.date===d&&x.kind==='Holiday'&&x.course===s.course);
+course=s.course;kind=off?'Class (cancelled)':'Class';title=cn(s.course);rows=[['When',`${dLong(d)}, ${span(s.start,s.end)}`],['Where',s.room||'—'],['Repeats',`Every ${DAYS[s.day]}`]];
+if(off)rows.push(['Why',off.notes||'No class on this day']);note=off?noteOf(off):null}
+else if(t==='item'){const x=S.sched.find(y=>y.id===id);if(!x)return;course=x.course;kind=KLABEL[x.kind];title=x.title;
+rows=[['When',`${dLong(x.date)}${x.time?', '+x.time:''}`],['Course',cn(x.course)]];if(x.notes)rows.push(['Notes',x.notes]);note=noteOf(x)}
+else{const a=S.ann.find(y=>y.id===id);if(!a)return;course=a.course;kind='Notice';title=a.title;rows=[['Posted',dLong(a.date)],['Course',cn(a.course)]];
+extra=`<p style="font-size:16px">${esc(a.body)}</p>`;if(isPast(a))rows.push(['Status',a.done?'Done':'Passed'])}
+const files=S.res.filter(r=>r.course===course);
+const dlg=$('#dlg');dlg.style.cssText=cv(course);
+dlg.innerHTML=`<div class="dh"><div>${tag(course)}<p style="margin-top:8px">${esc(kind)}</p><h2 id="dlgt">${esc(title)}</h2></div><button type="button" class="x" data-close aria-label="Close">×</button></div>
+<div class="db">${extra}<dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+${note?`<div class="lnote${isPast(note)?' past':''}"><h3>Notice: ${esc(note.title)}</h3><p>${esc(note.body)}</p><p style="color:var(--muted);font-size:14px;margin-top:6px">Posted ${dShort(note.date)}${isPast(note)?' · '+(note.done?'Done':'Passed'):''}</p></div>`:''}
+<div><h3>Files for ${esc(C(course).code)}</h3>${files.length?`<ul>${files.map(r=>`<li>${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)} ↗</a>`:`<b>${esc(r.title)}</b>`} <span>· ${esc(r.cat)}</span></li>`).join('')}</ul>`:'<p style="color:var(--muted)">No files for this course yet.</p>'}</div></div>`;
+dlg.setAttribute('aria-labelledby','dlgt');if(!dlg.open)dlg.showModal()}
+
+function row(c,t,m,acts,cls){return`<div class="row${cls?' '+cls:''}">${tag(c)}<div><b>${t}</b><small>${m}</small></div><div class="acts">${acts||''}</div></div>`}
+const del=k=>`<button class="btn s" data-del="${k}" type="button">Delete</button>`;
+function vAdmin(){const sch=[...S.sched].sort((a,b)=>a.date.localeCompare(b.date)||mins(a.time)-mins(b.time));
+const es=editSlot?S.slots.find(s=>s.id===editSlot):null;
+const itemOpts=sch.filter(x=>x.date>=addD(today,-7)).map(x=>`<option value="${x.id}">${esc(C(x.course).code)} · ${KLABEL[x.kind]} · ${esc(x.title)} · ${dShort(x.date)}</option>`).join('');
+const forms={
+ann:`<form class="box panel" id="fa"><h2>Post a notice</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><label>Message<textarea name="body" rows="4" required></textarea></label><label>Show it on<input type="date" name="date" value="${today}" required></label>
+<fieldset class="calopt"><legend>Calendar</legend><label class="radio"><input type="radio" name="cal" value="none" checked>Don’t add it to the calendar</label><label class="radio"><input type="radio" name="cal" value="link">Link it to a calendar item</label><label class="radio"><input type="radio" name="cal" value="new">Add it as a new calendar item</label>
+<div class="opt-link"><label>Calendar item<select name="linkItem"><option value="">Choose an item</option>${itemOpts}</select></label></div>
+<div class="opt-new"><label>What is it?<select name="nkind">${KINDS.map(k=>`<option value="${k}">${KLABEL[k]}</option>`).join('')}</select></label><div class="f2"><label>Date<input type="date" name="ndate" value="${today}"></label><label>Time (optional)<input name="ntime" placeholder="8:00 AM"></label></div></div></fieldset>
+<label class="c" style="margin-top:16px"><input type="checkbox" name="pin">Pin it to the top</label><label class="c"><input type="checkbox" name="push" checked>Send a push notification</label><button class="btn p">Post notice</button></form>`,
+sched:`<form class="box panel" id="fs"><h2>Add to the calendar</h2><p class="hint">For one-off things. Regular classes go in Schedule.</p><label>Course<select name="course">${opts()}</select></label><label>What is it?<select name="kind">${KINDS.map(k=>`<option value="${k}">${KLABEL[k]}</option>`).join('')}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Date<input type="date" name="date" value="${today}" required></label><label>Time (optional)<input name="time" placeholder="8:00 AM"></label></div><label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit"></textarea></label><button class="btn p">Add to the calendar</button></form>`,
+slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class time':'Add a class time'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
+res:`<form class="box panel" id="fr"><h2>Add a file</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Type<input name="cat" placeholder="Slides" required></label><label>Week (optional)<input name="week" placeholder="Week 3"></label></div><label>File<input type="file" name="file"></label><label>Or a link<input type="url" name="url" placeholder="https://"></label><button class="btn p">Add file</button></form>`,
+courses:`<form class="box panel" id="fcs"><h2>Your 9 courses</h2><p class="hint">Type each course’s name and a short code of up to ${CODE_MAX} characters. Each keeps its colour everywhere.</p>${S.courses.map((c,i)=>`<div class="crow">${sw(c.id)}<input name="name${i}" value="${esc(c.name)}" aria-label="Course ${i+1} name" required><input name="code${i}" value="${esc(c.code)}" aria-label="Course ${i+1} code" maxlength="${CODE_MAX}" required></div>`).join('')}<button class="btn p">Save courses</button></form>`};
+let list;
+if(adm==='ann')list=['Notices',S.ann.length,bySort(S.ann).map(a=>{const x=itemOf(a),p=isPast(a);
+return row(a.course,esc(a.title)+(p?`<span class="st">${a.done?'Done':'Passed'}</span>`:a.pin?'<span class="st" style="background:#111;color:#fff">Pinned</span>':''),`${fmt(a.date,{day:'numeric',month:'short'})}${x?' · on the calendar '+dShort(x.date):''}`,`<button class="btn s" data-done="${a.id}" type="button">${a.done?'Undo done':'Mark done'}</button>${del('ann:'+a.id)}`,p?'past':'')}).join('')];
+else if(adm==='sched')list=['Calendar',sch.length,sch.map(x=>row(x.course,esc(x.title),`${KLABEL[x.kind]} · ${dShort(x.date)}${x.time?' · '+esc(x.time):''}${noteOf(x)?' · has a notice':''}`,del('sched:'+x.id),x.date<today?'past':'')).join('')];
+else if(adm==='slots')list=['Weekly schedule',S.slots.length,DAYS.map((n,i)=>{const l=S.slots.filter(s=>s.day===i).sort((a,b)=>mins(a.start)-mins(b.start));
+return l.length?`<div class="dayhd">${n}</div>`+l.map(s=>row(s.course,esc(span(s.start,s.end)),`${esc(cn(s.course))}${s.room?' · '+esc(s.room):''}`,`<button class="btn s" data-edit-slot="${s.id}" type="button">Edit</button>${del('slots:'+s.id)}`,s.id===editSlot?'editing':'')).join(''):''}).join('')];
+else if(adm==='res')list=['Files',S.res.length,S.res.map(r=>row(r.course,esc(r.title),`${esc(r.cat)}${r.week?' · '+esc(r.week):''}`,del('res:'+r.id))).join('')];
+else list=['Courses',S.courses.length,S.courses.map(c=>row(c.id,esc(c.name),`${plural(S.slots.filter(s=>s.course===c.id).length,'class a week','classes a week')} · ${plural(S.ann.filter(a=>a.course===c.id).length,'notice','notices')} · ${plural(S.res.filter(r=>r.course===c.id).length,'file','files')}`,'')).join('')];
+const [lt,n,rows]=list,tabs=[['ann','Notice'],['sched','Calendar'],['slots','Schedule'],['res','File'],['courses','Courses']];
+return`<div class="title"><h1>Admin</h1><p class="sub">Post notices, keep the calendar and weekly schedule up to date, add files</p></div>
+<div class="adm"><div><div class="seg" role="group" aria-label="What to change">${tabs.map(([k,l])=>`<button type="button" data-adm="${k}" aria-pressed="${adm===k}">${l}</button>`).join('')}</div>${forms[adm]}<p class="proto">This is a prototype. Everything is saved in this browser only. Sign-in, real file uploads and push delivery come with the backend.</p></div>
+<section class="box rows" aria-label="${lt}"><div class="rh">${lt}<span>${plural(n,'item','items')}</span></div>${rows||'<p class="empty">Nothing here yet.</p>'}</section></div>
+<button class="btn reset" id="reset" type="button">Reset sample data</button>`}
+
+const views={week:vWeek,announcements:vAnn,resources:vRes,admin:vAdmin};
+const names={week:'Week',announcements:'Notices',resources:'Files',admin:'Admin'};
+function render(){const h=location.hash.slice(1),k=views[h]?h:'week';
+document.querySelectorAll('.nav a').forEach(a=>a.getAttribute('href')==='#'+k?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
+$('#markdots').innerHTML=S.courses.map(c=>`<b style="background:${c.color}"></b>`).join('');
+$('#app').innerHTML=views[k]();document.title='Class Hub · '+names[k];setBell()}
+window.addEventListener('hashchange',()=>{window.scrollTo(0,0);render()});
+
+document.addEventListener('click',e=>{const g=e.target.closest('[data-goadm]');if(g)adm=g.dataset.goadm;
+const dlg=$('#dlg');if(e.target===dlg){dlg.close();return}
+const t=e.target.closest('button');if(!t)return;
+if(t.dataset.open){openDetail(t.dataset.open);return}
+if(t.hasAttribute('data-close')){dlg.close();return}
+if(t.dataset.wk!==undefined){weekStart=t.dataset.wk==='0'?mon(today):addD(weekStart,+t.dataset.wk);render()}
+if(t.dataset.fc){fc=fc===t.dataset.fc&&t.dataset.fc!=='all'?'all':t.dataset.fc;render()}
+if(t.dataset.adm){adm=t.dataset.adm;editSlot=null;render()}
+if(t.dataset.done){const a=S.ann.find(x=>x.id===t.dataset.done);a.done=!a.done;save();render();toast(a.done?'Marked as done':'Back to active')}
+if(t.dataset.editSlot){editSlot=t.dataset.editSlot;render();$('#fsl').scrollIntoView({block:'nearest'})}
+if(t.hasAttribute('data-cancel-edit')){editSlot=null;render()}
+if(t.dataset.del){const[k,id]=t.dataset.del.split(':');S[k]=S[k].filter(x=>x.id!==id);if(k==='sched')S.ann.forEach(a=>{if(a.item===id)a.item=null});if(k==='slots'&&editSlot===id)editSlot=null;save();render();toast('Deleted')}
+if(t.id==='reset'){S=seed();fc='all';editSlot=null;save();render();toast('Sample data restored')}
+if(t.classList.contains('bell'))askPush()});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
+if(f.id==='fa'){let item=null;
+if(d.cal==='link'){if(!d.linkItem){toast('Choose the calendar item to link');return}item=d.linkItem}
+if(d.cal==='new'){const x={id:uid(),course:d.course,kind:d.nkind,title:d.title,date:d.ndate||d.date,time:d.ntime||'',notes:''};S.sched.push(x);item=x.id}
+S.ann.push({id:uid(),course:d.course,title:d.title,body:d.body,date:d.date,pin:!!d.pin,done:false,item});save();
+let sent=false;if(d.push&&window.Notification&&Notification.permission==='granted'){try{new Notification(C(d.course).code+': '+d.title,{body:d.body});sent=true}catch(x){}}
+render();toast((item?'Posted and on the calendar':'Posted')+(d.push?(sent?'. Notification sent to this device':'. Push delivery needs the backend'):''))}
+if(f.id==='fr'){const file=f.elements.file.files[0];S.res.push({id:uid(),course:d.course,title:d.title,cat:d.cat,week:d.week,file:file?file.name:'',url:d.url});save();render();toast('File added')}
+if(f.id==='fs'){S.sched.push({id:uid(),course:d.course,title:d.title,kind:d.kind,date:d.date,time:d.time||'',notes:d.notes||''});save();render();toast('Added to the calendar')}
+if(f.id==='fsl'){if(mins(d.start)<0||mins(d.end)<0||mins(d.end)<=mins(d.start)){toast('Use times like 7:30 AM, with the end after the start');return}
+const v={course:d.course,day:+d.day,start:d.start.trim().toUpperCase(),end:d.end.trim().toUpperCase(),room:d.room.trim()};
+if(editSlot){Object.assign(S.slots.find(s=>s.id===editSlot),v);editSlot=null;toast('Class time saved')}else{S.slots.push({id:uid(),...v});toast('Added to the weekly schedule')}save();render()}
+if(f.id==='fcs'){S.courses.forEach((c,i)=>{c.name=d['name'+i].trim()||c.name;c.code=(d['code'+i].trim()||c.code).toUpperCase().slice(0,CODE_MAX)});save();render();toast('Courses saved')}});
+function askPush(){if(!window.Notification){toast('This browser does not support notifications');return}
+Notification.requestPermission().then(p=>{toast(p==='granted'?'Notifications are on':'Notifications are blocked in browser settings');setBell()}).catch(()=>toast('Could not ask for permission here'))}
+function setBell(){const on=window.Notification&&Notification.permission==='granted';document.querySelectorAll('.bell').forEach(b=>{b.textContent=on?'Notifications on':'Turn on notifications';b.disabled=!!on})}
+render();
+</script></body></html>
