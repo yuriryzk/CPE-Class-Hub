@@ -139,9 +139,9 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .ctabs button .sw{width:18px;height:18px;border-radius:5px;border-width:1.5px}
 .ctabs .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)}
 .ctabs button:hover{background:var(--soft)}
-.ctabs button[aria-selected=true]{height:52px;background:var(--c);border-bottom-color:var(--c)}
-.ctabs button.all[aria-selected=true]{background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
-.ctabs button[aria-selected=true] small{color:inherit}
+.ctabs button[aria-pressed=true],.ctabs button[aria-selected=true]{height:52px;background:var(--c);border-bottom-color:var(--c)}
+.ctabs button.all[aria-pressed=true],.ctabs button.all[aria-selected=true]{background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
+.ctabs button[aria-pressed=true] small,.ctabs button[aria-selected=true] small{color:inherit}
 .tabpanel{border-top-left-radius:0;overflow:hidden}
 .tph{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 20px;background:var(--c,var(--ink));color:var(--ink);border-bottom:var(--bw) solid var(--ink)}
 .tph:not([style]){color:#fff}
@@ -150,6 +150,10 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .tph .btn{margin-left:auto}
 .tph:not([style]) .btn{background:#fff;color:var(--ink);box-shadow:3px 3px 0 #888}
 .tpb{padding:20px}
+.ctabs button[aria-pressed=true]:not(.all) .sw,.courses button[aria-pressed=true]:not(.all) .sw{display:grid;place-items:center;background:#fff}
+.ctabs button[aria-pressed=true]:not(.all) .sw:after,.courses button[aria-pressed=true]:not(.all) .sw:after{content:"\2713";font-size:12px;font-weight:800;line-height:1;color:#111}
+.tph .sws{display:flex;gap:4px;margin-bottom:8px}.tph .sws .sw{width:18px;height:18px;border-radius:5px}
+.chint{font-size:13px;color:var(--muted);padding:0 12px 10px;margin-top:-4px}
 /* Files table */
 .tw{overflow:hidden}
 .tbl{width:100%;border-collapse:collapse}
@@ -243,7 +247,7 @@ button.ev:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
 .band{grid-template-columns:minmax(0,1fr)}
 .wk{grid-template-columns:minmax(0,1fr)}
 .courses{display:flex;gap:6px;overflow-x:auto;padding:8px}
-.courses h2{display:none}
+.courses h2,.courses .chint{display:none}
 .courses button{width:auto;flex:none;padding:6px 10px}
 .courses button .nm small{display:none}
 .adm{grid-template-columns:1fr}
@@ -316,7 +320,7 @@ const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunda
 const CODE_MAX=8;
 // Nine course colours, one per slot, each 6:1 or better against black text
 const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#2ec4d6','#5b8cff','#a78bfa','#ff7ec7'];
-let S,weekStart=mon(today),fc='all',adm='ann',editSlot=null,editAnn=null,editItem=null;
+let S,weekStart=mon(today),fc='all',sel=[],adm='ann',editSlot=null,editAnn=null,editItem=null;
 
 // Sample semester: placeholder course names (renamed under Admin → Courses), a weekly timetable and this week's one-offs
 function seed(){const m=mon(today),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
@@ -372,6 +376,9 @@ const tag=id=>`<span class="tag" style="${cv(id)}" title="${esc(cn(id))}">${esc(
 const sw=id=>`<span class="sw" style="${cv(id)}" aria-hidden="true"></span>`;
 const opts=sel=>S.courses.map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(c.code)} · ${esc(c.name)}</option>`).join('');
 const inFc=x=>fc==='all'||x.course===fc;
+const inSel=x=>!sel.length||sel.includes(x.course);
+const codes=ids=>ids.map(id=>esc(C(id).code));
+const andList=l=>l.length<2?l.join(''):l.slice(0,-1).join(', ')+' and '+l[l.length-1];
 function toast(t){const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),3200)}
 const plural=(n,a,b)=>n+' '+(n===1?a:b);
 // "7:30 AM" → minutes after midnight, so a day sorts in time order; no time sorts first
@@ -397,9 +404,9 @@ function dayItems(d){const off=S.sched.filter(x=>x.date===d&&x.kind==='Holiday')
 const cls=S.slots.filter(s=>s.day===dayIdx(d)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
 const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:mins(x.time)}));
 const nts=S.ann.filter(a=>a.date===d&&!itemOf(a)).map(a=>({t:'note',a,course:a.course,m:1e4}));
-return[...cls,...one,...nts].filter(inFc).sort((p,q)=>p.m-q.m)}
+return[...cls,...one,...nts].filter(inSel).sort((p,q)=>p.m-q.m)}
 
-const nextItem=()=>S.sched.filter(e=>e.date>=today&&['Test','Due'].includes(e.kind)&&inFc(e)).sort((a,b)=>a.date.localeCompare(b.date)||mins(a.time)-mins(b.time))[0];
+const nextItem=()=>S.sched.filter(e=>e.date>=today&&['Test','Due'].includes(e.kind)&&inSel(e)).sort((a,b)=>a.date.localeCompare(b.date)||mins(a.time)-mins(b.time))[0];
 function nextUp(){const l=nextItem();
 if(!l)return`<section class="box next" aria-label="Next up"><p class="lbl">Next up</p><h2>Nothing due or tested from today on</h2></section>`;
 return`<section class="box next" style="${cv(l.course)}" aria-label="Next up"><p class="lbl">Next up: ${esc(KLABEL[l.kind])} <span>${when(l.date)}</span></p><h2>${esc(l.title)}</h2><p>${esc(cn(l.course))} · ${dLong(l.date)}${l.time?' at '+esc(l.time):''}</p><button type="button" class="lk" data-open="item:${l.id}" style="padding:0;border:0;background:none;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;text-align:left;margin-top:4px">See details</button></section>`}
@@ -413,30 +420,33 @@ function vWeek(){const days=[...Array(7)].map((_,i)=>addD(weekStart,i)),end=days
 const all=days.map(d=>dayItems(d));
 const cols=days.map((d,i)=>`<div class="day${i>4?' we':''}${d===today?' t':''}"><div class="dn"><b>${fmt(d,{day:'numeric'})}</b><span>${fmt(d,{weekday:'short'})}</span>${d===today?'<em>Today</em>':''}</div><div class="its">${all[i].map(o=>card(o,d,nx)).join('')||'<p class="none">Free day</p>'}</div></div>`).join('');
 const flat=all.flat(),cnt=f=>flat.filter(f).length;
-const an=S.ann.filter(a=>a.date>=weekStart&&a.date<=end&&inFc(a));
+const an=S.ann.filter(a=>a.date>=weekStart&&a.date<=end&&inSel(a));
 // Per-course counts ignore the course filter so the list always shows every course's load
-const fcWas=fc;fc='all';const every=days.flatMap(d=>dayItems(d));fc=fcWas;
+const selWas=sel;sel=[];const every=days.flatMap(d=>dayItems(d));sel=selWas;
 const per=id=>every.filter(o=>o.course===id).length;
-const list=`<nav class="box courses" aria-label="Your courses"><h2>Your courses</h2><button type="button" class="all" data-fc="all" aria-pressed="${fc==='all'}"><span class="sw" aria-hidden="true"></span><span class="nm"><b>All courses</b><small>${S.courses.length} this semester</small></span><span class="n">${every.length}</span></button>${S.courses.map(c=>`<button type="button" data-fc="${c.id}" aria-pressed="${fc===c.id}">${sw(c.id)}<span class="nm"><b>${esc(c.code)}</b><small>${esc(c.name)}</small></span><span class="n" title="Items this week">${per(c.id)}</span></button>`).join('')}</nav>`;
+const list=`<nav class="box courses" aria-label="Your courses"><h2>Your courses</h2><p class="chint">Tap several to see them together</p><button type="button" class="all" data-sel="all" aria-pressed="${!sel.length}"><span class="sw" aria-hidden="true"></span><span class="nm"><b>All courses</b><small>${S.courses.length} this semester</small></span><span class="n">${every.length}</span></button>${S.courses.map(c=>`<button type="button" data-sel="${c.id}" aria-pressed="${sel.includes(c.id)}">${sw(c.id)}<span class="nm"><b>${esc(c.code)}</b><small>${esc(c.name)}</small></span><span class="n" title="Items this week">${per(c.id)}</span></button>`).join('')}</nav>`;
 const key=`<div class="key"><span><i style="background:#fff"></i>Class</span><span><i style="background:#f3f3f0;border-style:dashed"></i>Cancelled</span><span><i style="background:#111"></i>Quiz or exam</span><span><i style="border-style:dashed"></i>Due</span><span><i style="background:repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 6px)"></i>No class</span><span><i style="background:#fffef7"></i>Notice</span><span>Tap any card for details</span></div>`;
-return`<div class="title"><h1>${weekStart===mon(today)?'This week':'Week of '+fmt(weekStart,{day:'numeric',month:'short'})}</h1><p class="sub">${dLong(weekStart)} to ${fmt(end,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${fc==='all'?'':' · showing '+esc(cn(fc))}</p><div class="act"><div class="seg"><button data-wk="-7" type="button">← Last<span class="lg"> week</span></button><button data-wk="0" type="button" aria-pressed="${weekStart===mon(today)}">This week</button><button data-wk="7" type="button">Next<span class="lg"> week</span> →</button></div><a class="btn p" href="#admin" data-goadm="ann">Post a notice</a></div></div>
+return`<div class="title"><h1>${weekStart===mon(today)?'This week':'Week of '+fmt(weekStart,{day:'numeric',month:'short'})}</h1><p class="sub">${dLong(weekStart)} to ${fmt(end,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${sel.length?' · showing '+andList(codes(sel)):''}</p><div class="act"><div class="seg"><button data-wk="-7" type="button">← Last<span class="lg"> week</span></button><button data-wk="0" type="button" aria-pressed="${weekStart===mon(today)}">This week</button><button data-wk="7" type="button">Next<span class="lg"> week</span> →</button></div><a class="btn p" href="#admin" data-goadm="ann">Post a notice</a></div></div>
 <div class="band">${nextUp()}<section class="box stats" aria-label="This week in numbers"><div><span>Classes</span><b>${cnt(o=>o.t==='slot'&&!o.cx||o.t==='item'&&o.x.kind==='Lesson')}</b></div><div><span>Quizzes and exams</span><b>${cnt(o=>o.t==='item'&&o.x.kind==='Test')}</b></div><div><span>Things due</span><b>${cnt(o=>o.t==='item'&&o.x.kind==='Due')}</b></div><div><span>New notices</span><b>${an.length}</b></div></section></div>
 <div class="wk">${list}<section aria-label="Calendar"><div class="calhd"><h2>Day by day</h2>${key}</div><div class="calw" tabindex="0"><div class="box cal">${cols}</div></div></section></div>
 <section class="posted"><div class="sec"><h2 style="font:inherit">Posted this week</h2><a href="#announcements">See all ${S.ann.length} notices</a></div><div class="notes">${bySort(an).slice(0,3).map(noteCard).join('')||'<p class="box empty">Nothing posted this week.</p>'}</div></section>`}
 
 function noteCard(a){const x=itemOf(a),p=isPast(a);return`<article class="box note${p?' past':''}" style="${cv(a.course)}"><div class="hd">${esc(C(a.course).code)} · ${esc(cn(a.course))}<small>${fmt(a.date,{weekday:'short',day:'numeric',month:'short'})}</small></div><div class="bd">${a.pin&&!p?'<span class="pin">Pinned</span> ':''}${p?`<span class="pin" style="background:#555">${a.done?'Done':'Passed'}</span> `:''}<h3${a.pin||p?' style="margin-top:8px"':''}>${esc(a.title)}</h3><p>${esc(a.body)}</p>${x?`<button type="button" class="lk" data-open="item:${x.id}">On the calendar: ${KLABEL[x.kind]}, ${dShort(x.date)}${x.time?' at '+esc(x.time):''}</button>`:''}</div></article>`}
 // Course tabs for Notices and Files: All first, then the nine courses in their fixed order, each with its count
-const ctabs=(l,label)=>`<div class="ctabs" role="tablist" aria-label="${label}"><button type="button" role="tab" class="all" data-fc="all" aria-selected="${fc==='all'}"><span class="sw" aria-hidden="true"></span>All <small>${l.length}</small></button>${S.courses.map(c=>`<button type="button" role="tab" data-fc="${c.id}" aria-selected="${fc===c.id}" style="${cv(c.id)}" title="${esc(c.name)}">${sw(c.id)}${esc(c.code)} <small>${l.filter(x=>x.course===c.id).length}</small></button>`).join('')}</div>`;
-const tabHead=(n,one,many,act)=>`<div class="tph"${fc==='all'?'':` style="${cv(fc)}"`}><div><h2>${fc==='all'?'All courses':esc(cn(fc))}</h2><p>${plural(n,one,many)}${fc==='all'?' across '+S.courses.length+' courses':''}</p></div>${act}</div>`;
-function vAnn(){const l=bySort(S.ann).filter(inFc);
-const h=l.length?`<div class="notes tpb">${l.map(noteCard).join('')}</div>`:`<p class="empty">No notices for ${fc==='all'?'any course':esc(cn(fc))} yet. Post one from Admin.</p>`;
-return`<div class="title"><h1>Notices</h1><p class="sub">Newest first, pinned on top. Finished notices are greyed out at the end.</p></div>${ctabs(S.ann,'Notices by course')}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'notice','notices','<a class="btn p" href="#admin" data-goadm="ann">Post a notice</a>')}${h}</section>`}
+const ctabs=(l,label,multi)=>{const on=id=>multi?(id==='all'?!sel.length:sel.includes(id)):(id==='all'?fc==='all':fc===id),at=multi?'data-sel':'data-fc',st=multi?'aria-pressed':'role="tab" aria-selected';
+return`<div class="ctabs" role="${multi?'group':'tablist'}" aria-label="${label}"><button type="button" class="all" ${at}="all" ${st}="${on('all')}"><span class="sw" aria-hidden="true"></span>All <small>${l.length}</small></button>${S.courses.map(c=>`<button type="button" ${at}="${c.id}" ${st}="${on(c.id)}" style="${cv(c.id)}" title="${esc(c.name)}">${sw(c.id)}${esc(c.code)} <small>${l.filter(x=>x.course===c.id).length}</small></button>`).join('')}</div>`};
+// Panel header: black for all courses, the course's colour for one, white with swatches for several
+const tabHead=(n,one,many,act,ids)=>{const k=ids.length,head=k===0?'All courses':k===1?esc(cn(ids[0])):andList(codes(ids));
+return`<div class="tph"${k===0?'':` style="${k===1?cv(ids[0]):'--c:#fff'}"`}><div>${k>1?`<p class="sws">${ids.map(sw).join('')}</p>`:''}<h2>${head}</h2><p>${plural(n,one,many)}${k===0?' across '+S.courses.length+' courses':k>1?' across '+k+' courses':''}</p></div>${act}</div>`};
+function vAnn(){const l=bySort(S.ann).filter(inSel);
+const h=l.length?`<div class="notes tpb">${l.map(noteCard).join('')}</div>`:`<p class="empty">No notices for ${sel.length?andList(codes(sel)):'any course'} yet. Post one from Admin.</p>`;
+return`<div class="title"><h1>Notices</h1><p class="sub">Newest first, pinned on top. Finished notices are greyed out at the end. Tap several courses to see them together.</p></div>${ctabs(S.ann,'Show notices from these courses',true)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'notice','notices','<a class="btn p" href="#admin" data-goadm="ann">Post a notice</a>',sel)}${h}</section>`}
 
 const fileCell=r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">Open link ↗</a>`:`<span class="m">${esc(r.file||'No file attached')}</span>`;
 const cIdx=id=>S.courses.findIndex(c=>c.id===id);
 function vRes(){const l=S.res.filter(inFc).sort((a,b)=>cIdx(a.course)-cIdx(b.course)||a.title.localeCompare(b.title));
 const body=l.map(r=>`<tr style="${cv(r.course)}"><td>${esc(r.title)}</td><td>${tag(r.course)}</td><td>${esc(r.cat)}</td><td class="m${r.week?'':' nw'}">${r.week?esc(r.week):'—'}</td><td>${fileCell(r)}</td></tr>`).join('');
-return`<div class="title"><h1>Files</h1><p class="sub">Slides, readings, templates and links, sorted by course.</p></div>${ctabs(S.res,'Files by course')}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'file or link','files and links','<a class="btn p" href="#admin" data-goadm="res">Add a file</a>')}
+return`<div class="title"><h1>Files</h1><p class="sub">Slides, readings, templates and links, sorted by course.</p></div>${ctabs(S.res,'Files by course',false)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'file or link','files and links','<a class="btn p" href="#admin" data-goadm="res">Add a file</a>',fc==='all'?[]:[fc])}
 ${l.length?`<table class="tbl"><thead><tr><th scope="col">What it is</th><th scope="col">Course</th><th scope="col">Type</th><th scope="col">Week</th><th scope="col">Open</th></tr></thead><tbody>${body}</tbody></table>`:`<p class="empty">No files for ${fc==='all'?'any course':esc(cn(fc))} yet. Add one from Admin.</p>`}</section>`}
 
 // Details panel for a regular class, a one-off item or a notice
@@ -502,7 +512,9 @@ const t=e.target.closest('button');if(!t)return;
 if(t.dataset.open){openDetail(t.dataset.open);return}
 if(t.hasAttribute('data-close')){dlg.close();return}
 if(t.dataset.wk!==undefined){weekStart=t.dataset.wk==='0'?mon(today):addD(weekStart,+t.dataset.wk);render()}
-if(t.dataset.fc){fc=fc===t.dataset.fc&&t.dataset.fc!=='all'?'all':t.dataset.fc;render()}
+if(t.dataset.fc){fc=t.dataset.fc;render()}
+if(t.dataset.sel){const id=t.dataset.sel;sel=id==='all'?[]:sel.includes(id)?sel.filter(x=>x!==id):[...sel,id];
+if(sel.length===S.courses.length)sel=[];sel.sort((a,b)=>cIdx(a)-cIdx(b));render()}
 if(t.dataset.adm){adm=t.dataset.adm;editSlot=editAnn=editItem=null;render()}
 if(t.dataset.done){const a=S.ann.find(x=>x.id===t.dataset.done);a.done=!a.done;save();render();toast(a.done?'Marked as done':'Back to active')}
 if(t.dataset.editSlot){editSlot=t.dataset.editSlot;render();$('#fsl').scrollIntoView({block:'nearest'})}
@@ -510,7 +522,7 @@ if(t.dataset.editAnn){editAnn=t.dataset.editAnn;render();$('#fa').scrollIntoView
 if(t.dataset.editItem){editItem=t.dataset.editItem;render();$('#fs').scrollIntoView({block:'nearest'})}
 if(t.hasAttribute('data-cancel-edit')){editSlot=editAnn=editItem=null;render()}
 if(t.dataset.del){const[k,id]=t.dataset.del.split(':');S[k]=S[k].filter(x=>x.id!==id);if(k==='sched')S.ann.forEach(a=>{if(a.item===id)a.item=null});if(editSlot===id)editSlot=null;if(editAnn===id)editAnn=null;if(editItem===id)editItem=null;save();render();toast('Deleted')}
-if(t.id==='reset'){S=seed();fc='all';editSlot=editAnn=editItem=null;save();render();toast('Sample data restored')}
+if(t.id==='reset'){S=seed();fc='all';sel=[];editSlot=editAnn=editItem=null;save();render();toast('Sample data restored')}
 if(t.classList.contains('bell'))askPush()});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
 if(f.id==='fa'){let item=null;

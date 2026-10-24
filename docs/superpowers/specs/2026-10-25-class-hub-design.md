@@ -208,8 +208,8 @@ even though visitors cannot.
 | route | who | what |
 | --- | --- | --- |
 | `/` | anyone | Week: title and date range, week switcher, Next up card, counts, "Your courses" filter, day-by-day calendar (days as columns), Posted this week |
-| `/?week=2026-10-26&course=NET` | anyone | Same, for another week or one course; shareable |
-| `/notices?course=NET` | anyone | Course tabs (All, then the nine courses), notice cards, past ones greyed at the end |
+| `/?week=2026-10-26&course=NET,MPU` | anyone | Same, for another week or for one or more courses; shareable |
+| `/notices?course=NET,MPU` | anyone | Course tabs (All, then the nine courses; several courses can be selected together, All clears the selection), notice cards, past ones greyed at the end |
 | `/files?course=NET` | anyone | Course tabs, files table |
 | `/login` | anyone | "Officers sign in with Google" button |
 | `/auth/callback` | — | Supabase OAuth callback |
@@ -221,6 +221,7 @@ even though visitors cannot.
 | `/admin/courses` | officer | Rename the nine courses and codes (8 characters at most) |
 | `/admin/officers` | head officer | Add or remove officers by email |
 
+- **Course filters:** on Week and Notices, tapping a course adds it to the selection and tapping it again removes it; "All courses" clears the selection, and selecting all nine counts as All. Selected courses show a tick. Files keeps one course at a time.
 - The details panel opens over the Week page when a card is tapped (a client component using `<dialog>`).
   It needs no separate route.
 - Admin lists use fixed columns: code (8 characters wide), title and details, actions.
