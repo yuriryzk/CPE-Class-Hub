@@ -122,6 +122,14 @@ Seeded with nine placeholder rows during setup. Never inserted or deleted from t
 | on_date | date | |
 | at_time | time | optional |
 | notes | text | optional, up to 2,000 characters |
+| moved_from_date | date | optional; the original date, set the first time the date or time changes |
+| moved_from_time | time | optional; the original time (null when the original had no time) |
+
+**Moving an item:** when an officer saves a new date or time, the original is kept in `moved_from_*` (only the
+first time, so it always shows where the item was first scheduled). If the item is moved back to its original
+date and time, both fields are cleared. The card shows a **Moved** label and the details panel shows
+"Moved from Wednesday 21 October, 5:00 PM". A linked notice shows the new date automatically, because it
+points to the item instead of copying its date.
 
 ### `notices`
 | column | type | rules |
@@ -206,8 +214,8 @@ even though visitors cannot.
 | `/login` | anyone | "Officers sign in with Google" button |
 | `/auth/callback` | — | Supabase OAuth callback |
 | `/admin` | officer | Redirects to `/admin/notices` |
-| `/admin/notices` | officer | Post / edit notice (with the Calendar option: none, link existing, add new), list with Mark done, Edit, Delete |
-| `/admin/calendar` | officer | Add / edit one-off items with notes; list |
+| `/admin/notices` | officer | Post / edit notice (with the Calendar option: none, link existing, add new), list with Edit, Mark done, Delete |
+| `/admin/calendar` | officer | Add / edit one-off items with notes; editing the date or time marks the item as moved; list with Edit, Delete |
 | `/admin/schedule` | officer | Weekly class times grouped by day; add, edit, delete |
 | `/admin/files` | officer | Add / edit links (phase 1) and uploads (phase 2); list |
 | `/admin/courses` | officer | Rename the nine courses and codes (8 characters at most) |
@@ -216,6 +224,10 @@ even though visitors cannot.
 - The details panel opens over the Week page when a card is tapped (a client component using `<dialog>`).
   It needs no separate route.
 - Admin lists use fixed columns: code (8 characters wide), title and details, actions.
+- **Editing:** Edit loads the item into the form beside the list, which turns blue and reads "Edit notice",
+  "Edit calendar item" or "Edit class time", with Save changes and Cancel editing; the row being edited is
+  highlighted. Editing a notice can also change its calendar link. For an edited notice, the push tick box
+  reads "Send a push notification about the change" and starts unticked (phase 3).
 - The header shows "Officer sign in" for visitors, and the officer's name, Admin and Sign out once signed in.
 - The prototype's "Turn on notifications" button and "Send a push notification" tick box are hidden until phase 3.
 

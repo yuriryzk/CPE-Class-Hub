@@ -184,7 +184,7 @@ label.c{display:flex;gap:10px;align-items:center;font-weight:500}
 .rows .rh span{margin-left:auto;font:600 15px/1 Figtree,sans-serif;color:var(--muted)}
 .reset{margin-top:var(--gap)}
 /* Admin lists: fixed columns so codes, titles and actions line up whatever the code's length (8 characters at most) */
-.row{display:grid;grid-template-columns:100px minmax(0,1fr) 220px;gap:16px;align-items:center;padding:12px 18px;border-top:1.5px solid #cfcfca}
+.row{display:grid;grid-template-columns:100px minmax(0,1fr) 270px;gap:16px;align-items:center;padding:12px 18px;border-top:1.5px solid #cfcfca}
 .rows .rh+.row,.rows .dayhd+.row{border-top:0}
 .row .tag{width:100%;justify-content:center}
 .row b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -192,6 +192,7 @@ label.c{display:flex;gap:10px;align-items:center;font-weight:500}
 .row .acts{display:flex;gap:8px;justify-content:flex-end}
 .row.past b,.row.past small{color:#6a6a6a}
 .row.past .tag{filter:grayscale(1);opacity:.6}
+.ev .mv{background:#fff;color:#111;border:1.5px solid #111;border-radius:4px;padding:0 4px;font-size:12px;font-weight:700}
 .st{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:999px;background:#ddd;color:#333;font-size:12px;font-weight:700;margin-left:6px;vertical-align:1px}
 .dayhd{padding:10px 18px;background:#f7f7f4;border-top:var(--bw) solid var(--ink);border-bottom:1.5px solid #cfcfca;font:800 17px/1 var(--head)}
 .rows .rh+.dayhd{border-top:0}
@@ -299,7 +300,7 @@ main{padding-top:22px;padding-bottom:100px}
 <main id="app"></main>
 <dialog id="dlg" class="dlg"></dialog>
 <script>
-const $=s=>document.querySelector(s),KEY='classhub-v3';
+const $=s=>document.querySelector(s),KEY='classhub-v4';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const dt=s=>new Date(s+'T00:00');
@@ -315,7 +316,7 @@ const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunda
 const CODE_MAX=8;
 // Nine course colours, one per slot, each 6:1 or better against black text
 const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#2ec4d6','#5b8cff','#a78bfa','#ff7ec7'];
-let S,weekStart=mon(today),fc='all',adm='ann',editSlot=null;
+let S,weekStart=mon(today),fc='all',adm='ann',editSlot=null,editAnn=null,editItem=null;
 
 // Sample semester: placeholder course names (renamed under Admin → Courses), a weekly timetable and this week's one-offs
 function seed(){const m=mon(today),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
@@ -332,6 +333,7 @@ it('swd','Due','Sprint 1 demo video',5,'11:59 PM','Three minutes at most.'),
 it('mpu','Test','Midterm exam',8,'7:30 AM',''),
 it('emg','Due','Gantt chart',9,'5:00 PM',''),
 it('emb','Lesson','Make-up lab',10,'1:00 PM','Replaces the lab missed in week 2.')];
+sched[1].movedFrom={date:addD(m,1),time:'5:00 PM'};
 const byT=t=>sched.find(x=>x.title===t);
 return{
 courses:[c('mpu','Microprocessors','MPU',0),c('emb','Embedded Systems','EMB',1),c('net','Computer Networks and Security','NET',2),c('ddc','Data and Digital Communications','DDC',3),c('os','Operating Systems','OS',4),c('fcs','Feedback and Control Systems','FCS',5),c('swd','Software Design','SWD',6),c('res','Methods of Research','RES',7),c('emg','Engineering Management','EMG',8)],
@@ -382,6 +384,8 @@ const dayIdx=d=>(dt(d).getDay()+6)%7;
 
 // Notices: linked to a calendar item through notice.item. A notice is past when an officer marked it done,
 // or when its linked item's date has gone by
+// Moving an item keeps its first date and time; moving it back clears the Moved label
+function moveItem(x,date,time){if(date===x.date&&time===x.time)return;const o=x.movedFrom||{date:x.date,time:x.time};x.date=date;x.time=time;x.movedFrom=o.date===date&&o.time===time?null:o}
 const itemOf=a=>a.item?S.sched.find(x=>x.id===a.item):null;
 const noteOf=x=>S.ann.find(a=>a.item===x.id);
 const isPast=a=>a.done||(!!itemOf(a)&&itemOf(a).date<today);
@@ -402,7 +406,7 @@ return`<section class="box next" style="${cv(l.course)}" aria-label="Next up"><p
 
 function card(o,d,nx){
 if(o.t==='slot'){const s=o.s;return`<button type="button" class="ev k-Lesson${o.cx?' cx':''}" style="${cv(s.course)}" data-open="slot:${s.id}:${d}">${tag(s.course)}<b>${esc(cn(s.course))}</b><small><i>${o.cx?'Cancelled':'Class'}</i>${esc(span(s.start,s.end))}</small><small>${esc(s.room)}</small></button>`}
-if(o.t==='item'){const x=o.x,n=noteOf(x);return`<button type="button" class="ev k-${x.kind}${nx&&x.id===nx.id?' nx':''}" style="${cv(x.course)}" data-open="item:${x.id}">${tag(x.course)}<b>${esc(x.title)}</b><small><i>${KLABEL[x.kind]}</i>${x.time?esc(x.time):''}${n?'<span class="nb">Notice</span>':''}</small></button>`}
+if(o.t==='item'){const x=o.x,n=noteOf(x);return`<button type="button" class="ev k-${x.kind}${nx&&x.id===nx.id?' nx':''}" style="${cv(x.course)}" data-open="item:${x.id}">${tag(x.course)}<b>${esc(x.title)}</b><small><i>${KLABEL[x.kind]}</i>${x.time?esc(x.time):''}${x.movedFrom?'<span class="mv">Moved</span>':''}${n?'<span class="nb">Notice</span>':''}</small></button>`}
 const a=o.a;return`<button type="button" class="ev k-Note${isPast(a)?' cx':''}" style="${cv(a.course)}" data-open="note:${a.id}">${tag(a.course)}<b>${esc(a.title)}</b><small><i>Notice</i></small></button>`}
 
 function vWeek(){const days=[...Array(7)].map((_,i)=>addD(weekStart,i)),end=days[6],nx=nextItem();
@@ -441,7 +445,7 @@ if(t==='slot'){const s=S.slots.find(x=>x.id===id);if(!s)return;const off=S.sched
 course=s.course;kind=off?'Class (cancelled)':'Class';title=cn(s.course);rows=[['When',`${dLong(d)}, ${span(s.start,s.end)}`],['Where',s.room||'—'],['Repeats',`Every ${DAYS[s.day]}`]];
 if(off)rows.push(['Why',off.notes||'No class on this day']);note=off?noteOf(off):null}
 else if(t==='item'){const x=S.sched.find(y=>y.id===id);if(!x)return;course=x.course;kind=KLABEL[x.kind];title=x.title;
-rows=[['When',`${dLong(x.date)}${x.time?', '+x.time:''}`],['Course',cn(x.course)]];if(x.notes)rows.push(['Notes',x.notes]);note=noteOf(x)}
+rows=[['When',`${dLong(x.date)}${x.time?', '+x.time:''}`]];if(x.movedFrom)rows.push(['Moved from',`${dLong(x.movedFrom.date)}${x.movedFrom.time?', '+x.movedFrom.time:''}`]);rows.push(['Course',cn(x.course)]);if(x.notes)rows.push(['Notes',x.notes]);note=noteOf(x)}
 else{const a=S.ann.find(y=>y.id===id);if(!a)return;course=a.course;kind='Notice';title=a.title;rows=[['Posted',dLong(a.date)],['Course',cn(a.course)]];
 extra=`<p style="font-size:16px">${esc(a.body)}</p>`;if(isPast(a))rows.push(['Status',a.done?'Done':'Passed'])}
 const files=S.res.filter(r=>r.course===course);
@@ -456,21 +460,24 @@ function row(c,t,m,acts,cls){return`<div class="row${cls?' '+cls:''}">${tag(c)}<
 const del=k=>`<button class="btn s" data-del="${k}" type="button">Delete</button>`;
 function vAdmin(){const sch=[...S.sched].sort((a,b)=>a.date.localeCompare(b.date)||mins(a.time)-mins(b.time));
 const es=editSlot?S.slots.find(s=>s.id===editSlot):null;
-const itemOpts=sch.filter(x=>x.date>=addD(today,-7)).map(x=>`<option value="${x.id}">${esc(C(x.course).code)} · ${KLABEL[x.kind]} · ${esc(x.title)} · ${dShort(x.date)}</option>`).join('');
+const ea=editAnn?S.ann.find(a=>a.id===editAnn):null,ei=editItem?S.sched.find(x=>x.id===editItem):null;
+const kopt=sel=>KINDS.map(k=>`<option value="${k}" ${k===sel?'selected':''}>${KLABEL[k]}</option>`).join('');
+const itemOpts=sch.filter(x=>x.date>=addD(today,-7)||(ea&&x.id===ea.item)).map(x=>`<option value="${x.id}" ${ea&&ea.item===x.id?'selected':''}>${esc(C(x.course).code)} · ${KLABEL[x.kind]} · ${esc(x.title)} · ${dShort(x.date)}</option>`).join('');
+const mode=ea&&ea.item?'link':'none',cancel='<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>';
 const forms={
-ann:`<form class="box panel" id="fa"><h2>Post a notice</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><label>Message<textarea name="body" rows="4" required></textarea></label><label>Show it on<input type="date" name="date" value="${today}" required></label>
-<fieldset class="calopt"><legend>Calendar</legend><label class="radio"><input type="radio" name="cal" value="none" checked>Don’t add it to the calendar</label><label class="radio"><input type="radio" name="cal" value="link">Link it to a calendar item</label><label class="radio"><input type="radio" name="cal" value="new">Add it as a new calendar item</label>
-<div class="opt-link"><label>Calendar item<select name="linkItem"><option value="">Choose an item</option>${itemOpts}</select></label></div>
-<div class="opt-new"><label>What is it?<select name="nkind">${KINDS.map(k=>`<option value="${k}">${KLABEL[k]}</option>`).join('')}</select></label><div class="f2"><label>Date<input type="date" name="ndate" value="${today}"></label><label>Time (optional)<input name="ntime" placeholder="8:00 AM"></label></div></div></fieldset>
-<label class="c" style="margin-top:16px"><input type="checkbox" name="pin">Pin it to the top</label><label class="c"><input type="checkbox" name="push" checked>Send a push notification</label><button class="btn p">Post notice</button></form>`,
-sched:`<form class="box panel" id="fs"><h2>Add to the calendar</h2><p class="hint">For one-off things. Regular classes go in Schedule.</p><label>Course<select name="course">${opts()}</select></label><label>What is it?<select name="kind">${KINDS.map(k=>`<option value="${k}">${KLABEL[k]}</option>`).join('')}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Date<input type="date" name="date" value="${today}" required></label><label>Time (optional)<input name="time" placeholder="8:00 AM"></label></div><label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit"></textarea></label><button class="btn p">Add to the calendar</button></form>`,
+ann:`<form class="box panel${ea?' editing':''}" id="fa"><h2>${ea?'Edit notice':'Post a notice'}</h2><label>Course<select name="course">${opts(ea&&ea.course)}</select></label><label>Title<input name="title" value="${ea?esc(ea.title):''}" required></label><label>Message<textarea name="body" rows="4" required>${ea?esc(ea.body):''}</textarea></label><label>Show it on<input type="date" name="date" value="${ea?ea.date:today}" required></label>
+<fieldset class="calopt"><legend>Calendar</legend><label class="radio"><input type="radio" name="cal" value="none" ${mode==='none'?'checked':''}>Don’t add it to the calendar</label><label class="radio"><input type="radio" name="cal" value="link" ${mode==='link'?'checked':''}>Link it to a calendar item</label><label class="radio"><input type="radio" name="cal" value="new">Add it as a new calendar item</label>
+<div class="opt-link"><label>Calendar item<select name="linkItem"><option value="">Choose an item</option>${itemOpts}</select></label>${ea&&ea.item?'<p class="hint">To move the event itself, edit it in the Calendar tab.</p>':''}</div>
+<div class="opt-new"><label>What is it?<select name="nkind">${kopt()}</select></label><div class="f2"><label>Date<input type="date" name="ndate" value="${today}"></label><label>Time (optional)<input name="ntime" placeholder="8:00 AM"></label></div></div></fieldset>
+<label class="c" style="margin-top:16px"><input type="checkbox" name="pin" ${ea&&ea.pin?'checked':''}>Pin it to the top</label><label class="c"><input type="checkbox" name="push" ${ea?'':'checked'}>${ea?'Send a push notification about the change':'Send a push notification'}</label><button class="btn p">${ea?'Save changes':'Post notice'}</button>${ea?cancel:''}</form>`,
+sched:`<form class="box panel${ei?' editing':''}" id="fs"><h2>${ei?'Edit calendar item':'Add to the calendar'}</h2><p class="hint">${ei?'Changing the date or time marks it as moved.':'For one-off things. Regular classes go in Schedule.'}</p><label>Course<select name="course">${opts(ei&&ei.course)}</select></label><label>What is it?<select name="kind">${kopt(ei&&ei.kind)}</select></label><label>Title<input name="title" value="${ei?esc(ei.title):''}" required></label><div class="f2"><label>Date<input type="date" name="date" value="${ei?ei.date:today}" required></label><label>Time (optional)<input name="time" value="${ei?esc(ei.time):''}" placeholder="8:00 AM"></label></div>${ei&&ei.movedFrom?`<p class="hint">Originally ${dShort(ei.movedFrom.date)}${ei.movedFrom.time?', '+esc(ei.movedFrom.time):''}. Set it back to clear the Moved label.</p>`:''}<label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit">${ei?esc(ei.notes):''}</textarea></label><button class="btn p">${ei?'Save changes':'Add to the calendar'}</button>${ei?cancel:''}</form>`,
 slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class time':'Add a class time'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
 res:`<form class="box panel" id="fr"><h2>Add a file</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Type<input name="cat" placeholder="Slides" required></label><label>Week (optional)<input name="week" placeholder="Week 3"></label></div><label>File<input type="file" name="file"></label><label>Or a link<input type="url" name="url" placeholder="https://"></label><button class="btn p">Add file</button></form>`,
 courses:`<form class="box panel" id="fcs"><h2>Your 9 courses</h2><p class="hint">Type each course’s name and a short code of up to ${CODE_MAX} characters. Each keeps its colour everywhere.</p>${S.courses.map((c,i)=>`<div class="crow">${sw(c.id)}<input name="name${i}" value="${esc(c.name)}" aria-label="Course ${i+1} name" required><input name="code${i}" value="${esc(c.code)}" aria-label="Course ${i+1} code" maxlength="${CODE_MAX}" required></div>`).join('')}<button class="btn p">Save courses</button></form>`};
 let list;
 if(adm==='ann')list=['Notices',S.ann.length,bySort(S.ann).map(a=>{const x=itemOf(a),p=isPast(a);
-return row(a.course,esc(a.title)+(p?`<span class="st">${a.done?'Done':'Passed'}</span>`:a.pin?'<span class="st" style="background:#111;color:#fff">Pinned</span>':''),`${fmt(a.date,{day:'numeric',month:'short'})}${x?' · on the calendar '+dShort(x.date):''}`,`<button class="btn s" data-done="${a.id}" type="button">${a.done?'Undo done':'Mark done'}</button>${del('ann:'+a.id)}`,p?'past':'')}).join('')];
-else if(adm==='sched')list=['Calendar',sch.length,sch.map(x=>row(x.course,esc(x.title),`${KLABEL[x.kind]} · ${dShort(x.date)}${x.time?' · '+esc(x.time):''}${noteOf(x)?' · has a notice':''}`,del('sched:'+x.id),x.date<today?'past':'')).join('')];
+return row(a.course,esc(a.title)+(p?`<span class="st">${a.done?'Done':'Passed'}</span>`:a.pin?'<span class="st" style="background:#111;color:#fff">Pinned</span>':''),`${fmt(a.date,{day:'numeric',month:'short'})}${x?' · on the calendar '+dShort(x.date):''}`,`<button class="btn s" data-edit-ann="${a.id}" type="button">Edit</button><button class="btn s" data-done="${a.id}" type="button">${a.done?'Undo done':'Mark done'}</button>${del('ann:'+a.id)}`,(p?'past':'')+(a.id===editAnn?' editing':''))}).join('')];
+else if(adm==='sched')list=['Calendar',sch.length,sch.map(x=>row(x.course,esc(x.title),`${KLABEL[x.kind]} · ${dShort(x.date)}${x.time?' · '+esc(x.time):''}${x.movedFrom?' · moved from '+dShort(x.movedFrom.date):''}${noteOf(x)?' · has a notice':''}`,`<button class="btn s" data-edit-item="${x.id}" type="button">Edit</button>${del('sched:'+x.id)}`,(x.date<today?'past':'')+(x.id===editItem?' editing':''))).join('')];
 else if(adm==='slots')list=['Weekly schedule',S.slots.length,DAYS.map((n,i)=>{const l=S.slots.filter(s=>s.day===i).sort((a,b)=>mins(a.start)-mins(b.start));
 return l.length?`<div class="dayhd">${n}</div>`+l.map(s=>row(s.course,esc(span(s.start,s.end)),`${esc(cn(s.course))}${s.room?' · '+esc(s.room):''}`,`<button class="btn s" data-edit-slot="${s.id}" type="button">Edit</button>${del('slots:'+s.id)}`,s.id===editSlot?'editing':'')).join(''):''}).join('')];
 else if(adm==='res')list=['Files',S.res.length,S.res.map(r=>row(r.course,esc(r.title),`${esc(r.cat)}${r.week?' · '+esc(r.week):''}`,del('res:'+r.id))).join('')];
@@ -496,22 +503,27 @@ if(t.dataset.open){openDetail(t.dataset.open);return}
 if(t.hasAttribute('data-close')){dlg.close();return}
 if(t.dataset.wk!==undefined){weekStart=t.dataset.wk==='0'?mon(today):addD(weekStart,+t.dataset.wk);render()}
 if(t.dataset.fc){fc=fc===t.dataset.fc&&t.dataset.fc!=='all'?'all':t.dataset.fc;render()}
-if(t.dataset.adm){adm=t.dataset.adm;editSlot=null;render()}
+if(t.dataset.adm){adm=t.dataset.adm;editSlot=editAnn=editItem=null;render()}
 if(t.dataset.done){const a=S.ann.find(x=>x.id===t.dataset.done);a.done=!a.done;save();render();toast(a.done?'Marked as done':'Back to active')}
 if(t.dataset.editSlot){editSlot=t.dataset.editSlot;render();$('#fsl').scrollIntoView({block:'nearest'})}
-if(t.hasAttribute('data-cancel-edit')){editSlot=null;render()}
-if(t.dataset.del){const[k,id]=t.dataset.del.split(':');S[k]=S[k].filter(x=>x.id!==id);if(k==='sched')S.ann.forEach(a=>{if(a.item===id)a.item=null});if(k==='slots'&&editSlot===id)editSlot=null;save();render();toast('Deleted')}
-if(t.id==='reset'){S=seed();fc='all';editSlot=null;save();render();toast('Sample data restored')}
+if(t.dataset.editAnn){editAnn=t.dataset.editAnn;render();$('#fa').scrollIntoView({block:'nearest'})}
+if(t.dataset.editItem){editItem=t.dataset.editItem;render();$('#fs').scrollIntoView({block:'nearest'})}
+if(t.hasAttribute('data-cancel-edit')){editSlot=editAnn=editItem=null;render()}
+if(t.dataset.del){const[k,id]=t.dataset.del.split(':');S[k]=S[k].filter(x=>x.id!==id);if(k==='sched')S.ann.forEach(a=>{if(a.item===id)a.item=null});if(editSlot===id)editSlot=null;if(editAnn===id)editAnn=null;if(editItem===id)editItem=null;save();render();toast('Deleted')}
+if(t.id==='reset'){S=seed();fc='all';editSlot=editAnn=editItem=null;save();render();toast('Sample data restored')}
 if(t.classList.contains('bell'))askPush()});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
 if(f.id==='fa'){let item=null;
 if(d.cal==='link'){if(!d.linkItem){toast('Choose the calendar item to link');return}item=d.linkItem}
 if(d.cal==='new'){const x={id:uid(),course:d.course,kind:d.nkind,title:d.title,date:d.ndate||d.date,time:d.ntime||'',notes:''};S.sched.push(x);item=x.id}
-S.ann.push({id:uid(),course:d.course,title:d.title,body:d.body,date:d.date,pin:!!d.pin,done:false,item});save();
+const v={course:d.course,title:d.title,body:d.body,date:d.date,pin:!!d.pin,item},verb=editAnn?'Saved':'Posted';
+if(editAnn){Object.assign(S.ann.find(a=>a.id===editAnn),v);editAnn=null}else S.ann.push({id:uid(),done:false,...v});save();
 let sent=false;if(d.push&&window.Notification&&Notification.permission==='granted'){try{new Notification(C(d.course).code+': '+d.title,{body:d.body});sent=true}catch(x){}}
-render();toast((item?'Posted and on the calendar':'Posted')+(d.push?(sent?'. Notification sent to this device':'. Push delivery needs the backend'):''))}
+render();toast((item?verb+' and on the calendar':verb)+(d.push?(sent?'. Notification sent to this device':'. Push delivery needs the backend'):''))}
 if(f.id==='fr'){const file=f.elements.file.files[0];S.res.push({id:uid(),course:d.course,title:d.title,cat:d.cat,week:d.week,file:file?file.name:'',url:d.url});save();render();toast('File added')}
-if(f.id==='fs'){S.sched.push({id:uid(),course:d.course,title:d.title,kind:d.kind,date:d.date,time:d.time||'',notes:d.notes||''});save();render();toast('Added to the calendar')}
+if(f.id==='fs'){const v={course:d.course,title:d.title,kind:d.kind,notes:d.notes||''},time=(d.time||'').trim();
+if(editItem){const x=S.sched.find(y=>y.id===editItem);Object.assign(x,v);moveItem(x,d.date,time);editItem=null;save();render();toast(x.movedFrom?'Saved. Shown as moved from '+dShort(x.movedFrom.date):'Saved')}
+else{S.sched.push({id:uid(),...v,date:d.date,time});save();render();toast('Added to the calendar')}}
 if(f.id==='fsl'){if(mins(d.start)<0||mins(d.end)<0||mins(d.end)<=mins(d.start)){toast('Use times like 7:30 AM, with the end after the start');return}
 const v={course:d.course,day:+d.day,start:d.start.trim().toUpperCase(),end:d.end.trim().toUpperCase(),room:d.room.trim()};
 if(editSlot){Object.assign(S.slots.find(s=>s.id===editSlot),v);editSlot=null;toast('Class time saved')}else{S.slots.push({id:uid(),...v});toast('Added to the weekly schedule')}save();render()}
