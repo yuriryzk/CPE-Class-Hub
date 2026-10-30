@@ -34,7 +34,7 @@ Assumed (correct any of these):
 - Exactly nine course slots, each with a fixed colour. Officers rename them; they are never added or removed.
 - All dates and times are Philippine time (Asia/Manila). "Today" and "this week" are computed in that zone,
   whatever the viewer's device says.
-- Weeks run Monday to Sunday.
+- Weeks run Sunday to Saturday. Teaching weeks are numbered 1 to 18 from Sunday 15 November 2026, skipping the Christmas and New Year weeks (see `term`).
 - Everything shown is public: no grades, attendance, phone numbers or other private data is stored.
 - One **head officer** manages the officer list. The first head officer's email is added once by hand during setup.
 - Officers can edit, not only delete, notices, calendar items, files and class times.
@@ -45,7 +45,7 @@ Each phase ends with something deployed and usable.
 
 | Phase | Delivers |
 | --- | --- |
-| **1. Core** | Database, public Week / Notices / Files pages, details panel, officer Google login, full Admin (schedule, calendar, notices, files as links, courses, officers), deployed on Vercel. |
+| **1. Core** | Database, public Schedule / Notices / Files pages, details panel, officer Google login, full Admin (schedule, calendar, notices, files as links, courses, officers), deployed on Vercel. |
 | **2. File uploads** | Officers upload PDFs, slides, documents and images; classmates download them. Links still work. |
 | **3. Phone app and push** | Install to home screen (PWA), and classmates who opt in get a push notification when a notice is posted. |
 
@@ -163,6 +163,16 @@ Exactly one of `url` and `storage_path` is set (check constraint).
 | role | enum | `head` or `officer` |
 | added_by | text | email of the head officer who added them |
 
+### `term` (one row) and `term_breaks`
+| column | type | rules |
+| --- | --- | --- |
+| term.starts_on | date | a Sunday; the first day of Week 1 (2026-11-15) |
+| term.week_count | smallint | number of teaching weeks (18) |
+| term_breaks.starts_on | date | a Sunday inside the term; that week is a break (2026-12-20, 2026-12-27) |
+| term_breaks.label | text | shown in the heading, such as "Christmas break" |
+
+Seeded with the values above. Officers can change them under Admin → Courses (a "Semester" section).
+
 ### `push_subscriptions` (phase 3)
 | column | type | rules |
 | --- | --- | --- |
@@ -178,10 +188,17 @@ Exactly one of `url` and `storage_path` is set (check constraint).
   cancelled. They still show, struck through.
 - **Notice is past:** `done` is true, or it is linked to a calendar item whose date is before today.
   Past notices sort after active ones and are greyed out.
-- **Next up:** the earliest `quiz_exam` or `due` item from today on (date, then time), within the selected course
-  filter.
-- **This week's counts:** classes (slots not cancelled, plus extra classes), quizzes and exams, things due, new
-  notices.
+- **Grouping:** on each day, entries of the same course share one box (the course's tag and name on top, its
+  entries in time order inside, each still opening the details panel). A course with one entry that day shows a
+  single card.
+- **Term week number:** for the week starting on Sunday `w`: before `term.starts_on`, no number; a week listed
+  in `term_breaks`, that break's label; otherwise the number of weeks since `term.starts_on`, plus one, minus the
+  break weeks before `w`, as long as it is at most `term.week_count`. With the seeded values, Week 1 is
+  15–21 November 2026, Week 5 is 13–19 December, the two break weeks follow, Week 6 is 3–9 January 2027 and
+  Week 18 is 28 March – 3 April 2027.
+- **Break weeks:** no regular classes are placed; one-off items still show.
+- **Next up:** the three earliest `quiz_exam` or `due` items from today on (date, then time), within the
+  selected courses. Fewer than three leaves a "Nothing else due or tested yet" card in the remaining places.
 
 ## 5. Security (Row Level Security)
 
@@ -207,7 +224,7 @@ even though visitors cannot.
 
 | route | who | what |
 | --- | --- | --- |
-| `/` | anyone | Week: title and date range, week switcher, Next up card, counts, "Your courses" filter, day-by-day calendar (days as columns), Posted this week |
+| `/` | anyone | Schedule: heading "Schedule of Week N" with "November 15, 2026 to November 21, 2026" for term weeks (outside the term or in a break: "This week" / "Week of 8 Nov" with the long date range, plus the break label), week switcher, three Next up cards, "Your courses" filter, day-by-day calendar (days as columns), Posted this week |
 | `/?week=2026-10-26&course=NET,MPU` | anyone | Same, for another week or for one or more courses; shareable |
 | `/notices?course=NET,MPU` | anyone | Course tabs (All, then the nine courses; several courses can be selected together, All clears the selection), notice cards, past ones greyed at the end |
 | `/files?course=NET` | anyone | Course tabs, files table |
@@ -216,13 +233,13 @@ even though visitors cannot.
 | `/admin` | officer | Redirects to `/admin/notices` |
 | `/admin/notices` | officer | Post / edit notice (with the Calendar option: none, link existing, add new), list with Edit, Mark done, Delete |
 | `/admin/calendar` | officer | Add / edit one-off items with notes; editing the date or time marks the item as moved; list with Edit, Delete |
-| `/admin/schedule` | officer | Weekly class times grouped by day; add, edit, delete |
+| `/admin/class-times` | officer | Weekly class times grouped by day; add, edit, delete |
 | `/admin/files` | officer | Add / edit links (phase 1) and uploads (phase 2); list |
 | `/admin/courses` | officer | Rename the nine courses and codes (8 characters at most) |
 | `/admin/officers` | head officer | Add or remove officers by email |
 
-- **Course filters:** on Week and Notices, tapping a course adds it to the selection and tapping it again removes it; "All courses" clears the selection, and selecting all nine counts as All. Selected courses show a tick. Files keeps one course at a time.
-- The details panel opens over the Week page when a card is tapped (a client component using `<dialog>`).
+- **Course filters:** on Schedule and Notices, tapping a course adds it to the selection and tapping it again removes it; "All courses" clears the selection, and selecting all nine counts as All. Selected courses show a tick. Files keeps one course at a time.
+- The details panel opens over the Schedule page when a card is tapped (a client component using `<dialog>`).
   It needs no separate route.
 - Admin lists use fixed columns: code (8 characters wide), title and details, actions.
 - **Editing:** Edit loads the item into the form beside the list, which turns blue and reads "Edit notice",
@@ -250,7 +267,7 @@ Public pages are rendered on the server and revalidated whenever an officer save
 ## 8. Phase 3: phone app and push notifications
 
 - `manifest.webmanifest` with name, the nine-dot icon (generated PNGs at 192 and 512), theme colour and
-  `display: standalone`. A service worker caches the app shell and the last-seen Week page so it opens offline
+  `display: standalone`. A service worker caches the app shell and the last-seen Schedule page so it opens offline
   with a "You're offline; this is the last saved week" notice.
 - "Turn on notifications" asks permission, subscribes with the VAPID public key and sends the subscription to
   `/api/push/subscribe`. "Turn off" removes it.
