@@ -45,22 +45,25 @@ Each phase ends with something deployed and usable.
 
 | Phase | Delivers |
 | --- | --- |
-| **1. Core** | Database, public Schedule / Notices / Files pages, details panel, officer Google login, full Admin (schedule, calendar, notices, files as links, courses, officers), deployed on Vercel. |
+| **1. Core** | Database, public Schedule / Notices / Files pages, details panel, officer Google login, full Admin (classes, calendar, notices, files as links, courses, officers), General files, notices list view, schedule image download, remembered course picks, deployed on Vercel. |
 | **2. File uploads** | Officers upload PDFs, slides, documents and images; classmates download them. Links still work. |
 | **3. Phone app and push** | Install to home screen (PWA), and classmates who opt in get a push notification when a notice is posted. |
 
 Out of scope for all phases: grades, attendance, comments or reactions, multiple sections or year levels,
 student accounts, email notifications, archiving past semesters, analytics.
 
-### Planned features (not yet placed in a phase)
+### Also in Phase 1
 
 - **General files:** a "General" tab on Files, before the course tabs, for class-wide files such as master
   lists and group lists. Files gain an optional course (none = General).
 - **Notices list view:** a switch on Notices between the current cards and a detailed list (one row per notice:
   course code, title, posted date, calendar link, status).
 - **Download the schedule as an image:** a button on Schedule that saves the shown week, for the selected
-  courses, as a PNG. The site remembers the courses a visitor last picked; how it remembers is still to be
-  decided.
+  courses, as a PNG.
+- **Remembering picked courses (Schedule and Notices):** the selection is saved in the visitor's browser
+  (`localStorage`, no login) and also written into the page link (`?course=microP,CNS`). Opening a link with
+  courses shows those courses and saves them; opening the plain site uses the saved picks, or all courses if
+  none are saved. Picking "All" clears both. It is per device: clearing browser data or switching phones resets it.
 
 ## 3. Architecture
 
