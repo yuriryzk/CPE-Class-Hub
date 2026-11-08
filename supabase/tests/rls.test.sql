@@ -1,5 +1,5 @@
 begin;
-select plan(17);
+select plan(20);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -17,6 +17,9 @@ select throws_ok(
   $$insert into notices (course_id, title, body, posted_on) values ((select course_id from ctx), 't', 'b', current_date)$$,
   '42501', null, 'anon cannot insert notices');
 select is((select count(*)::int from officers), 0, 'anon sees no officers');
+select throws_ok(
+  $$select save_courses((select jsonb_agg(jsonb_build_object('id', id, 'name', 'x', 'code', code)) from courses))$$,
+  '42501', null, 'anon cannot use save_courses');
 
 -- authenticated but not an officer
 set local role authenticated;
@@ -58,12 +61,19 @@ select lives_ok(
   'officer inserts a calendar item');
 select lives_ok(
   $$insert into notices (course_id, title, body, posted_on, calendar_item_id)
-    select course_id, 'a', 'b', current_date, (select id from calendar_items limit 1) from ctx$$,
+    select course_id, 'a', 'b', current_date, (select id from calendar_items where title = 'item') from ctx$$,
   'first notice linked to item');
 select throws_ok(
   $$insert into notices (course_id, title, body, posted_on, calendar_item_id)
-    select course_id, 'a', 'b', current_date, (select id from calendar_items limit 1) from ctx$$,
+    select course_id, 'a', 'b', current_date, (select id from calendar_items where title = 'item') from ctx$$,
   '23505', null, 'second notice for same item refused');
+
+-- save_courses: all-or-nothing. Swapping two codes trips the unique index, and neither changes.
+select throws_ok(
+  $$select save_courses((select jsonb_agg(jsonb_build_object('id', id, 'name', name,
+    'code', case code when 'PM' then 'CNS' when 'CNS' then 'PM' else code end)) from courses))$$,
+  '23505', null, 'swapping two course codes is refused');
+select is((select string_agg(code, ',' order by slot) from courses where code in ('PM', 'CNS')), 'PM,CNS', 'a refused save leaves both codes unchanged');
 
 -- head officer
 set local request.jwt.claims = '{"email":"head@test.local"}';
