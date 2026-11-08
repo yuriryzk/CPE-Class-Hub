@@ -160,6 +160,8 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .tph .btn{margin-left:auto}
 .tph:not([style]) .btn{background:#fff;color:var(--ink);box-shadow:3px 3px 0 #888}
 .tpb{padding:20px}
+.dfoot{border-top:2px solid var(--ink);padding-top:12px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.dfoot p{font-size:13px;font-weight:700;color:var(--muted);width:100%}
 .tph .tphint{font-weight:500;font-size:14px;opacity:.85;margin-top:4px}
 .ctabs button[aria-pressed=true]:not(.all) .sw,.courses button[aria-pressed=true]:not(.all) .sw{display:grid;place-items:center;background:#fff}
 .ctabs button[aria-pressed=true]:not(.all) .sw:after,.courses button[aria-pressed=true]:not(.all) .sw:after{content:"\2713";font-size:12px;font-weight:800;line-height:1;color:#111}
@@ -416,10 +418,13 @@ const bySort=l=>[...l].sort((a,b)=>(isPast(a)-isPast(b))||(b.pin-a.pin)||b.date.
 
 // Everything on one date: that weekday's regular classes (struck through when a "No class" item covers the course),
 // the one-off items, and notices that are not tied to an item
-function dayItems(d){const brk=typeof termWeek(sun(d))==='string',off=S.sched.filter(x=>x.date===d&&x.kind==='Holiday').map(x=>x.course);
-const cls=(brk?[]:S.slots).filter(s=>s.day===dayIdx(d)&&!(grp&&s.g&&s.g!==grp)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
+const hidG=s=>!!(s&&grp&&s.g&&s.g!==grp);
+const offOf=(s,d)=>S.sched.find(x=>x.date===d&&x.kind==='Holiday'&&x.course===s.course&&(!x.slot||x.slot===s.id));
+function dayItems(d){const brk=typeof termWeek(sun(d))==='string';
+const cls=(brk?[]:S.slots).filter(s=>s.day===dayIdx(d)&&!hidG(s)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:!!offOf(s,d)}));
 const at=c=>Math.min(9e3,...cls.filter(o=>o.course===c).map(o=>o.m));
-const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:x.time?mins(x.time):at(x.course)}));
+const slotOf=x=>x.slot&&S.slots.find(o=>o.id===x.slot);
+const one=S.sched.filter(x=>x.date===d&&!hidG(slotOf(x))).map(x=>({t:'item',x,course:x.course,m:x.time?mins(x.time):slotOf(x)?mins(slotOf(x).start):at(x.course)}));
 const nts=S.ann.filter(a=>a.date===d&&!itemOf(a)).map(a=>({t:'note',a,course:a.course,m:1e4}));
 return[...cls,...one,...nts].filter(inSel).sort((p,q)=>p.m-q.m)}
 
@@ -472,10 +477,11 @@ return`<div class="title"><h1>Files</h1></div>${ctabs(S.res,'Files by course',fa
 ${l.length?`<table class="tbl"><thead><tr><th scope="col">What it is</th><th scope="col">Course</th><th scope="col">Type</th><th scope="col">Week</th><th scope="col">Open</th></tr></thead><tbody>${body}</tbody></table>`:`<p class="empty">No files for ${fc==='all'?'any course':esc(cn(fc))} yet. Add one from Admin.</p>`}</section>`}
 
 // Details panel for a regular class, a one-off item or a notice
-function openDetail(key){const[t,id,d]=key.split(':');let course,kind,title,rows=[],note=null,extra='';
-if(t==='slot'){const s=S.slots.find(x=>x.id===id);if(!s)return;const off=S.sched.find(x=>x.date===d&&x.kind==='Holiday'&&x.course===s.course);
+function openDetail(key){const[t,id,d]=key.split(':');let course,kind,title,rows=[],note=null,extra='',foot='';
+if(t==='slot'){const s=S.slots.find(x=>x.id===id);if(!s)return;const off=offOf(s,d);
 course=s.course;kind=off?'Class (cancelled)':'Class';title=cn(s.course);rows=[['When',`${dLong(d)}, ${span(s.start,s.end)}`],['Where',s.room||'—'],['Group',s.g||'Whole class'],['Repeats',`Every ${DAYS[s.day]}`]];
-if(off)rows.push(['Why',off.notes||'No class on this day']);note=off?noteOf(off):null}
+if(off)rows.push(['Why',off.notes||'No class on this day']);note=off?noteOf(off):null;
+foot=`<div class="dfoot"><p>Officers only</p>${!off?`<button type="button" class="btn s" data-cxl="${s.id}:${d}">Cancel this class on ${esc(dShort(d))} only</button>`:off.slot?`<button type="button" class="btn s" data-uncxl="${off.id}:${s.id}:${d}">Restore this class</button>`:'<span>Cancelled for the whole course. Change it under Admin → Calendar.</span>'}</div>`}
 else if(t==='item'){const x=S.sched.find(y=>y.id===id);if(!x)return;course=x.course;kind=KLABEL[x.kind];title=x.title;
 rows=[['When',`${dLong(x.date)}${x.time?', '+x.time:''}`]];if(x.movedFrom)rows.push(['Moved from',`${dLong(x.movedFrom.date)}${x.movedFrom.time?', '+x.movedFrom.time:''}`]);rows.push(['Course',cn(x.course)]);if(x.notes)rows.push(['Notes',x.notes]);note=noteOf(x)}
 else{const a=S.ann.find(y=>y.id===id);if(!a)return;course=a.course;kind='Notice';title=a.title;rows=[['Posted',dLong(a.date)],['Course',cn(a.course)]];
@@ -485,7 +491,7 @@ const dlg=$('#dlg');dlg.style.cssText=cv(course);
 dlg.innerHTML=`<div class="dh"><div>${tag(course)}<p style="margin-top:8px">${esc(kind)}</p><h2 id="dlgt">${esc(title)}</h2></div><button type="button" class="x" data-close aria-label="Close">×</button></div>
 <div class="db">${extra}<dl>${rows.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
 ${note?`<div class="lnote${isPast(note)?' past':''}"><h3>Notice: ${esc(note.title)}</h3><p>${esc(note.body)}</p><p style="color:var(--muted);font-size:14px;margin-top:6px">Posted ${dShort(note.date)}${isPast(note)?' · '+(note.done?'Done':'Passed'):''}</p></div>`:''}
-<div><h3>Files for ${esc(C(course).code)}</h3>${files.length?`<ul>${files.map(r=>`<li>${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)} ↗</a>`:`<b>${esc(r.title)}</b>`} <span>· ${esc(r.cat)}</span></li>`).join('')}</ul>`:'<p style="color:var(--muted)">No files for this course yet.</p>'}</div></div>`;
+<div><h3>Files for ${esc(C(course).code)}</h3>${files.length?`<ul>${files.map(r=>`<li>${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)} ↗</a>`:`<b>${esc(r.title)}</b>`} <span>· ${esc(r.cat)}</span></li>`).join('')}</ul>`:'<p style="color:var(--muted)">No files for this course yet.</p>'}</div>${foot}</div>`;
 dlg.setAttribute('aria-labelledby','dlgt');if(!dlg.open)dlg.showModal()}
 
 function row(c,t,m,acts,cls){return`<div class="row${cls?' '+cls:''}">${tag(c)}<div><b>${t}</b><small>${m}</small></div><div class="acts">${acts||''}</div></div>`}
@@ -533,6 +539,8 @@ const dlg=$('#dlg');if(e.target===dlg){dlg.close();return}
 const t=e.target.closest('button');if(!t)return;
 if(t.dataset.open){openDetail(t.dataset.open);return}
 if(t.hasAttribute('data-close')){dlg.close();return}
+if(t.dataset.cxl){const[sid,d]=t.dataset.cxl.split(':'),sl=S.slots.find(x=>x.id===sid);S.sched.push({id:uid(),course:sl.course,kind:'Holiday',title:'No class',date:d,time:'',notes:'',slot:sid});save();render();openDetail('slot:'+t.dataset.cxl);toast('Class cancelled for '+dShort(d));return}
+if(t.dataset.uncxl){const[iid,sid,d]=t.dataset.uncxl.split(':');S.sched=S.sched.filter(x=>x.id!==iid);S.ann.forEach(a=>{if(a.item===iid)a.item=null});save();render();openDetail('slot:'+sid+':'+d);toast('Class restored');return}
 if(t.dataset.wk!==undefined){weekStart=t.dataset.wk==='0'?sun(today):addD(weekStart,+t.dataset.wk);render()}
 if(t.dataset.fc){fc=t.dataset.fc;render()}
 if(t.dataset.grp!==undefined){grp=t.dataset.grp;try{localStorage.setItem('classhub-grp',grp)}catch(e){}render()}

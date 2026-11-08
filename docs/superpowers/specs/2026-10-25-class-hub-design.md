@@ -142,6 +142,11 @@ Seeded during setup with the nine courses of the semester, in slot order: Microp
 | notes | text | optional, up to 2,000 characters |
 | moved_from_date | date | optional; the original date, set the first time the date or time changes |
 | moved_from_time | time | optional; the original time (null when the original had no time) |
+| class_slot_id | uuid → class_slots | optional, only for `no_class`; on delete cascade. Set: only that one class is cancelled that day. Empty: every class of the course that day is cancelled |
+
+**Cancelling one class for one week:** an officer opens a class on the Schedule and taps "Cancel this class on
+<date> only". This adds a `no_class` item for that date with `class_slot_id` set; the weekly class itself is not
+changed, so the next week shows it again. "Restore this class" deletes that item. Visitors never see the buttons.
 
 **Moving an item:** when an officer saves a new date or time, the original is kept in `moved_from_*` (only the
 first time, so it always shows where the item was first scheduled). If the item is moved back to its original
