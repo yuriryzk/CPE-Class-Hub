@@ -42,6 +42,12 @@ describe("withOfficer", () => {
     expect(await withOfficer(fn, { courseCode: "CNS" })).toEqual({ ok: false, message: "Another course already uses CNS" });
   });
 
+  it("translates a duplicate officer and a duplicate break", async () => {
+    const dup = (message: string) => async () => { throw { code: "23505", message }; };
+    expect(await withOfficer(dup('duplicate key value violates unique constraint "officers_pkey"'))).toEqual({ ok: false, message: "That email is already an officer" });
+    expect(await withOfficer(dup('duplicate key value violates unique constraint "term_breaks_pkey"'))).toEqual({ ok: false, message: "That week is already a break" });
+  });
+
   it("translates a row-level-security refusal", async () => {
     const fn = async () => { throw { code: "42501" }; };
     expect(await withOfficer(fn)).toEqual(NOT_OFFICER);

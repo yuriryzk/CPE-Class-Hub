@@ -40,6 +40,11 @@ export async function withOfficer(
     if (e instanceof NotOfficerError) return { ok: false, message: e.message };
     const code = (e as { code?: string } | null)?.code;
     if (code === "42501") return { ok: false, message: NOT_OFFICER_MESSAGE };
+    if (code === "23505") {
+      const where = (e as { message?: string }).message ?? "";
+      if (where.includes("officers")) return { ok: false, message: "That email is already an officer" };
+      if (where.includes("term_breaks")) return { ok: false, message: "That week is already a break" };
+    }
     if (code === "23505" && ctx.courseCode) return { ok: false, message: `Another course already uses ${ctx.courseCode}` };
     return { ok: false, message: "Couldn't save. Try again." };
   }
