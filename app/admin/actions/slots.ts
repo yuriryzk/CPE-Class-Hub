@@ -33,7 +33,7 @@ export async function cancelSlotOn(slotId: string, date: string): Promise<Action
     const { error: e2 } = await db.from("calendar_items").insert({
       course_id: slot.course_id, kind: "no_class", title: "No class", on_date: date, class_slot_id: slotId,
     });
-    if (e2) throw e2;
+    if (e2 && e2.code !== "23505") throw e2; // already cancelled for that day
   });
 }
 

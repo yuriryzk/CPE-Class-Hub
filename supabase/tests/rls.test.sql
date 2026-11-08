@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(21);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -74,6 +74,9 @@ select throws_ok(
     'code', case code when 'PM' then 'CNS' when 'CNS' then 'PM' else code end)) from courses))$$,
   '23505', null, 'swapping two course codes is refused');
 select is((select string_agg(code, ',' order by slot) from courses where code in ('PM', 'CNS')), 'PM,CNS', 'a refused save leaves both codes unchanged');
+
+-- one cancel per class per day
+select has_index('calendar_items', 'calendar_items_slot_day_key', 'a class is cancelled at most once per day');
 
 -- head officer
 set local request.jwt.claims = '{"email":"head@test.local"}';

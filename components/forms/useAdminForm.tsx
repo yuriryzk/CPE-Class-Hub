@@ -26,12 +26,17 @@ export function useAdminForm(opts: {
     if (!p.success) return setErrors(z.flattenError(p.error).fieldErrors as Record<string, string[]>);
     setErrors({});
     setBusy(true);
-    const r = await opts.action(fd);
-    setBusy(false);
-    if (!r.ok) return toast(r.message);
-    toast(opts.done(fd));
-    if (opts.editing) router.replace(opts.base, { scroll: false });
-    else form.reset();
+    try {
+      const r = await opts.action(fd);
+      if (!r.ok) return toast(r.message);
+      toast(opts.done(fd));
+      if (opts.editing) router.replace(opts.base, { scroll: false });
+      else form.reset();
+    } catch {
+      toast("Couldn't save. Try again.");
+    } finally {
+      setBusy(false);
+    }
   };
   const err = (name: string) => errors[name] && <p className={s.err} role="alert">{errors[name][0]}</p>;
   return { onSubmit, err, busy };

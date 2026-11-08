@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import type { ActionResult } from "@/lib/auth";
 import { toast } from "./Toast";
 
@@ -6,12 +7,20 @@ import { toast } from "./Toast";
 export function ActionButton({ label, action, done, ask }: {
   label: string; action: () => Promise<ActionResult>; done: string; ask?: string;
 }) {
+  const [busy, setBusy] = useState(false);
   const run = async () => {
     if (ask && !confirm(ask)) return;
-    const r = await action();
-    toast(r.ok ? done : r.message);
+    setBusy(true);
+    try {
+      const r = await action();
+      toast(r.ok ? done : r.message);
+    } catch {
+      toast("Couldn't save. Try again.");
+    } finally {
+      setBusy(false);
+    }
   };
-  return <button type="button" className="btn s" onClick={run}>{label}</button>;
+  return <button type="button" className="btn s" disabled={busy} onClick={run}>{label}</button>;
 }
 
 export default function ConfirmDelete({ title, action }: { title: string; action: () => Promise<ActionResult> }) {
