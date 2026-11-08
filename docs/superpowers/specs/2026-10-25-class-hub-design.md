@@ -1,7 +1,7 @@
 # Class Hub — full-stack design
 
 Date: 2026-10-25
-Status: draft, awaiting review
+Status: approved 2026-11-08
 Reference design: `design/prototype.html` (the colourful nine-course prototype; open it in a browser)
 
 ## 1. Purpose
@@ -59,11 +59,14 @@ student accounts, email notifications, archiving past semesters, analytics.
 - **Notices list view:** a switch on Notices between the current cards and a detailed list (one row per notice:
   course code, title, posted date, calendar link, status).
 - **Download the schedule as an image:** a button on Schedule that saves the shown week, for the selected
-  courses, as a PNG.
-- **Remembering picked courses (Schedule and Notices):** the selection is saved in the visitor's browser
-  (`localStorage`, no login) and also written into the page link (`?course=MICROP,CNS`). Opening a link with
-  courses shows those courses and saves them; opening the plain site uses the saved picks, or all courses if
-  none are saved. Picking "All" clears both. It is per device: clearing browser data or switching phones resets it.
+  courses and lab group, as a PNG. The image is always drawn at a fixed desktop width with all seven days,
+  whatever the screen size.
+- **Remembering picked courses (Schedule and Notices):** one selection is shared by Schedule and Notices. It is
+  saved in the visitor's browser (`localStorage`, no login) as course ids, which never change, and also written
+  into the page link as codes (`?course=MICROP,CNS`). Codes in a link match regardless of upper or lower case,
+  and codes that no longer exist are skipped. Opening a link with courses shows those courses and saves them;
+  opening the plain site uses the saved picks, or all courses if none are saved. Picking "All" clears both. It is
+  per device: clearing browser data or switching phones resets it.
 - **Lab groups (G1 / G2):** five courses (MICROP, CNS, CEDD, HDL, ELEC) split the class into two groups with
   their own lab times. Schedule has a "Both / G1 / G2" switch; "Both" shows every class with its group tagged,
   G1 or G2 hides the other group's labs. The choice is saved in the visitor's browser like the course picks.
@@ -163,17 +166,17 @@ points to the item instead of copying its date.
 | posted_on | date | the day it shows on the calendar and in "Posted this week" |
 | pinned | boolean | default false |
 | done | boolean | default false; set by an officer |
-| calendar_item_id | uuid → calendar_items | optional; on delete set null |
+| calendar_item_id | uuid → calendar_items | optional, unique (at most one notice per item); on delete set null |
 | created_by | text | the officer's email |
 
 ### `files`
 | column | type | rules |
 | --- | --- | --- |
-| course_id | uuid → courses | on delete cascade |
+| course_id | uuid → courses | optional; empty = General (class-wide). On delete cascade |
 | title | text | 1–120 characters |
 | file_type | text | free text such as "Slides", up to 30 characters |
 | week_label | text | optional, such as "Week 3" |
-| url | text | for a link; https only |
+| url | text | for a link; must start with `https://` (a `javascript:` or `http:` link is refused) |
 | storage_path | text | phase 2: path in the `class-files` bucket |
 | size_bytes, mime_type | bigint, text | phase 2 |
 
@@ -210,7 +213,10 @@ Seeded with the values above. Officers can change them under Admin → Courses (
   that course's class that day (so a "No class" sits where the cancelled class was); otherwise untimed items and
   notices go after the timed entries.
 - **Cancelled class:** a `no_class` item for a course on a date marks that course's slots on that date as
-  cancelled. They still show, struck through.
+  cancelled, or only the one slot named by `class_slot_id`. They still show, struck through. An untimed
+  `no_class` item with a slot sits at that slot's start time.
+- **Lab group:** with G1 or G2 chosen, slots of the other group are left out, and so are `no_class` items whose
+  slot belongs to the other group. Slots with no group always show.
 - **Notice is past:** `done` is true, or it is linked to a calendar item whose date is before today.
   Past notices sort after active ones and are greyed out.
 - **Grouping:** on each day, entries of the same course share one box (only the course's short code on top, like
@@ -223,8 +229,8 @@ Seeded with the values above. Officers can change them under Admin → Courses (
   15–21 November 2026, Week 5 is 13–19 December, the two break weeks follow, Week 6 is 3–9 January 2027 and
   Week 18 is 28 March – 3 April 2027.
 - **Break weeks:** no regular classes are placed; one-off items still show.
-- **Next up:** the three earliest `quiz_exam` or `due` items from today on (date, then time), within the
-  selected courses. Fewer than three leaves a "Nothing else due or tested yet" card in the remaining places.
+- **Next up:** the three earliest `quiz_exam` or `due` items from now on (date, then time; an item today whose
+  time has passed is skipped, an untimed item today still counts), within the selected courses. Fewer than three leaves a "Nothing else due or tested yet" card in the remaining places.
 
 ## 5. Security (Row Level Security)
 
@@ -236,6 +242,7 @@ even though visitors cannot.
 | --- | --- | --- | --- |
 | courses | read | update name and code | same |
 | class_slots, calendar_items, notices, files | read | insert, update, delete | same |
+| term, term_breaks | read | update term; insert, update, delete breaks | same |
 | officers | none | read own row | read, insert, delete (cannot delete self) |
 | push_subscriptions | insert, delete own by endpoint (through an API route) | none | none |
 | storage `class-files` | read | upload, delete | same |
@@ -251,9 +258,9 @@ even though visitors cannot.
 | route | who | what |
 | --- | --- | --- |
 | `/` | anyone | Schedule: heading "Schedule of Week N" with "November 15, 2026 to November 21, 2026" for term weeks (outside the term or in a break: "This week" / "Week of 8 Nov" with the long date range, plus the break label), week switcher, three Next up cards, "Your courses" filter, day-by-day calendar (days as columns), Posted this week |
-| `/?week=2026-10-26&course=NET,MPU` | anyone | Same, for another week or for one or more courses; shareable |
-| `/notices?course=NET,MPU` | anyone | Course tabs (All, then the nine courses; several courses can be selected together, All clears the selection), notice cards, past ones greyed at the end |
-| `/files?course=NET` | anyone | Course tabs, files table |
+| `/?week=2026-10-26&course=MICROP,CNS` | anyone | Same, for another week or for one or more courses; shareable |
+| `/notices?course=MICROP,CNS` | anyone | Course tabs (All, then the nine courses; several courses can be selected together, All clears the selection), notice cards, past ones greyed at the end |
+| `/files?course=CNS` | anyone | Tabs: General, then the nine courses; files table |
 | `/login` | anyone | "Officers sign in with Google" button |
 | `/auth/callback` | — | Supabase OAuth callback |
 | `/admin` | officer | Redirects to `/admin/notices` |
@@ -268,8 +275,9 @@ even though visitors cannot.
 - The details panel opens over the Schedule page when a card is tapped (a client component using `<dialog>`).
   It needs no separate route.
 - Admin lists use fixed columns: code (8 characters wide), title and details, actions.
+- **Delete asks first:** every Delete button asks "Delete <title>? This can't be undone." before deleting.
 - **Editing:** Edit loads the item into the form beside the list, which turns blue and reads "Edit notice",
-  "Edit calendar item" or "Edit class time", with Save changes and Cancel editing; the row being edited is
+  "Edit calendar item" or "Edit class", with Save changes and Cancel editing; the row being edited is
   highlighted. Editing a notice can also change its calendar link. For an edited notice, the push tick box
   reads "Send a push notification about the change" and starts unticked (phase 3).
 - The header shows "Officer sign in" for visitors, and the officer's name, Admin and Sign out once signed in.
@@ -298,7 +306,7 @@ Public pages are rendered on the server and revalidated whenever an officer save
 - "Turn on notifications" asks permission, subscribes with the VAPID public key and sends the subscription to
   `/api/push/subscribe`. "Turn off" removes it.
 - When an officer posts a notice with "Send a push notification" ticked, the server sends
-  "MPU: Lab 3 moved to Wednesday" to every subscription. Subscriptions that return 404 or 410 are deleted.
+  "MICROP: Lab 3 moved to Wednesday" to every subscription. Subscriptions that return 404 or 410 are deleted.
 - On iPhone, push works only after the app is added to the home screen (iOS 16.4 or later). The button explains
   this on iPhones that are not installed.
 
@@ -308,7 +316,7 @@ Public pages are rendered on the server and revalidated whenever an officer save
   after the start time", "Codes are up to 8 characters"). The same schemas give instant messages in the browser.
 - **Saves:** every Server Action returns `{ ok: true }` or `{ ok: false, message }`; the page shows a toast in the
   prototype's style. Database constraint errors are translated (a duplicate course code becomes "Another course
-  already uses NET").
+  already uses CNS").
 - **Not an officer:** a clear page with "Sign out" and "Back to the week".
 - **Data fails to load:** the block that failed shows "Couldn't load the calendar. Try again." with a retry
   link; the rest of the page still renders.
@@ -318,8 +326,11 @@ Public pages are rendered on the server and revalidated whenever an officer save
 ## 10. Testing
 
 - **Unit (Vitest):** `lib/week.ts` (week building across month ends, weekday mapping, cancelled classes, past
-  notices, next up, counts, Asia/Manila "today" near midnight), time parsing and formatting ("7:30 AM"),
-  zod schemas.
+  notices, next up, counts, Asia/Manila "today" near midnight: 23:30 UTC on 7 November is already
+  8 November in Manila), lab-group filtering and one-slot cancels, time parsing and formatting ("7:30 AM"),
+  zod schemas (a `javascript:` link is refused), and the course-pick rule (a link with courses beats saved
+  picks and replaces them; no link uses saved picks; neither shows all; unknown codes are skipped; codes match
+  in any case).
 - **Database:** an SQL test script run against the development Supabase project that checks RLS: anon can read
   and cannot write; a non-officer cannot write; an officer can; only the head officer manages officers.
 - **End to end (Playwright):** public pages render and the details panel opens; with a test officer session,
