@@ -1,0 +1,32 @@
+:root{--bg:#efefef;--card:#fff;--ink:#111;--muted:#4d4d4d;--soft:#e9e8e3;--r:10px;--bw:2.5px;--sh:4px 4px 0 var(--ink);--pad:32px;--gap:24px;
+--head:var(--font-head),"Arial Black",sans-serif;color-scheme:light;box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--font-body),system-ui,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #2f6bff;outline-offset:3px}
+.box{background:var(--card);border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh)}
+main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 18px;border:var(--bw) solid var(--ink);border-radius:var(--r);background:var(--card);box-shadow:3px 3px 0 var(--ink);cursor:pointer;text-decoration:none;font-weight:700;white-space:nowrap;color:var(--ink)}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.p{background:var(--ink);color:#fff}
+.btn.p:hover{background:#333}
+.btn.s{height:34px;padding:0 12px;font-size:14px;box-shadow:2px 2px 0 var(--ink)}
+.btn[disabled]{box-shadow:none;color:var(--muted);background:var(--soft);cursor:default;transform:none}
+
+/* A course's colour travels with it as --c */
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border:2px solid var(--ink);border-radius:6px;background:var(--c);font-size:13px;font-weight:700;flex:none;white-space:nowrap}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#ffd93d;border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);padding:12px 18px;z-index:60;max-width:90vw;font-weight:700}
+.empty{padding:20px;color:var(--muted)}
+
+@media(max-width:900px){
+:root{--pad:16px;--gap:18px}
+main{padding-top:22px;padding-bottom:100px}
+.toast{bottom:88px}
+.btn.s{height:36px;padding:0 12px;font-size:14px}
+}
+@media(prefers-reduced-motion:no-preference){.btn{transition:transform .08s,box-shadow .08s,background-color .1s}}

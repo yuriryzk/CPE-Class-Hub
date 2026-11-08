@@ -1,0 +1,15 @@
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;background:var(--card);border-bottom:3px solid var(--ink);height:68px;padding:0 var(--pad)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none}
+.mark i{display:grid;grid-template-columns:repeat(3,8px);gap:2px;padding:4px;background:var(--ink);border-radius:6px}
+.mark i b{width:8px;height:8px;border-radius:2px}
+.mark span{font:800 22px/1 var(--head);letter-spacing:-.02em}
+.nav{display:flex;gap:6px}
+.nav a{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;text-decoration:none;font-weight:600;border:var(--bw) solid transparent}
+.nav a:hover{border-color:var(--ink)}
+.nav a[aria-current=page]{background:var(--ink);color:#fff}
+.end{margin-left:auto}
+@media(max-width:900px){
+.top{height:56px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(64px + env(safe-area-inset-bottom,0px));padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:#fff;border-top:3px solid var(--ink);gap:4px}
+.nav a{flex:1;justify-content:center;padding:0;font-size:14px}
+}
