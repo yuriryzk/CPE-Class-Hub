@@ -1,5 +1,5 @@
 begin;
-select plan(16);
+select plan(17);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -25,12 +25,17 @@ select throws_ok(
   $$insert into notices (course_id, title, body, posted_on) values ((select course_id from ctx), 't', 'b', current_date)$$,
   '42501', null, 'non-officer cannot insert notices');
 
+-- non-officer cannot change term (RLS filters the row silently)
+update term set week_count = 5;
+select is((select week_count from term), 18::smallint, 'non-officer update of term changes nothing');
+
 -- officer
 set local request.jwt.claims = '{"email":"Officer@Test.local"}';
 select lives_ok(
   $$insert into notices (course_id, title, body, posted_on) values ((select course_id from ctx), 't', 'b', current_date)$$,
   'officer inserts a notice (email match is case-insensitive)');
-select lives_ok($$update term set week_count = 18$$, 'officer updates term');
+update term set week_count = 17;
+select is((select week_count from term), 17::smallint, 'officer updates term');
 select lives_ok($$insert into term_breaks (starts_on, label) values ('2027-01-03', 'Test break')$$, 'officer inserts a break');
 select is((select count(*)::int from officers), 1, 'officer reads only own officers row');
 select throws_ok(
