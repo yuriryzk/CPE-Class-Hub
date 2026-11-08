@@ -1,0 +1,2 @@
+.wk{display:grid;grid-template-columns:270px minmax(0,1fr);gap:var(--gap);align-items:start;margin-bottom:40px}
+@media(max-width:1180px){.wk{grid-template-columns:minmax(0,1fr)}}

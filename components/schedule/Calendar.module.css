@@ -1,0 +1,15 @@
+.calhd{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;margin-bottom:12px}
+.calhd h2{font:800 26px/1 var(--head);letter-spacing:-.02em}
+.key{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{width:26px;height:16px;border-radius:4px;background:#fff;border:2px solid var(--ink)}
+.calw{overflow-x:auto;padding:0 4px 4px 0}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1060px;overflow:hidden}
+@media(max-width:900px){
+.calw{scroll-snap-type:x mandatory}
+.cal{--n:3;grid-template-columns:repeat(7,calc((100vw - 2*var(--pad) - 9px) / var(--n)));min-width:0}
+}
+@media(max-width:640px){.cal{--n:2}}
+/* Download image: fixed desktop layout regardless of the screen */
+.wide .calw{overflow:visible}
+.wide .cal{grid-template-columns:repeat(7,minmax(0,1fr));min-width:0}

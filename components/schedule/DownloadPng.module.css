@@ -1,0 +1,4 @@
+/* Off screen; the inner node is what gets drawn */
+.off{position:fixed;top:0;left:-10000px;pointer-events:none}
+.shot{width:1280px;padding:24px;background:var(--bg)}
+.title{font:800 28px/1.2 var(--head);letter-spacing:-.02em;margin-bottom:16px}
