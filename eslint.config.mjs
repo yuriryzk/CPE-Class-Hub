@@ -18,6 +18,10 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      ".taste-skill/**",
+      "class-hub*/**",
+      "before/**",
+      "_now.html",
     ],
   },
 ];
