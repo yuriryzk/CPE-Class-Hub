@@ -56,3 +56,6 @@ export type FileRow = {
 
 export type Term = { starts_on: string; week_count: number };
 export type TermBreak = { starts_on: string; label: string };
+
+/** Kind labels shown to people. Lives here, not in a client component, so server pages can read it. */
+export const KIND: Record<Item['kind'], string> = { quiz_exam: 'Quiz/exam', due: 'Due', no_class: 'No class', extra_class: 'Extra class' };

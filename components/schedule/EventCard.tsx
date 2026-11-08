@@ -1,11 +1,11 @@
 "use client";
 import { formatTime, fromPgTime } from "@/lib/time";
-import type { Course, Item, Slot } from "@/lib/types";
+import { KIND, type Course, type Item, type Slot } from "@/lib/types";
 import type { Entry } from "@/lib/week";
 import { openDetail } from "./DetailsDialog";
 import s from "./EventCard.module.css";
 
-export const KIND: Record<Item["kind"], string> = { quiz_exam: "Quiz/exam", due: "Due", no_class: "No class", extra_class: "Extra class" };
+export { KIND };
 const KIND_CLASS: Record<Item["kind"], string> = { quiz_exam: s.test, due: s.due, no_class: s.off, extra_class: "" };
 
 export const pgTime = (t: string) => formatTime(fromPgTime(t));

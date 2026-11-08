@@ -12,6 +12,7 @@ test("a done notice comes after the active ones and is greyed", async ({ page })
   await expect(last).toContainText("Done");
   await expect(last).toHaveClass(/past/);
   await expect(all.first()).not.toHaveClass(/past/);
+  await expect(all.filter({ hasText: "Quiz 1 on Tuesday" })).toContainText("On the calendar: Quiz/exam, Tue 17 Nov");
 });
 
 test("List view is a table with a Status column and is remembered", async ({ page }) => {

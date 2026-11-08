@@ -70,3 +70,9 @@ export async function loadItemsByIds(ids: string[]): Promise<Item[]> {
   const db = await serverClient();
   return run("notices", db.from("calendar_items").select("*").in("id", ids));
 }
+
+/** Every calendar item, for the admin lists. */
+export async function loadItems(): Promise<Item[]> {
+  const db = await serverClient();
+  return run("calendar", db.from("calendar_items").select("*").order("on_date").order("at_time", { nullsFirst: true }));
+}

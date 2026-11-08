@@ -1,0 +1,43 @@
+/* Admin: the form beside the list (prototype vAdmin) */
+.adm{display:grid;grid-template-columns:470px minmax(0,1fr);gap:var(--gap);align-items:start}
+.tabs{margin-bottom:16px}
+.tabs>*{flex:1;padding:0 8px}
+.panel{padding:22px}
+.panel h2{font:800 26px/1.1 var(--head);letter-spacing:-.02em}
+.hint{color:var(--muted);margin-top:4px}
+.panel label{display:block;font-size:15px;font-weight:700;margin:16px 0 0}
+.panel :is(select,input,textarea){display:block;width:100%;height:44px;margin-top:6px;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:0 12px;font-size:15px;font-weight:400}
+.panel textarea{height:auto;padding:10px 12px;resize:vertical}
+.panel .c{display:flex;gap:10px;align-items:center;font-weight:500}
+.panel .c input{width:20px;height:20px;margin:0;accent-color:var(--ink)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{color:#b3261e;font-size:14px;font-weight:600;margin-top:4px}
+.save{margin-top:24px;width:100%}
+.cancel{display:block;margin:12px auto 0;background:none;border:0;font-weight:700;text-decoration:underline;cursor:pointer}
+.editing{outline:3px solid #2f6bff;outline-offset:-3px}
+/* Notice form: optional calendar link */
+.calopt{border:2px solid var(--ink);border-radius:8px;padding:6px 14px 14px;margin:18px 0 0}
+.calopt legend{font-weight:700;padding:0 6px}
+.panel .radio{display:flex;gap:10px;align-items:center;font-weight:500;margin-top:8px}
+.panel .radio input{width:18px;height:18px;margin:0;accent-color:var(--ink)}
+.optLink,.optNew{display:none}
+.calopt:has(input[value=link]:checked) .optLink,.calopt:has(input[value=new]:checked) .optNew{display:block}
+/* Lists: fixed columns so codes, titles and actions line up whatever the code's length */
+.rows{overflow:hidden}
+.rh{display:flex;align-items:center;padding:14px 18px;background:var(--soft);border-bottom:var(--bw) solid var(--ink);font:800 20px/1 var(--head)}
+.rh span{margin-left:auto;font:600 15px/1 var(--font-body),sans-serif;color:var(--muted)}
+.row{display:grid;grid-template-columns:100px minmax(0,1fr) 270px;gap:16px;align-items:center;padding:12px 18px;border-top:1.5px solid #cfcfca}
+.rh+.row{border-top:0}
+.row :global(.tag){width:100%;justify-content:center}
+.row b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{display:block;color:var(--muted);font-size:14px}
+.acts{display:flex;gap:8px;justify-content:flex-end}
+.past b,.past small{color:#6a6a6a}
+.past :global(.tag){filter:grayscale(1);opacity:.6}
+.st{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:999px;background:#ddd;color:#333;font-size:12px;font-weight:700;margin-left:6px;vertical-align:1px}
+.st.pin{background:var(--ink);color:#fff}
+@media(max-width:1180px){.adm{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){
+.row{grid-template-columns:84px minmax(0,1fr)}
+.acts{grid-column:2;justify-content:flex-start}
+}

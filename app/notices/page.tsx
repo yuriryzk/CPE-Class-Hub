@@ -3,7 +3,7 @@ import { resolvePicks } from "@/lib/picks";
 import { formatShort, manilaToday } from "@/lib/time";
 import { isPastNotice, sortNotices } from "@/lib/week";
 import PicksSync from "@/components/schedule/PicksSync";
-import { KIND } from "@/components/schedule/EventCard";
+import { KIND } from "@/lib/types";
 import Tabs, { TabPanel } from "@/components/Tabs";
 import type { Row } from "@/components/notices/NoticeCard";
 import NoticeList from "@/components/notices/NoticeList";
