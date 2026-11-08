@@ -8,7 +8,7 @@ export async function serverClient() {
     cookies: {
       getAll: () => store.getAll(),
       setAll: (all) => {
-        // Server Components cannot set cookies; the session refresh happens where they can.
+        // Server Components cannot set cookies; middleware.ts refreshes the session where cookies can be written.
         try {
           all.forEach(({ name, value, options }) => store.set(name, value, options));
         } catch {}

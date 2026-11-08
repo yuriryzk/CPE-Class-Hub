@@ -8,5 +8,5 @@ export async function GET(req: NextRequest) {
     const { error } = await (await serverClient()).auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}/admin`);
   }
-  return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("Sign-in didn't complete. Try again.")}`);
+  return NextResponse.redirect(`${origin}/login?error=1`);
 }
