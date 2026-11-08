@@ -82,3 +82,13 @@ export async function loadSlots(): Promise<Slot[]> {
   const db = await serverClient();
   return run("classes", db.from("class_slots").select("*").order("starts_at"));
 }
+
+/** The semester (Week 1, week count) and its breaks, for the admin Semester section. */
+export async function loadTerm(): Promise<{ term: Term; breaks: TermBreak[] }> {
+  const db = await serverClient();
+  const [term, breaks] = await Promise.all([
+    run<Term>("semester", db.from("term").select("starts_on, week_count").single()),
+    run<TermBreak[]>("semester", db.from("term_breaks").select("starts_on, label").order("starts_on")),
+  ]);
+  return { term, breaks };
+}

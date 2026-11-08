@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  breakSchema, courseSchema, fileSchema, itemSchema, noticeSchema, officerSchema, slotSchema, termSchema,
+  breakSchema, courseSchema, coursesSchema, fileSchema, itemSchema, noticeSchema, officerSchema, slotSchema, termSchema,
 } from "@/lib/schemas";
 
 const msgs = (r: { error?: { issues: { message: string }[] } }) => r.error?.issues.map((i) => i.message) ?? [];
@@ -82,5 +82,14 @@ describe("termSchema and breakSchema", () => {
     expect(termSchema.safeParse({ starts_on: "2026-11-16", week_count: "18" }).success).toBe(false);
     expect(breakSchema.parse({ starts_on: "2026-12-20", label: "Christmas break" }).label).toBe("Christmas break");
     expect(breakSchema.safeParse({ starts_on: "2026-12-21", label: "x" }).success).toBe(false);
+  });
+});
+
+describe("coursesSchema", () => {
+  it("reads the numbered rows and reports errors on the row that has them", () => {
+    expect(coursesSchema.parse({ id0: "a", name0: " Math ", code0: "MATH" })).toEqual([{ id: "a", name: "Math", code: "MATH" }]);
+    const r = coursesSchema.safeParse({ id0: "a", name0: "Math", code0: "TOOLONGCODE" });
+    expect(r.success).toBe(false);
+    expect(r.error?.issues[0].path).toEqual(["code0"]);
   });
 });

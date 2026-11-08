@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 // Local Supabase only: keys come from the running stack, never from committed files.
 const OFFICER = "tests/e2e/.auth/officer.json";
 const VIEWER = "tests/e2e/.auth/viewer.json";
+const PLAIN = "tests/e2e/.auth/plain.json";
 
 const env: Record<string, string> = Object.fromEntries(
   execSync("npx supabase status -o env", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] })
@@ -54,11 +55,22 @@ setup("officer and viewer sessions", async () => {
   const { error } = await admin.from("officers").upsert({ email: "officer@test.local", role: "head" });
   if (error) throw error;
   await signedInState("viewer@test.local", VIEWER);
+  await signedInState("plain@test.local", PLAIN);
+  const { error: ep } = await admin.from("officers").upsert({ email: "plain@test.local", role: "officer" });
+  if (ep) throw ep;
   // Leftovers from an admin test that failed before its own cleanup.
   for (const table of ["notices", "calendar_items"]) {
     const { error: e } = await admin.from(table).delete().like("title", "E2E %");
     if (e) throw e;
   }
+  // Admin-rest leftovers: files, officers, the E2E break, and a renamed CNS.
+  for (const [table, col, like] of [["files", "title", "E2E %"], ["officers", "email", "e2e-%"], ["term_breaks", "label", "E2E %"]]) {
+    const { error: e } = await admin.from(table).delete().like(col, like);
+    if (e) throw e;
+  }
+  const { error: ec } = await admin.from("courses").update({ code: "CNS" }).eq("slot", 6);
+  if (ec) throw ec;
+  await admin.from("term").update({ starts_on: "2026-11-15", week_count: 18 }).eq("id", true);
   const { error: e } = await admin.from("class_slots").delete().like("room", "E2E %");
   if (e) throw e;
 });
