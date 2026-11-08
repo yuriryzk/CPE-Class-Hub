@@ -63,3 +63,10 @@ export async function loadFiles(): Promise<FileRow[]> {
   const db = await serverClient();
   return run("files", db.from("files").select("*").order("created_at", { ascending: false }));
 }
+
+/** The calendar items notices point at, so Notices can tell which are past. */
+export async function loadItemsByIds(ids: string[]): Promise<Item[]> {
+  if (!ids.length) return [];
+  const db = await serverClient();
+  return run("notices", db.from("calendar_items").select("*").in("id", ids));
+}

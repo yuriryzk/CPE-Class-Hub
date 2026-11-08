@@ -1,0 +1,19 @@
+.tabs{display:flex;gap:6px;overflow-x:auto;align-items:flex-end;padding-right:6px;position:relative;z-index:1;margin-bottom:-2.5px}
+.tabs :is(button,a){flex:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:10px 10px 0 0;background:#fff;cursor:pointer;font:inherit;font-weight:700;font-size:15px;color:var(--ink);text-decoration:none}
+.tabs small{font-size:13px;font-weight:600;color:var(--muted)}
+.tabs :global(.sw){width:18px;height:18px;border-radius:5px;border-width:1.5px}
+.all :global(.sw){background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#5b8cff 0 240deg,#a78bfa 0 280deg,#ff7ec7 0 320deg,#c6c3ff 0)}
+.tabs :is(button,a):hover{background:var(--soft)}
+.tabs :is([aria-pressed=true],[aria-current=page]){height:52px;background:var(--c);border-bottom-color:var(--c)}
+.tabs .ink:is([aria-pressed=true],[aria-current=page]){background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
+.tabs :is([aria-pressed=true],[aria-current=page]) small{color:inherit}
+.tabs button[aria-pressed=true]:not(.all) :global(.sw){display:grid;place-items:center;background:#fff}
+.tabs button[aria-pressed=true]:not(.all) :global(.sw):after{content:"\2713";font-size:12px;font-weight:800;line-height:1;color:#111}
+.panel{border-top-left-radius:0;overflow:hidden}
+.tph{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 20px;background:var(--c,var(--ink));color:var(--ink);border-bottom:var(--bw) solid var(--ink)}
+.tph.ink{color:#fff}
+.tph h2{font:800 26px/1.1 var(--head);letter-spacing:-.02em}
+.tph p{font-weight:600;margin-top:2px}
+.tph .tphint{font-weight:500;font-size:14px;opacity:.85;margin-top:4px}
+.sws{display:flex;gap:4px;margin-bottom:8px}
+.sws :global(.sw){width:18px;height:18px;border-radius:5px}

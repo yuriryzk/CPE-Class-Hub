@@ -1,0 +1,9 @@
+.pad{padding:20px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:14px;font-weight:700;padding:12px 16px;background:var(--soft);border-bottom:var(--bw) solid var(--ink)}
+.tbl td{padding:14px 16px;border-top:1.5px solid #cfcfca;vertical-align:middle}
+.tbl tbody tr:first-child td{border-top:0}
+.tbl td:first-child{font-weight:700;border-left:8px solid var(--c)}
+.tbl a{font-weight:700;text-underline-offset:3px}
+.past{filter:grayscale(1);opacity:.6}
+@media(max-width:640px){.pad{padding:14px}.tbl{display:block;overflow-x:auto}}
