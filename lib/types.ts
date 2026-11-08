@@ -1,0 +1,58 @@
+// Row shapes as returned by Supabase: uuids, dates and times are strings.
+export type Course = {
+  id: string;
+  slot: number;
+  name: string;
+  code: string;
+  color: string;
+};
+
+export type Slot = {
+  id: string;
+  course_id: string;
+  weekday: number; // 1 = Monday ... 7 = Sunday
+  starts_at: string; // 'HH:MM:SS'
+  ends_at: string;
+  room: string | null;
+  lab_group: '' | 'G1' | 'G2';
+};
+
+export type Item = {
+  id: string;
+  course_id: string;
+  kind: 'quiz_exam' | 'due' | 'no_class' | 'extra_class';
+  title: string;
+  on_date: string; // 'YYYY-MM-DD'
+  at_time: string | null;
+  notes: string | null;
+  moved_from_date: string | null;
+  moved_from_time: string | null;
+  class_slot_id: string | null;
+};
+
+export type Notice = {
+  id: string;
+  course_id: string;
+  title: string;
+  body: string;
+  posted_on: string;
+  pinned: boolean;
+  done: boolean;
+  calendar_item_id: string | null;
+  created_by: string | null;
+};
+
+export type FileRow = {
+  id: string;
+  course_id: string | null;
+  title: string;
+  file_type: string;
+  week_label: string | null;
+  url: string | null;
+  storage_path: string | null;
+  size_bytes: number | null;
+  mime_type: string | null;
+};
+
+export type Term = { starts_on: string; week_count: number };
+export type TermBreak = { starts_on: string; label: string };

@@ -1,0 +1,2 @@
+-- Local-only data, applied by `supabase db reset`, never pushed to production.
+-- Later tasks add e2e fixtures here.
