@@ -41,3 +41,5 @@
 .row{grid-template-columns:84px minmax(0,1fr)}
 .acts{grid-column:2;justify-content:flex-start}
 }
+.dayhd{padding:8px 18px;background:var(--soft);border-top:1.5px solid #cfcfca;font:800 15px/1 var(--head)}
+.rh+div>.dayhd{border-top:0}

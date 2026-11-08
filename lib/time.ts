@@ -71,3 +71,6 @@ export function formatShort(d: string): string {
   const p = parts(d);
   return `${p.wd.slice(0, 3)} ${p.day} ${p.month.slice(0, 3)}`;
 }
+
+/** Monday to Sunday; DB weekday = index + 1 */
+export const WEEKDAYS = [...DAYS.slice(1), DAYS[0]];

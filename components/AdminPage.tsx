@@ -5,6 +5,7 @@ import s from "./Admin.module.css";
 const TABS = [
   ["notices", "Notice"],
   ["calendar", "Calendar"],
+  ["classes", "Class"],
 ] as const;
 
 /** Admin layout: tabs and the form on the left, the list on the right. */

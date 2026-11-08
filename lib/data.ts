@@ -76,3 +76,9 @@ export async function loadItems(): Promise<Item[]> {
   const db = await serverClient();
   return run("calendar", db.from("calendar_items").select("*").order("on_date").order("at_time", { nullsFirst: true }));
 }
+
+/** Every weekly class, for the admin list. */
+export async function loadSlots(): Promise<Slot[]> {
+  const db = await serverClient();
+  return run("classes", db.from("class_slots").select("*").order("starts_at"));
+}

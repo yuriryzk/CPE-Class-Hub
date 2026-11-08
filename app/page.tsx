@@ -1,3 +1,4 @@
+import { getOfficer } from "@/lib/auth";
 import { loadCourses, loadFiles, loadUpcoming, loadWeek, LoadError } from "@/lib/data";
 import { resolvePicks } from "@/lib/picks";
 import { addDays, formatLong, formatShort, formatUS, manilaNowMinutes, manilaToday, sundayOf } from "@/lib/time";
@@ -33,8 +34,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const today = manilaToday();
   const weekStart = sundayOf(isDate(weekParam) ? weekParam : today);
   const weekEnd = addDays(weekStart, 6);
-  const [courses, week, upcoming, files] = await Promise.all([
-    orNull(loadCourses()), orNull(loadWeek(weekStart)), orNull(loadUpcoming(today)), orNull(loadFiles()),
+  const [courses, week, upcoming, files, officer] = await Promise.all([
+    orNull(loadCourses()), orNull(loadWeek(weekStart)), orNull(loadUpcoming(today)), orNull(loadFiles()), getOfficer(),
   ]);
   const list: Course[] = courses ?? [];
   const sel = resolvePicks(course ?? null, null, list).ids;
@@ -74,7 +75,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           today={today}
         />
       )}
-      <DetailsDialog week={week} upcoming={upcoming ?? []} courses={list} files={files} />
+      <DetailsDialog week={week} upcoming={upcoming ?? []} courses={list} files={files} isOfficer={!!officer} />
     </main>
   );
 }

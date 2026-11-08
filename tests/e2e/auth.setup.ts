@@ -59,4 +59,6 @@ setup("officer and viewer sessions", async () => {
     const { error: e } = await admin.from(table).delete().like("title", "E2E %");
     if (e) throw e;
   }
+  const { error: e } = await admin.from("class_slots").delete().like("room", "E2E %");
+  if (e) throw e;
 });
