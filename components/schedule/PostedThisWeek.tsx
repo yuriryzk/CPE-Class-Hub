@@ -2,14 +2,14 @@
 import Link from "next/link";
 import { formatShort } from "@/lib/time";
 import type { Course, Item, Notice } from "@/lib/types";
-import { isPastNotice } from "@/lib/week";
+import { isPastNotice, sortNotices } from "@/lib/week";
 import { openDetail } from "./DetailsDialog";
 import { KIND, pgTime } from "./EventCard";
 import s from "./PostedThisWeek.module.css";
 
-/** Notices posted in the shown week, newest first. */
+/** Notices posted in the shown week: active before past, then pinned, then newest. */
 export default function PostedThisWeek({ notices, items, courses, today }: { notices: Notice[]; items: Item[]; courses: Course[]; today: string }) {
-  const list = [...notices].sort((a, b) => b.posted_on.localeCompare(a.posted_on));
+  const list = sortNotices(notices, items, today);
   return (
     <section className={s.posted} aria-labelledby="posted">
       <div className={s.sec}>

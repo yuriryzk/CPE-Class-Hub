@@ -26,6 +26,8 @@ insert into notices (course_id, title, body, posted_on, calendar_item_id) values
   ((select id from courses where code = 'CNS'), 'Quiz 1 on Tuesday', 'Bring a pen. Covers chapters 1 and 2.', '2026-11-15',
     (select id from calendar_items where title = 'Quiz 1: OSI model')),
   ((select id from courses where code = 'LAWS'), 'Read the code of ethics', 'Read sections 1 to 3 before Thursday.', '2026-11-16', null);
+insert into notices (course_id, title, body, posted_on, done) values
+  ((select id from courses where code = 'PM'), 'Group list submitted', 'All groups are in. Thank you.', '2026-11-17', true);
 
 insert into files (course_id, title, file_type, url) values
   ((select id from courses where code = 'CNS'), 'Packet Tracer download', 'Link', 'https://www.netacad.com'),

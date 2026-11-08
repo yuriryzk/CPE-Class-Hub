@@ -62,3 +62,9 @@ test("phone width has no sideways page scroll", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test("posted this week puts done notices after active ones", async ({ page }) => {
+  await page.goto("/?week=2026-11-15");
+  const titles = page.getByRole("region", { name: "Posted this week" }).getByRole("heading", { level: 3 });
+  await expect(titles).toHaveText(["Read the code of ethics", "Quiz 1 on Tuesday", "Group list submitted"]);
+});
