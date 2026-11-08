@@ -52,6 +52,16 @@ Each phase ends with something deployed and usable.
 Out of scope for all phases: grades, attendance, comments or reactions, multiple sections or year levels,
 student accounts, email notifications, archiving past semesters, analytics.
 
+### Planned features (not yet placed in a phase)
+
+- **General files:** a "General" tab on Files, before the course tabs, for class-wide files such as master
+  lists and group lists. Files gain an optional course (none = General).
+- **Notices list view:** a switch on Notices between the current cards and a detailed list (one row per notice:
+  course code, title, posted date, calendar link, status).
+- **Download the schedule as an image:** a button on Schedule that saves the shown week, for the selected
+  courses, as a PNG. The site remembers the courses a visitor last picked; how it remembers is still to be
+  decided.
+
 ## 3. Architecture
 
 ```
@@ -99,10 +109,10 @@ unless noted. Times of day are Postgres `time`; dates are `date` (Asia/Manila ca
 | --- | --- | --- |
 | slot | smallint | 1–9, unique; decides order and colour |
 | name | text | 1–80 characters |
-| code | text | 1–8 characters, uppercase letters, digits and hyphen, unique |
-| color | text | fixed per slot (the prototype's nine colours); not editable in the app |
+| code | text | 1–8 characters, letters (either case, kept as typed, such as "microP"), digits and hyphen, unique |
+| color | text | fixed per slot, in this order: red #ff6b6b, orange #ff9f43, yellow #ffd93d, yellow-green #b8e62e, green #3ddc97, blue #5b8cff, purple #a78bfa, pink #ff7ec7, lavender #c6c3ff; not editable in the app |
 
-Seeded with nine placeholder rows during setup. Never inserted or deleted from the app.
+Seeded during setup with the nine courses of the semester, in slot order: Microprocessors (microP), Project Management (PM), CpE Laws and Professional Practice (LAWS), Basic Occupational Health and Safety (BOHS), Introduction to HDL (HDL), Computer Networks and Security (CNS), Methods of Research (MOR), Computer Engineering Drafting and Design (CEDD), Elective 1 (ELEC). Never inserted or deleted from the app.
 
 ### `class_slots` (the weekly schedule)
 | column | type | rules |
@@ -183,14 +193,17 @@ Seeded with the values above. Officers can change them under Admin → Courses (
 ### Derived rules (in `lib/week.ts`, unit tested)
 
 - **A day's entries:** that weekday's class slots, plus calendar items on that date, plus notices posted that
-  date that are not linked to a calendar item. Sorted by time; untimed items first, notices last.
+  date that are not linked to a calendar item. Sorted by start time. An untimed item takes the start time of
+  that course's class that day (so a "No class" sits where the cancelled class was); otherwise untimed items and
+  notices go after the timed entries.
 - **Cancelled class:** a `no_class` item for a course on a date marks that course's slots on that date as
   cancelled. They still show, struck through.
 - **Notice is past:** `done` is true, or it is linked to a calendar item whose date is before today.
   Past notices sort after active ones and are greyed out.
-- **Grouping:** on each day, entries of the same course share one box (the course's tag and name on top, its
-  entries in time order inside, each still opening the details panel). A course with one entry that day shows a
-  single card.
+- **Grouping:** on each day, entries of the same course share one box (only the course's short code on top, like
+  a single card's tag; its entries in time order inside, each still opening the details panel). The box sits at
+  its earliest entry's start time among the day's other entries. A course with one entry that day shows a single
+  card.
 - **Term week number:** for the week starting on Sunday `w`: before `term.starts_on`, no number; a week listed
   in `term_breaks`, that break's label; otherwise the number of weeks since `term.starts_on`, plus one, minus the
   break weeks before `w`, as long as it is at most `term.week_count`. With the seeded values, Week 1 is
@@ -233,7 +246,7 @@ even though visitors cannot.
 | `/admin` | officer | Redirects to `/admin/notices` |
 | `/admin/notices` | officer | Post / edit notice (with the Calendar option: none, link existing, add new), list with Edit, Mark done, Delete |
 | `/admin/calendar` | officer | Add / edit one-off items with notes; editing the date or time marks the item as moved; list with Edit, Delete |
-| `/admin/class-times` | officer | Weekly class times grouped by day; add, edit, delete |
+| `/admin/classes` | officer | "Class": weekly classes grouped by day; add, edit, delete |
 | `/admin/files` | officer | Add / edit links (phase 1) and uploads (phase 2); list |
 | `/admin/courses` | officer | Rename the nine courses and codes (8 characters at most) |
 | `/admin/officers` | head officer | Add or remove officers by email |

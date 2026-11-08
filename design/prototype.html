@@ -86,7 +86,7 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .courses button .nm b{display:block;font-size:14px;font-weight:700}
 .courses button .nm small{display:block;font-size:13px;color:var(--muted)}
 .courses button .n{font-weight:700;font-size:14px;min-width:20px;text-align:right}
-.courses .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)} /* the nine course colours as one swatch */
+.courses .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#5b8cff 0 240deg,#a78bfa 0 280deg,#ff7ec7 0 320deg,#c6c3ff 0)} /* the nine course colours as one swatch */
 
 .calhd{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;margin-bottom:12px}
 .calhd h2{font:800 26px/1 var(--head);letter-spacing:-.02em}
@@ -140,14 +140,14 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .chips button .sw{width:24px;height:24px;border-radius:999px;border-width:1.5px}
 .chips button:hover{background:var(--soft)}
 .chips button[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:2px 2px 0 #888}
-.chips .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)}
+.chips .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#5b8cff 0 240deg,#a78bfa 0 280deg,#ff7ec7 0 320deg,#c6c3ff 0)}
 
 /* Course tabs: folder tabs sitting on the panel below; the chosen one takes its course colour */
 .ctabs{display:flex;gap:6px;overflow-x:auto;align-items:flex-end;padding-right:6px;position:relative;z-index:1;margin-bottom:-2.5px}
 .ctabs button{flex:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:10px 10px 0 0;background:#fff;cursor:pointer;font-weight:700;font-size:15px}
 .ctabs button small{font-size:13px;font-weight:600;color:var(--muted)}
 .ctabs button .sw{width:18px;height:18px;border-radius:5px;border-width:1.5px}
-.ctabs .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#2ec4d6 0 240deg,#5b8cff 0 280deg,#a78bfa 0 320deg,#ff7ec7 0)}
+.ctabs .all .sw{background:conic-gradient(#ff6b6b 0 40deg,#ff9f43 0 80deg,#ffd93d 0 120deg,#b8e62e 0 160deg,#3ddc97 0 200deg,#5b8cff 0 240deg,#a78bfa 0 280deg,#ff7ec7 0 320deg,#c6c3ff 0)}
 .ctabs button:hover{background:var(--soft)}
 .ctabs button[aria-pressed=true],.ctabs button[aria-selected=true]{height:52px;background:var(--c);border-bottom-color:var(--c)}
 .ctabs button.all[aria-pressed=true],.ctabs button.all[aria-selected=true]{background:var(--ink);color:#fff;border-bottom-color:var(--ink)}
@@ -160,6 +160,7 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 .tph .btn{margin-left:auto}
 .tph:not([style]) .btn{background:#fff;color:var(--ink);box-shadow:3px 3px 0 #888}
 .tpb{padding:20px}
+.tph .tphint{font-weight:500;font-size:14px;opacity:.85;margin-top:4px}
 .ctabs button[aria-pressed=true]:not(.all) .sw,.courses button[aria-pressed=true]:not(.all) .sw{display:grid;place-items:center;background:#fff}
 .ctabs button[aria-pressed=true]:not(.all) .sw:after,.courses button[aria-pressed=true]:not(.all) .sw:after{content:"\2713";font-size:12px;font-weight:800;line-height:1;color:#111}
 .tph .sws{display:flex;gap:4px;margin-bottom:8px}.tph .sws .sw{width:18px;height:18px;border-radius:5px}
@@ -310,7 +311,7 @@ main{padding-top:22px;padding-bottom:100px}
 <main id="app"></main>
 <dialog id="dlg" class="dlg"></dialog>
 <script>
-const $=s=>document.querySelector(s),KEY='classhub-v4';
+const $=s=>document.querySelector(s),KEY='classhub-v5';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const dt=s=>new Date(s+'T00:00');
@@ -333,53 +334,53 @@ const KLABEL={Lesson:'Extra class',Test:'Quiz/exam',Due:'Due',Holiday:'No class'
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const CODE_MAX=8;
 // Nine course colours, one per slot, each 6:1 or better against black text
-const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#2ec4d6','#5b8cff','#a78bfa','#ff7ec7'];
+const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#5b8cff','#a78bfa','#ff7ec7','#c6c3ff'];
 let S,weekStart=sun(today),fc='all',sel=[],adm='ann',editSlot=null,editAnn=null,editItem=null;
 
 // Sample semester: placeholder course names (renamed under Admin → Courses), a weekly timetable and this week's one-offs
-function seed(){const m=mon(today),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
+function seed(){const m=addD(sun(today),1),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
 sl=(course,day,start,end,room)=>({id:uid(),course,day,start,end,room}),
 it=(course,kind,title,d,time,notes)=>({id:uid(),course,kind,title,date:addD(m,d),time:time||'',notes:notes||''});
 const sched=[
-it('os','Test','Process scheduling quiz',1,'1:00 PM','During class. Covers FCFS, SJF and round robin.'),
-it('mpu','Due','Lab 3 report',2,'5:00 PM','Submit the PDF to the course page.'),
-it('net','Test','Subnetting quiz',3,'9:00 AM','Uses Packet Tracer on your own laptop.'),
-it('ddc','Test','Midterm exam',4,'8:00 AM','Modules 1 to 4. Bring a scientific calculator.'),
-it('fcs','Holiday','No class',4,'','Faculty meeting. Read chapter 5 instead.'),
-it('res','Due','Proposal draft',4,'11:59 PM','Use the proposal template in Files.'),
-it('swd','Due','Sprint 1 demo video',5,'11:59 PM','Three minutes at most.'),
-it('mpu','Test','Midterm exam',8,'7:30 AM',''),
-it('emg','Due','Gantt chart',9,'5:00 PM',''),
-it('emb','Lesson','Make-up lab',10,'1:00 PM','Replaces the lab missed in week 2.')];
+it('hdl','Test','Verilog basics quiz',1,'1:00 PM','During class. Covers modules, ports and assign statements.'),
+it('micro','Due','Lab 3 report',2,'5:00 PM','Submit the PDF to the course page.'),
+it('cns','Test','Subnetting quiz',3,'9:00 AM','Uses Packet Tracer on your own laptop.'),
+it('laws','Test','Midterm exam',4,'8:00 AM','Lessons 1 to 4.'),
+it('bohs','Holiday','No class',4,'','Faculty meeting. Read chapter 5 instead.'),
+it('mor','Due','Proposal draft',4,'11:59 PM','Use the proposal template in Files.'),
+it('cedd','Due','Floor plan drawing',5,'11:59 PM','Submit the CAD file and a PDF.'),
+it('micro','Test','Midterm exam',8,'7:30 AM',''),
+it('pm','Due','Gantt chart',9,'5:00 PM',''),
+it('hdl','Lesson','Make-up lab',10,'1:00 PM','Replaces the lab missed in week 2.')];
 sched[1].movedFrom={date:addD(m,1),time:'5:00 PM'};
 const byT=t=>sched.find(x=>x.title===t);
 return{
-courses:[c('mpu','Microprocessors','MPU',0),c('emb','Embedded Systems','EMB',1),c('net','Computer Networks and Security','NET',2),c('ddc','Data and Digital Communications','DDC',3),c('os','Operating Systems','OS',4),c('fcs','Feedback and Control Systems','FCS',5),c('swd','Software Design','SWD',6),c('res','Methods of Research','RES',7),c('emg','Engineering Management','EMG',8)],
+courses:[c('micro','Microprocessors','microP',0),c('pm','Project Management','PM',1),c('laws','CpE Laws and Professional Practice','LAWS',2),c('bohs','Basic Occupational Health and Safety','BOHS',3),c('hdl','Introduction to HDL','HDL',4),c('cns','Computer Networks and Security','CNS',5),c('mor','Methods of Research','MOR',6),c('cedd','Computer Engineering Drafting and Design','CEDD',7),c('elec','Elective 1','ELEC',8)],
 slots:[
-sl('mpu',0,'7:30 AM','9:00 AM','Room 304'),sl('net',0,'10:30 AM','12:00 PM','Comp Lab 2'),sl('res',0,'1:00 PM','2:30 PM','Room 210'),
-sl('emb',1,'8:00 AM','11:00 AM','Lab 1'),sl('ddc',1,'11:00 AM','12:30 PM','Room 305'),sl('os',1,'1:00 PM','2:30 PM','Room 306'),
-sl('fcs',2,'7:30 AM','9:00 AM','Room 304'),sl('swd',2,'10:30 AM','12:00 PM','Comp Lab 3'),sl('mpu',2,'1:00 PM','4:00 PM','Lab 2'),
-sl('net',3,'9:00 AM','10:30 AM','Comp Lab 2'),sl('emg',3,'1:00 PM','2:30 PM','Room 210'),sl('os',3,'3:00 PM','4:30 PM','Room 306'),
-sl('ddc',4,'8:00 AM','9:30 AM','Room 305'),sl('emb',4,'10:30 AM','12:00 PM','Lab 1'),sl('fcs',4,'1:00 PM','2:30 PM','Room 304'),sl('emg',4,'3:00 PM','4:30 PM','Room 210'),
-sl('swd',5,'8:00 AM','11:00 AM','Comp Lab 3'),sl('res',5,'1:00 PM','2:30 PM','Room 210')],
+sl('micro',0,'7:30 AM','9:00 AM','Room 304'),sl('cns',0,'10:30 AM','12:00 PM','Comp Lab 2'),sl('mor',0,'1:00 PM','2:30 PM','Room 210'),
+sl('pm',1,'8:00 AM','11:00 AM','Room 201'),sl('laws',1,'11:00 AM','12:30 PM','Room 305'),sl('hdl',1,'1:00 PM','2:30 PM','Comp Lab 1'),
+sl('bohs',2,'7:30 AM','9:00 AM','Room 304'),sl('cedd',2,'10:30 AM','12:00 PM','Drafting Room'),sl('micro',2,'1:00 PM','4:00 PM','Lab 2'),
+sl('cns',3,'9:00 AM','10:30 AM','Comp Lab 2'),sl('elec',3,'1:00 PM','2:30 PM','Room 210'),sl('hdl',3,'3:00 PM','4:30 PM','Comp Lab 1'),
+sl('laws',4,'8:00 AM','9:30 AM','Room 305'),sl('pm',4,'10:30 AM','12:00 PM','Room 201'),sl('bohs',4,'1:00 PM','2:30 PM','Room 304'),sl('elec',4,'3:00 PM','4:30 PM','Room 210'),
+sl('cedd',5,'8:00 AM','11:00 AM','Drafting Room'),sl('mor',5,'1:00 PM','2:30 PM','Room 210')],
 sched,
 ann:[
-{id:uid(),course:'mpu',title:'Lab 3 moved to Wednesday',body:'The 8086 interfacing lab is now on Wednesday. The lab report is due the same day.',date:addD(m,0),pin:true,done:false,item:byT('Lab 3 report').id},
-{id:uid(),course:'net',title:'Bring your laptops on Thursday',body:'The subnetting quiz uses Packet Tracer. Install it before class.',date:addD(m,1),pin:false,done:false,item:byT('Subnetting quiz').id},
-{id:uid(),course:'ddc',title:'Midterm covers modules 1 to 4',body:'Friday’s midterm covers modules 1 to 4. Bring a scientific calculator.',date:addD(m,2),pin:false,done:false,item:byT('Midterm exam').id},
-{id:uid(),course:'res',title:'Proposal template posted',body:'Use the template in Files for your research proposal draft due Friday.',date:addD(m,2),pin:false,done:false,item:null},
-{id:uid(),course:'os',title:'Quiz on process scheduling',body:'Tuesday’s quiz covers FCFS, SJF and round robin.',date:addD(m,0),pin:false,done:true,item:null},
-{id:uid(),course:'emg',title:'Groups for the term project',body:'Form groups of four and send the list to your class officer by next week.',date:addD(m,3),pin:false,done:false,item:null}],
+{id:uid(),course:'micro',title:'Lab 3 moved to Wednesday',body:'The 8086 interfacing lab is now on Wednesday. The lab report is due the same day.',date:addD(m,0),pin:true,done:false,item:byT('Lab 3 report').id},
+{id:uid(),course:'cns',title:'Bring your laptops on Thursday',body:'The subnetting quiz uses Packet Tracer. Install it before class.',date:addD(m,1),pin:false,done:false,item:byT('Subnetting quiz').id},
+{id:uid(),course:'laws',title:'Midterm covers lessons 1 to 4',body:'Friday’s midterm covers lessons 1 to 4.',date:addD(m,2),pin:false,done:false,item:byT('Midterm exam').id},
+{id:uid(),course:'mor',title:'Proposal template posted',body:'Use the template in Files for your research proposal draft due Friday.',date:addD(m,2),pin:false,done:false,item:null},
+{id:uid(),course:'hdl',title:'Quiz on Verilog basics',body:'Tuesday’s quiz covers modules, ports and assign statements.',date:addD(m,0),pin:false,done:true,item:null},
+{id:uid(),course:'pm',title:'Groups for the term project',body:'Form groups of four and send the list to your class officer by next week.',date:addD(m,3),pin:false,done:false,item:null}],
 res:[
-{id:uid(),course:'mpu',title:'8086 instruction set',cat:'Slides',week:'Week 3',file:'8086-instructions.pdf',url:''},
-{id:uid(),course:'emb',title:'Arduino lab manual',cat:'Lab manual',week:'',file:'arduino-lab-manual.pdf',url:''},
-{id:uid(),course:'net',title:'Packet Tracer download',cat:'Link',week:'',file:'',url:'https://www.netacad.com'},
-{id:uid(),course:'ddc',title:'Modules 1 to 4 reviewer',cat:'Reviewer',week:'Week 4',file:'ddc-reviewer.pdf',url:''},
-{id:uid(),course:'os',title:'Scheduling exercises',cat:'Worksheet',week:'Week 3',file:'scheduling-exercises.docx',url:''},
-{id:uid(),course:'fcs',title:'Course syllabus',cat:'Syllabus',week:'',file:'fcs-syllabus.pdf',url:''},
-{id:uid(),course:'swd',title:'Sprint 1 brief',cat:'Brief',week:'Week 3',file:'sprint-1-brief.pdf',url:''},
-{id:uid(),course:'res',title:'Proposal template',cat:'Template',week:'Week 4',file:'proposal-template.docx',url:''},
-{id:uid(),course:'emg',title:'Gantt chart example',cat:'Example',week:'',file:'gantt-example.xlsx',url:''}]}}
+{id:uid(),course:'micro',title:'8086 instruction set',cat:'Slides',week:'Week 3',file:'8086-instructions.pdf',url:''},
+{id:uid(),course:'pm',title:'Gantt chart example',cat:'Example',week:'',file:'gantt-example.xlsx',url:''},
+{id:uid(),course:'laws',title:'Lessons 1 to 4 reviewer',cat:'Reviewer',week:'Week 4',file:'laws-reviewer.pdf',url:''},
+{id:uid(),course:'bohs',title:'Course syllabus',cat:'Syllabus',week:'',file:'bohs-syllabus.pdf',url:''},
+{id:uid(),course:'hdl',title:'Verilog exercises',cat:'Worksheet',week:'Week 3',file:'verilog-exercises.docx',url:''},
+{id:uid(),course:'cns',title:'Packet Tracer download',cat:'Link',week:'',file:'',url:'https://www.netacad.com'},
+{id:uid(),course:'mor',title:'Proposal template',cat:'Template',week:'Week 4',file:'proposal-template.docx',url:''},
+{id:uid(),course:'cedd',title:'Drafting standards',cat:'Slides',week:'Week 2',file:'cedd-standards.pdf',url:''},
+{id:uid(),course:'elec',title:'Course outline',cat:'Syllabus',week:'',file:'elec-outline.pdf',url:''}]}}
 function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!S)S=seed()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
@@ -416,7 +417,8 @@ const bySort=l=>[...l].sort((a,b)=>(isPast(a)-isPast(b))||(b.pin-a.pin)||b.date.
 // the one-off items, and notices that are not tied to an item
 function dayItems(d){const brk=typeof termWeek(sun(d))==='string',off=S.sched.filter(x=>x.date===d&&x.kind==='Holiday').map(x=>x.course);
 const cls=(brk?[]:S.slots).filter(s=>s.day===dayIdx(d)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
-const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:mins(x.time)}));
+const at=c=>Math.min(9e3,...cls.filter(o=>o.course===c).map(o=>o.m));
+const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:x.time?mins(x.time):at(x.course)}));
 const nts=S.ann.filter(a=>a.date===d&&!itemOf(a)).map(a=>({t:'note',a,course:a.course,m:1e4}));
 return[...cls,...one,...nts].filter(inSel).sort((p,q)=>p.m-q.m)}
 
@@ -428,7 +430,7 @@ return`<section class="upnext" aria-labelledby="uph"><h2 id="uph" class="uph">Ne
 
 // Items of the same course on the same day share one box, in time order
 function groups(l){const m=new Map();l.forEach(o=>{if(!m.has(o.course))m.set(o.course,[]);m.get(o.course).push(o)});return[...m.values()]}
-function cell(g,d,nx){return g.length===1?card(g[0],d,nx):`<div class="grp" style="${cv(g[0].course)}" role="group" aria-label="${esc(cn(g[0].course))}, ${g.length} items"><p class="gh">${tag(g[0].course)}<span>${esc(cn(g[0].course))}</span></p>${g.map(o=>card(o,d,nx)).join('')}</div>`}
+function cell(g,d,nx){return g.length===1?card(g[0],d,nx):`<div class="grp" style="${cv(g[0].course)}" role="group" aria-label="${esc(cn(g[0].course))}, ${g.length} items"><p class="gh">${tag(g[0].course)}</p>${g.map(o=>card(o,d,nx)).join('')}</div>`}
 
 function card(o,d,nx){
 if(o.t==='slot'){const s=o.s;return`<button type="button" class="ev k-Lesson${o.cx?' cx':''}" style="${cv(s.course)}" data-open="slot:${s.id}:${d}">${tag(s.course)}<b>${esc(cn(s.course))}</b><small><i>${o.cx?'Cancelled':'Class'}</i>${esc(span(s.start,s.end))}</small><small>${esc(s.room)}</small></button>`}
@@ -455,17 +457,17 @@ function noteCard(a){const x=itemOf(a),p=isPast(a);return`<article class="box no
 const ctabs=(l,label,multi)=>{const on=id=>multi?(id==='all'?!sel.length:sel.includes(id)):(id==='all'?fc==='all':fc===id),at=multi?'data-sel':'data-fc',st=multi?'aria-pressed':'role="tab" aria-selected';
 return`<div class="ctabs" role="${multi?'group':'tablist'}" aria-label="${label}"><button type="button" class="all" ${at}="all" ${st}="${on('all')}"><span class="sw" aria-hidden="true"></span>All <small>${l.length}</small></button>${S.courses.map(c=>`<button type="button" ${at}="${c.id}" ${st}="${on(c.id)}" style="${cv(c.id)}" title="${esc(c.name)}">${sw(c.id)}${esc(c.code)} <small>${l.filter(x=>x.course===c.id).length}</small></button>`).join('')}</div>`};
 // Panel header: black for all courses, the course's colour for one, white with swatches for several
-const tabHead=(n,one,many,act,ids)=>{const k=ids.length,head=k===0?'All courses':k===1?esc(cn(ids[0])):andList(codes(ids));
-return`<div class="tph"${k===0?'':` style="${k===1?cv(ids[0]):'--c:#fff'}"`}><div>${k>1?`<p class="sws">${ids.map(sw).join('')}</p>`:''}<h2>${head}</h2><p>${plural(n,one,many)}${k===0?' across '+S.courses.length+' courses':k>1?' across '+k+' courses':''}</p></div>${act}</div>`};
+const tabHead=(n,one,many,act,ids,hint)=>{const k=ids.length,head=k===0?'All courses':k===1?esc(cn(ids[0])):andList(codes(ids));
+return`<div class="tph"${k===0?'':` style="${k===1?cv(ids[0]):'--c:#fff'}"`}><div>${k>1?`<p class="sws">${ids.map(sw).join('')}</p>`:''}<h2>${head}</h2><p>${plural(n,one,many)}${k===0?' across '+S.courses.length+' courses':k>1?' across '+k+' courses':''}</p>${hint?`<p class="tphint">${hint}</p>`:''}</div>${act}</div>`};
 function vAnn(){const l=bySort(S.ann).filter(inSel);
 const h=l.length?`<div class="notes tpb">${l.map(noteCard).join('')}</div>`:`<p class="empty">No notices for ${sel.length?andList(codes(sel)):'any course'} yet. Post one from Admin.</p>`;
-return`<div class="title"><h1>Notices</h1><p class="sub">Newest first, pinned on top. Finished notices are greyed out at the end. Tap several courses to see them together.</p></div>${ctabs(S.ann,'Show notices from these courses',true)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'notice','notices','<a class="btn p" href="#admin" data-goadm="ann">Post a notice</a>',sel)}${h}</section>`}
+return`<div class="title"><h1>Notices</h1></div>${ctabs(S.ann,'Show notices from these courses',true)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'notice','notices','<a class="btn p" href="#admin" data-goadm="ann">Post a notice</a>',sel,'Tap several courses to see them together')}${h}</section>`}
 
 const fileCell=r=>r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">Open link ↗</a>`:`<span class="m">${esc(r.file||'No file attached')}</span>`;
 const cIdx=id=>S.courses.findIndex(c=>c.id===id);
 function vRes(){const l=S.res.filter(inFc).sort((a,b)=>cIdx(a.course)-cIdx(b.course)||a.title.localeCompare(b.title));
 const body=l.map(r=>`<tr style="${cv(r.course)}"><td>${esc(r.title)}</td><td>${tag(r.course)}</td><td>${esc(r.cat)}</td><td class="m${r.week?'':' nw'}">${r.week?esc(r.week):'—'}</td><td>${fileCell(r)}</td></tr>`).join('');
-return`<div class="title"><h1>Files</h1><p class="sub">Slides, readings, templates and links, sorted by course.</p></div>${ctabs(S.res,'Files by course',false)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'file or link','files and links','<a class="btn p" href="#admin" data-goadm="res">Add a file</a>',fc==='all'?[]:[fc])}
+return`<div class="title"><h1>Files</h1></div>${ctabs(S.res,'Files by course',false)}<section class="box tabpanel" role="tabpanel">${tabHead(l.length,'file or link','files and links','<a class="btn p" href="#admin" data-goadm="res">Add a file</a>',fc==='all'?[]:[fc])}
 ${l.length?`<table class="tbl"><thead><tr><th scope="col">What it is</th><th scope="col">Course</th><th scope="col">Type</th><th scope="col">Week</th><th scope="col">Open</th></tr></thead><tbody>${body}</tbody></table>`:`<p class="empty">No files for ${fc==='all'?'any course':esc(cn(fc))} yet. Add one from Admin.</p>`}</section>`}
 
 // Details panel for a regular class, a one-off item or a notice
@@ -499,20 +501,20 @@ ann:`<form class="box panel${ea?' editing':''}" id="fa"><h2>${ea?'Edit notice':'
 <div class="opt-link"><label>Calendar item<select name="linkItem"><option value="">Choose an item</option>${itemOpts}</select></label>${ea&&ea.item?'<p class="hint">To move the event itself, edit it in the Calendar tab.</p>':''}</div>
 <div class="opt-new"><label>What is it?<select name="nkind">${kopt()}</select></label><div class="f2"><label>Date<input type="date" name="ndate" value="${today}"></label><label>Time (optional)<input name="ntime" placeholder="8:00 AM"></label></div></div></fieldset>
 <label class="c" style="margin-top:16px"><input type="checkbox" name="pin" ${ea&&ea.pin?'checked':''}>Pin it to the top</label><label class="c"><input type="checkbox" name="push" ${ea?'':'checked'}>${ea?'Send a push notification about the change':'Send a push notification'}</label><button class="btn p">${ea?'Save changes':'Post notice'}</button>${ea?cancel:''}</form>`,
-sched:`<form class="box panel${ei?' editing':''}" id="fs"><h2>${ei?'Edit calendar item':'Add to the calendar'}</h2><p class="hint">${ei?'Changing the date or time marks it as moved.':'For one-off things. Regular classes go in Class times.'}</p><label>Course<select name="course">${opts(ei&&ei.course)}</select></label><label>What is it?<select name="kind">${kopt(ei&&ei.kind)}</select></label><label>Title<input name="title" value="${ei?esc(ei.title):''}" required></label><div class="f2"><label>Date<input type="date" name="date" value="${ei?ei.date:today}" required></label><label>Time (optional)<input name="time" value="${ei?esc(ei.time):''}" placeholder="8:00 AM"></label></div>${ei&&ei.movedFrom?`<p class="hint">Originally ${dShort(ei.movedFrom.date)}${ei.movedFrom.time?', '+esc(ei.movedFrom.time):''}. Set it back to clear the Moved label.</p>`:''}<label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit">${ei?esc(ei.notes):''}</textarea></label><button class="btn p">${ei?'Save changes':'Add to the calendar'}</button>${ei?cancel:''}</form>`,
-slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class time':'Add a class time'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
+sched:`<form class="box panel${ei?' editing':''}" id="fs"><h2>${ei?'Edit calendar item':'Add to the calendar'}</h2><p class="hint">${ei?'Changing the date or time marks it as moved.':'For one-off things. Regular classes go in Class.'}</p><label>Course<select name="course">${opts(ei&&ei.course)}</select></label><label>What is it?<select name="kind">${kopt(ei&&ei.kind)}</select></label><label>Title<input name="title" value="${ei?esc(ei.title):''}" required></label><div class="f2"><label>Date<input type="date" name="date" value="${ei?ei.date:today}" required></label><label>Time (optional)<input name="time" value="${ei?esc(ei.time):''}" placeholder="8:00 AM"></label></div>${ei&&ei.movedFrom?`<p class="hint">Originally ${dShort(ei.movedFrom.date)}${ei.movedFrom.time?', '+esc(ei.movedFrom.time):''}. Set it back to clear the Moved label.</p>`:''}<label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit">${ei?esc(ei.notes):''}</textarea></label><button class="btn p">${ei?'Save changes':'Add to the calendar'}</button>${ei?cancel:''}</form>`,
+slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class':'Add a class'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
 res:`<form class="box panel" id="fr"><h2>Add a file</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Type<input name="cat" placeholder="Slides" required></label><label>Week (optional)<input name="week" placeholder="Week 3"></label></div><label>File<input type="file" name="file"></label><label>Or a link<input type="url" name="url" placeholder="https://"></label><button class="btn p">Add file</button></form>`,
 courses:`<form class="box panel" id="fcs"><h2>Your 9 courses</h2><p class="hint">Type each course’s name and a short code of up to ${CODE_MAX} characters. Each keeps its colour everywhere.</p>${S.courses.map((c,i)=>`<div class="crow">${sw(c.id)}<input name="name${i}" value="${esc(c.name)}" aria-label="Course ${i+1} name" required><input name="code${i}" value="${esc(c.code)}" aria-label="Course ${i+1} code" maxlength="${CODE_MAX}" required></div>`).join('')}<button class="btn p">Save courses</button></form>`};
 let list;
 if(adm==='ann')list=['Notices',S.ann.length,bySort(S.ann).map(a=>{const x=itemOf(a),p=isPast(a);
 return row(a.course,esc(a.title)+(p?`<span class="st">${a.done?'Done':'Passed'}</span>`:a.pin?'<span class="st" style="background:#111;color:#fff">Pinned</span>':''),`${fmt(a.date,{day:'numeric',month:'short'})}${x?' · on the calendar '+dShort(x.date):''}`,`<button class="btn s" data-edit-ann="${a.id}" type="button">Edit</button><button class="btn s" data-done="${a.id}" type="button">${a.done?'Undo done':'Mark done'}</button>${del('ann:'+a.id)}`,(p?'past':'')+(a.id===editAnn?' editing':''))}).join('')];
 else if(adm==='sched')list=['Calendar',sch.length,sch.map(x=>row(x.course,esc(x.title),`${KLABEL[x.kind]} · ${dShort(x.date)}${x.time?' · '+esc(x.time):''}${x.movedFrom?' · moved from '+dShort(x.movedFrom.date):''}${noteOf(x)?' · has a notice':''}`,`<button class="btn s" data-edit-item="${x.id}" type="button">Edit</button>${del('sched:'+x.id)}`,(x.date<today?'past':'')+(x.id===editItem?' editing':''))).join('')];
-else if(adm==='slots')list=['Weekly class times',S.slots.length,DAYS.map((n,i)=>{const l=S.slots.filter(s=>s.day===i).sort((a,b)=>mins(a.start)-mins(b.start));
+else if(adm==='slots')list=['Weekly classes',S.slots.length,DAYS.map((n,i)=>{const l=S.slots.filter(s=>s.day===i).sort((a,b)=>mins(a.start)-mins(b.start));
 return l.length?`<div class="dayhd">${n}</div>`+l.map(s=>row(s.course,esc(span(s.start,s.end)),`${esc(cn(s.course))}${s.room?' · '+esc(s.room):''}`,`<button class="btn s" data-edit-slot="${s.id}" type="button">Edit</button>${del('slots:'+s.id)}`,s.id===editSlot?'editing':'')).join(''):''}).join('')];
 else if(adm==='res')list=['Files',S.res.length,S.res.map(r=>row(r.course,esc(r.title),`${esc(r.cat)}${r.week?' · '+esc(r.week):''}`,del('res:'+r.id))).join('')];
 else list=['Courses',S.courses.length,S.courses.map(c=>row(c.id,esc(c.name),`${plural(S.slots.filter(s=>s.course===c.id).length,'class a week','classes a week')} · ${plural(S.ann.filter(a=>a.course===c.id).length,'notice','notices')} · ${plural(S.res.filter(r=>r.course===c.id).length,'file','files')}`,'')).join('')];
-const [lt,n,rows]=list,tabs=[['ann','Notice'],['sched','Calendar'],['slots','Class times'],['res','File'],['courses','Courses']];
-return`<div class="title"><h1>Admin</h1><p class="sub">Post notices, keep the calendar and weekly schedule up to date, add files</p></div>
+const [lt,n,rows]=list,tabs=[['ann','Notice'],['sched','Calendar'],['slots','Class'],['res','File'],['courses','Courses']];
+return`<div class="title"><h1>Admin</h1></div>
 <div class="adm"><div><div class="seg" role="group" aria-label="What to change">${tabs.map(([k,l])=>`<button type="button" data-adm="${k}" aria-pressed="${adm===k}">${l}</button>`).join('')}</div>${forms[adm]}<p class="proto">This is a prototype. Everything is saved in this browser only. Sign-in, real file uploads and push delivery come with the backend.</p></div>
 <section class="box rows" aria-label="${lt}"><div class="rh">${lt}<span>${plural(n,'item','items')}</span></div>${rows||'<p class="empty">Nothing here yet.</p>'}</section></div>
 <button class="btn reset" id="reset" type="button">Reset sample data</button>`}
@@ -557,8 +559,8 @@ if(editItem){const x=S.sched.find(y=>y.id===editItem);Object.assign(x,v);moveIte
 else{S.sched.push({id:uid(),...v,date:d.date,time});save();render();toast('Added to the calendar')}}
 if(f.id==='fsl'){if(mins(d.start)<0||mins(d.end)<0||mins(d.end)<=mins(d.start)){toast('Use times like 7:30 AM, with the end after the start');return}
 const v={course:d.course,day:+d.day,start:d.start.trim().toUpperCase(),end:d.end.trim().toUpperCase(),room:d.room.trim()};
-if(editSlot){Object.assign(S.slots.find(s=>s.id===editSlot),v);editSlot=null;toast('Class time saved')}else{S.slots.push({id:uid(),...v});toast('Added to the weekly schedule')}save();render()}
-if(f.id==='fcs'){S.courses.forEach((c,i)=>{c.name=d['name'+i].trim()||c.name;c.code=(d['code'+i].trim()||c.code).toUpperCase().slice(0,CODE_MAX)});save();render();toast('Courses saved')}});
+if(editSlot){Object.assign(S.slots.find(s=>s.id===editSlot),v);editSlot=null;toast('Class saved')}else{S.slots.push({id:uid(),...v});toast('Added to the weekly schedule')}save();render()}
+if(f.id==='fcs'){S.courses.forEach((c,i)=>{c.name=d['name'+i].trim()||c.name;c.code=(d['code'+i].trim()||c.code).slice(0,CODE_MAX)});save();render();toast('Courses saved')}});
 function askPush(){if(!window.Notification){toast('This browser does not support notifications');return}
 Notification.requestPermission().then(p=>{toast(p==='granted'?'Notifications are on':'Notifications are blocked in browser settings');setBell()}).catch(()=>toast('Could not ask for permission here'))}
 function setBell(){const on=window.Notification&&Notification.permission==='granted';document.querySelectorAll('.bell').forEach(b=>{b.textContent=on?'Notifications on':'Turn on notifications';b.disabled=!!on})}
