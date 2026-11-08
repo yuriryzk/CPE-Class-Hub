@@ -220,9 +220,7 @@ web3 = 30
 [auth.email]
 # Allow/disallow the email provider. When false, users can't sign up or sign in with email.
 # To block new signups only, set enable_signup = false under [auth] instead.
-enabled = true
-# Officers sign in with Google only; is_officer() trusts the JWT email, so no email self-signup.
-enable_signup = false
+enabled = false # Google-only: is_officer() trusts the JWT email, so no email signup
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
