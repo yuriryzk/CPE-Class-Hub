@@ -6,7 +6,7 @@ export type Entry =
   | { t: "slot"; slot: Slot; course: string; m: number; cancelled: boolean }
   | { t: "item"; item: Item; course: string; m: number }
   | { t: "note"; notice: Notice; course: string; m: number };
-export type WeekData = { slots: Slot[]; items: Item[]; notices: Notice[]; term: Term; breaks: TermBreak[] };
+export type WeekData = { slots: Slot[]; items: Item[]; notices: Notice[]; /** items the notices link to, in any week; only `items` places things on days */ linkedItems: Item[]; term: Term; breaks: TermBreak[] };
 
 const UNTIMED = 9000;
 const NOTICE = 10000;

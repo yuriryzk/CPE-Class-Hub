@@ -15,7 +15,7 @@ const item = (id: string, course_id: string, kind: Item["kind"], on_date: string
   ({ id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id });
 const notice = (id: string, over: Partial<Notice> = {}): Notice =>
   ({ id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, ...over });
-const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, term, breaks });
+const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, linkedItems: [], term, breaks });
 const ids = (es: ReturnType<typeof dayEntries>) =>
   es.map((e) => (e.t === "slot" ? e.slot.id : e.t === "item" ? e.item.id : e.notice.id));
 

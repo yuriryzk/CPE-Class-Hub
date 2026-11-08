@@ -42,7 +42,9 @@ export async function loadWeek(weekStart: string): Promise<WeekData> {
     "calendar",
     db.from("notices").select("*").or(ids.length ? `${inWeek},calendar_item_id.in.(${ids.join(",")})` : inWeek),
   );
-  return { slots, items, notices, term, breaks };
+  const linkedIds = notices.flatMap((n) => (n.calendar_item_id ? [n.calendar_item_id] : []));
+  const linkedItems = await loadItemsByIds(linkedIds);
+  return { slots, items, notices, linkedItems, term, breaks };
 }
 
 export async function loadUpcoming(today: string): Promise<Item[]> {
@@ -52,6 +54,13 @@ export async function loadUpcoming(today: string): Promise<Item[]> {
     db.from("calendar_items").select("*").in("kind", ["quiz_exam", "due"]).gte("on_date", today)
       .order("on_date").order("at_time", { nullsFirst: false }).limit(60),
   );
+}
+
+/** Notices linked to the given calendar items, so Next up items show theirs too. */
+export async function loadNoticesForItems(ids: string[]): Promise<Notice[]> {
+  if (!ids.length) return [];
+  const db = await serverClient();
+  return run("calendar", db.from("notices").select("*").in("calendar_item_id", ids));
 }
 
 export async function loadNotices(): Promise<Notice[]> {

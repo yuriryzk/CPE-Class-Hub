@@ -1,5 +1,5 @@
 import { getOfficer } from "@/lib/auth";
-import { loadCourses, loadFiles, loadUpcoming, loadWeek, LoadError } from "@/lib/data";
+import { loadCourses, loadFiles, loadNoticesForItems, loadUpcoming, loadWeek, LoadError } from "@/lib/data";
 import { resolvePicks } from "@/lib/picks";
 import { addDays, formatLong, formatShort, formatUS, manilaNowMinutes, manilaToday, sundayOf } from "@/lib/time";
 import type { Course } from "@/lib/types";
@@ -48,6 +48,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
     + (typeof tw === "string" ? ` · ${tw}, no classes` : "")
     + (codes.length ? ` · showing ${andList(codes)}` : "");
   const up = upcoming ? nextUp(upcoming, today, manilaNowMinutes(), sel) : null;
+  const upNotices = (up && (await orNull(loadNoticesForItems(up.map((i) => i.id))))) || [];
   const calProps = week && { week, courses: list, sel, today, weekStart, nextId: up?.[0]?.id ?? null };
 
   return (
@@ -70,12 +71,12 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       {week && (
         <PostedThisWeek
           notices={week.notices.filter((n) => n.posted_on >= weekStart && n.posted_on <= weekEnd && (!sel.length || sel.includes(n.course_id)))}
-          items={week.items}
+          items={[...week.items, ...week.linkedItems]}
           courses={list}
           today={today}
         />
       )}
-      <DetailsDialog week={week} upcoming={upcoming ?? []} courses={list} files={files} isOfficer={!!officer} />
+      <DetailsDialog week={week} upcoming={upcoming ?? []} upNotices={upNotices} courses={list} files={files} isOfficer={!!officer} />
     </main>
   );
 }

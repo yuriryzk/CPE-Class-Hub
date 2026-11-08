@@ -16,14 +16,15 @@ const EVENT = "classhub:detail";
 /** Open the details panel for a calendar entry. Needs <DetailsDialog /> on the page. */
 export const openDetail = (key: DetailKey) => window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
 
-type Props = { week: WeekData | null; upcoming: Item[]; courses: Course[]; files: FileRow[] | null; isOfficer: boolean };
+type Props = { week: WeekData | null; upcoming: Item[]; upNotices: Notice[]; courses: Course[]; files: FileRow[] | null; isOfficer: boolean };
 
 const at = (date: string, time: string | null) => `${formatLong(date)}${time ? `, ${pgTime(time)}` : ""}`;
 
-export default function DetailsDialog({ week, upcoming, courses, files, isOfficer }: Props) {
+export default function DetailsDialog({ week, upcoming, upNotices, courses, files, isOfficer }: Props) {
   const router = useRouter();
   const ref = useRef<HTMLDialogElement>(null);
   const [key, setKey] = useState<DetailKey | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     const on = (e: Event) => setKey((e as CustomEvent<DetailKey>).detail);
     window.addEventListener(EVENT, on);
@@ -33,8 +34,9 @@ export default function DetailsDialog({ week, upcoming, courses, files, isOffice
     if (key && !ref.current?.open) ref.current?.showModal();
   }, [key]);
 
-  const items = [...(week?.items ?? []), ...upcoming];
-  const notices = week?.notices ?? [];
+  const items = [...(week?.items ?? []), ...(week?.linkedItems ?? []), ...upcoming];
+  const weekNotices = week?.notices ?? [];
+  const notices = [...weekNotices, ...upNotices.filter((u) => !weekNotices.some((n) => n.id === u.id))];
   const today = manilaToday();
   const noteOf = (id: string) => notices.find((n) => n.calendar_item_id === id);
 
@@ -54,14 +56,21 @@ export default function DetailsDialog({ week, upcoming, courses, files, isOffice
         ["Repeats", `Every ${formatLong(key.date).split(" ")[0]}`],
       ];
       const run = async (act: () => Promise<ActionResult>, done: string) => {
-        const r = await act();
-        toast(r.ok ? done : r.message);
-        if (r.ok) router.refresh();
+        setBusy(true);
+        try {
+          const r = await act();
+          toast(r.ok ? done : r.message);
+          if (r.ok) router.refresh();
+        } catch {
+          toast("Couldn't save. Try again.");
+        } finally {
+          setBusy(false);
+        }
       };
       foot = !off
-        ? <button type="button" className="btn s" onClick={() => run(() => cancelSlotOn(slot.id, key.date), `Class cancelled for ${formatShort(key.date)}`)}>Cancel this class on {formatShort(key.date)} only</button>
+        ? <button type="button" className="btn s" disabled={busy} onClick={() => run(() => cancelSlotOn(slot.id, key.date), `Class cancelled for ${formatShort(key.date)}`)}>Cancel this class on {formatShort(key.date)} only</button>
         : off.class_slot_id
-          ? <button type="button" className="btn s" onClick={() => run(() => restoreSlotOn(off.id), "Class restored")}>Restore this class</button>
+          ? <button type="button" className="btn s" disabled={busy} onClick={() => run(() => restoreSlotOn(off.id), "Class restored")}>Restore this class</button>
           : <span>Cancelled for the whole course. Change it under Admin → Calendar.</span>;
       if (off) {
         rows.push(["Why", off.notes || "No class on this day"]);

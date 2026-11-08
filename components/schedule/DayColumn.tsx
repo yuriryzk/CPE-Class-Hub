@@ -20,7 +20,7 @@ export default function DayColumn({ date, entries, week, courses, today, nextId 
       inGroup={inGroup}
       next={e.t === "item" && e.item.id === nextId}
       noticed={e.t === "item" && week.notices.some((n) => n.calendar_item_id === e.item.id)}
-      past={e.t === "note" && isPastNotice(e.notice, week.items, today)}
+      past={e.t === "note" && isPastNotice(e.notice, [...week.items, ...week.linkedItems], today)}
     />
   );
   const groups = groupByCourse(entries);

@@ -68,6 +68,32 @@ test.describe("officer", () => {
     const noticeRow = list(page, "Notices").locator("div", { has: page.getByText(title, { exact: true }) }).filter({ has: page.getByRole("link", { name: "Edit" }) }).last();
     await confirmDelete(page, noticeRow, title);
   });
+
+  test("a notice linked to an item in another week still shows its calendar link", async ({ page }) => {
+    const title = `E2E far item ${Date.now()}`;
+    await page.goto("/admin/notices");
+    const form = page.getByRole("form", { name: "Post a notice" });
+    await form.getByLabel("Course").selectOption({ label: "CNS · Computer Networks and Security" });
+    await form.getByLabel("Title").fill(title);
+    await form.getByLabel("Message").fill("The item is weeks after this notice.");
+    await form.getByLabel("Show it on").fill("2026-11-16");
+    await form.getByLabel("Add it as a new calendar item").check();
+    await form.getByLabel("What is it?").selectOption({ label: "Due" });
+    await form.getByLabel("Date").fill("2026-12-08");
+    await form.getByRole("button", { name: "Post notice" }).click();
+    await expect(page.getByRole("status")).toHaveText("Posted and on the calendar");
+
+    await page.goto("/?week=2026-11-15");
+    const card = page.getByRole("region", { name: "Posted this week" }).getByRole("article").filter({ hasText: title });
+    await expect(card).toContainText(/On the calendar: Due, [A-Z][a-z]{2} 8 Dec/);
+
+    await page.goto("/admin/calendar");
+    const row = list(page, "Calendar").locator("div", { has: page.getByText(title, { exact: true }) }).filter({ has: page.getByRole("link", { name: "Edit" }) }).last();
+    await confirmDelete(page, row, title);
+    await page.goto("/admin/notices");
+    const noticeRow = list(page, "Notices").locator("div", { has: page.getByText(title, { exact: true }) }).filter({ has: page.getByRole("link", { name: "Edit" }) }).last();
+    await confirmDelete(page, noticeRow, title);
+  });
 });
 
 test.describe("signed in, not an officer", () => {
