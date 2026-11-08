@@ -311,7 +311,7 @@ main{padding-top:22px;padding-bottom:100px}
 <main id="app"></main>
 <dialog id="dlg" class="dlg"></dialog>
 <script>
-const $=s=>document.querySelector(s),KEY='classhub-v5';
+const $=s=>document.querySelector(s),KEY='classhub-v6';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const dt=s=>new Date(s+'T00:00');
@@ -335,11 +335,12 @@ const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunda
 const CODE_MAX=8;
 // Nine course colours, one per slot, each 6:1 or better against black text
 const COLOURS=['#ff6b6b','#ff9f43','#ffd93d','#b8e62e','#3ddc97','#5b8cff','#a78bfa','#ff7ec7','#c6c3ff'];
+let grp='';try{grp=localStorage.getItem('classhub-grp')||''}catch(e){}
 let S,weekStart=sun(today),fc='all',sel=[],adm='ann',editSlot=null,editAnn=null,editItem=null;
 
 // Sample semester: placeholder course names (renamed under Admin → Courses), a weekly timetable and this week's one-offs
 function seed(){const m=addD(sun(today),1),c=(id,name,code,i)=>({id,name,code,color:COLOURS[i]}),
-sl=(course,day,start,end,room)=>({id:uid(),course,day,start,end,room}),
+sl=(course,day,start,end,room,g)=>({id:uid(),course,day,start,end,room,g:g||''}),
 it=(course,kind,title,d,time,notes)=>({id:uid(),course,kind,title,date:addD(m,d),time:time||'',notes:notes||''});
 const sched=[
 it('hdl','Test','Verilog basics quiz',1,'1:00 PM','During class. Covers modules, ports and assign statements.'),
@@ -355,14 +356,14 @@ it('hdl','Lesson','Make-up lab',10,'1:00 PM','Replaces the lab missed in week 2.
 sched[1].movedFrom={date:addD(m,1),time:'5:00 PM'};
 const byT=t=>sched.find(x=>x.title===t);
 return{
-courses:[c('micro','Microprocessors','microP',0),c('pm','Project Management','PM',1),c('laws','CpE Laws and Professional Practice','LAWS',2),c('bohs','Basic Occupational Health and Safety','BOHS',3),c('hdl','Introduction to HDL','HDL',4),c('cns','Computer Networks and Security','CNS',5),c('mor','Methods of Research','MOR',6),c('cedd','Computer Engineering Drafting and Design','CEDD',7),c('elec','Elective 1','ELEC',8)],
+courses:[c('micro','Microprocessors','MICROP',0),c('pm','Project Management','PM',1),c('laws','CpE Laws and Professional Practice','LAWS',2),c('bohs','Basic Occupational Health and Safety','BOHS',3),c('hdl','Introduction to HDL','HDL',4),c('cns','Computer Networks and Security','CNS',5),c('mor','Methods of Research','MOR',6),c('cedd','Computer Engineering Drafting and Design','CEDD',7),c('elec','Elective 1','ELEC',8)],
 slots:[
-sl('micro',0,'7:30 AM','9:00 AM','Room 304'),sl('cns',0,'10:30 AM','12:00 PM','Comp Lab 2'),sl('mor',0,'1:00 PM','2:30 PM','Room 210'),
-sl('pm',1,'8:00 AM','11:00 AM','Room 201'),sl('laws',1,'11:00 AM','12:30 PM','Room 305'),sl('hdl',1,'1:00 PM','2:30 PM','Comp Lab 1'),
-sl('bohs',2,'7:30 AM','9:00 AM','Room 304'),sl('cedd',2,'10:30 AM','12:00 PM','Drafting Room'),sl('micro',2,'1:00 PM','4:00 PM','Lab 2'),
-sl('cns',3,'9:00 AM','10:30 AM','Comp Lab 2'),sl('elec',3,'1:00 PM','2:30 PM','Room 210'),sl('hdl',3,'3:00 PM','4:30 PM','Comp Lab 1'),
-sl('laws',4,'8:00 AM','9:30 AM','Room 305'),sl('pm',4,'10:30 AM','12:00 PM','Room 201'),sl('bohs',4,'1:00 PM','2:30 PM','Room 304'),sl('elec',4,'3:00 PM','4:30 PM','Room 210'),
-sl('cedd',5,'8:00 AM','11:00 AM','Drafting Room'),sl('mor',5,'1:00 PM','2:30 PM','Room 210')],
+sl('micro',0,'7:30 AM','9:00 AM','Room 304'),sl('cns',0,'10:30 AM','12:00 PM','Comp Lab 2','G1'),sl('mor',0,'1:00 PM','2:30 PM','Room 210'),
+sl('pm',1,'8:00 AM','11:00 AM','Room 201'),sl('laws',1,'11:00 AM','12:30 PM','Room 305'),sl('hdl',1,'1:00 PM','2:30 PM','Comp Lab 1','G1'),
+sl('bohs',2,'7:30 AM','9:00 AM','Room 304'),sl('cedd',2,'10:30 AM','12:00 PM','Drafting Room'),sl('micro',2,'1:00 PM','4:00 PM','Lab 2','G1'),sl('micro',3,'9:00 AM','12:00 PM','Lab 2','G2'),
+sl('cns',3,'9:00 AM','10:30 AM','Comp Lab 2','G2'),sl('elec',3,'1:00 PM','2:30 PM','Room 210'),sl('hdl',3,'3:00 PM','4:30 PM','Comp Lab 1','G2'),
+sl('laws',4,'8:00 AM','9:30 AM','Room 305'),sl('pm',4,'10:30 AM','12:00 PM','Room 201'),sl('bohs',4,'1:00 PM','2:30 PM','Room 304'),sl('elec',4,'3:00 PM','4:30 PM','Comp Lab 1','G1'),sl('elec',5,'3:00 PM','4:30 PM','Comp Lab 1','G2'),
+sl('cedd',5,'8:00 AM','11:00 AM','Drafting Room','G1'),sl('cedd',2,'1:00 PM','4:00 PM','Drafting Room','G2'),sl('mor',5,'1:00 PM','2:30 PM','Room 210')],
 sched,
 ann:[
 {id:uid(),course:'micro',title:'Lab 3 moved to Wednesday',body:'The 8086 interfacing lab is now on Wednesday. The lab report is due the same day.',date:addD(m,0),pin:true,done:false,item:byT('Lab 3 report').id},
@@ -416,7 +417,7 @@ const bySort=l=>[...l].sort((a,b)=>(isPast(a)-isPast(b))||(b.pin-a.pin)||b.date.
 // Everything on one date: that weekday's regular classes (struck through when a "No class" item covers the course),
 // the one-off items, and notices that are not tied to an item
 function dayItems(d){const brk=typeof termWeek(sun(d))==='string',off=S.sched.filter(x=>x.date===d&&x.kind==='Holiday').map(x=>x.course);
-const cls=(brk?[]:S.slots).filter(s=>s.day===dayIdx(d)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
+const cls=(brk?[]:S.slots).filter(s=>s.day===dayIdx(d)&&!(grp&&s.g&&s.g!==grp)).map(s=>({t:'slot',s,course:s.course,m:mins(s.start),cx:off.includes(s.course)}));
 const at=c=>Math.min(9e3,...cls.filter(o=>o.course===c).map(o=>o.m));
 const one=S.sched.filter(x=>x.date===d).map(x=>({t:'item',x,course:x.course,m:x.time?mins(x.time):at(x.course)}));
 const nts=S.ann.filter(a=>a.date===d&&!itemOf(a)).map(a=>({t:'note',a,course:a.course,m:1e4}));
@@ -433,7 +434,7 @@ function groups(l){const m=new Map();l.forEach(o=>{if(!m.has(o.course))m.set(o.c
 function cell(g,d,nx){return g.length===1?card(g[0],d,nx):`<div class="grp" style="${cv(g[0].course)}" role="group" aria-label="${esc(cn(g[0].course))}, ${g.length} items"><p class="gh">${tag(g[0].course)}</p>${g.map(o=>card(o,d,nx)).join('')}</div>`}
 
 function card(o,d,nx){
-if(o.t==='slot'){const s=o.s;return`<button type="button" class="ev k-Lesson${o.cx?' cx':''}" style="${cv(s.course)}" data-open="slot:${s.id}:${d}">${tag(s.course)}<b>${esc(cn(s.course))}</b><small><i>${o.cx?'Cancelled':'Class'}</i>${esc(span(s.start,s.end))}</small><small>${esc(s.room)}</small></button>`}
+if(o.t==='slot'){const s=o.s;return`<button type="button" class="ev k-Lesson${o.cx?' cx':''}" style="${cv(s.course)}" data-open="slot:${s.id}:${d}">${tag(s.course)}<b>${esc(cn(s.course))}</b><small><i>${o.cx?'Cancelled':'Class'}${s.g?' · '+s.g:''}</i>${esc(span(s.start,s.end))}</small><small>${esc(s.room)}</small></button>`}
 if(o.t==='item'){const x=o.x,n=noteOf(x);return`<button type="button" class="ev k-${x.kind}${nx&&x.id===nx.id?' nx':''}" style="${cv(x.course)}" data-open="item:${x.id}">${tag(x.course)}<b>${esc(x.title)}</b><small><i>${KLABEL[x.kind]}</i>${x.time?esc(x.time):''}${x.movedFrom?'<span class="mv">Moved</span>':''}${n?'<span class="nb">Notice</span>':''}</small></button>`}
 const a=o.a;return`<button type="button" class="ev k-Note${isPast(a)?' cx':''}" style="${cv(a.course)}" data-open="note:${a.id}">${tag(a.course)}<b>${esc(a.title)}</b><small><i>Notice</i></small></button>`}
 
@@ -447,7 +448,7 @@ const selWas=sel;sel=[];const every=days.flatMap(d=>dayItems(d));sel=selWas;
 const per=id=>every.filter(o=>o.course===id).length;
 const list=`<nav class="box courses" aria-label="Your courses"><h2>Your courses</h2><p class="chint">Tap several to see them together</p><button type="button" class="all" data-sel="all" aria-pressed="${!sel.length}"><span class="sw" aria-hidden="true"></span><span class="nm"><b>All courses</b><small>${S.courses.length} this semester</small></span><span class="n">${every.length}</span></button>${S.courses.map(c=>`<button type="button" data-sel="${c.id}" aria-pressed="${sel.includes(c.id)}">${sw(c.id)}<span class="nm"><b>${esc(c.code)}</b><small>${esc(c.name)}</small></span><span class="n" title="Items this week">${per(c.id)}</span></button>`).join('')}</nav>`;
 const key=`<div class="key"><span><i style="background:#fff"></i>Class</span><span><i style="background:#f3f3f0;border-style:dashed"></i>Cancelled</span><span><i style="background:#111"></i>Quiz or exam</span><span><i style="border-style:dashed"></i>Due</span><span><i style="background:repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 6px)"></i>No class</span><span><i style="background:#fffef7"></i>Notice</span><span>Tap any card for details</span></div>`;
-return`<div class="title"><h1>${typeof tw==='number'?'Schedule of Week '+tw:isNow?'This week':'Week of '+fmt(weekStart,{day:'numeric',month:'short'})}</h1><p class="sub">${typeof tw==='number'?dUS(weekStart)+' to '+dUS(end):dLong(weekStart)+' to '+fmt(end,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${typeof tw==='string'?' · '+tw+', no classes':''}${sel.length?' · showing '+andList(codes(sel)):''}</p><div class="act"><div class="seg"><button data-wk="-7" type="button">← Last<span class="lg"> week</span></button><button data-wk="0" type="button" aria-pressed="${isNow}">This week</button><button data-wk="7" type="button">Next<span class="lg"> week</span> →</button></div><a class="btn p" href="#admin" data-goadm="ann">Post a notice</a></div></div>
+return`<div class="title"><h1>${typeof tw==='number'?'Schedule of Week '+tw:isNow?'This week':'Week of '+fmt(weekStart,{day:'numeric',month:'short'})}</h1><p class="sub">${typeof tw==='number'?dUS(weekStart)+' to '+dUS(end):dLong(weekStart)+' to '+fmt(end,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${typeof tw==='string'?' · '+tw+', no classes':''}${sel.length?' · showing '+andList(codes(sel)):''}</p><div class="act"><div class="seg"><button data-wk="-7" type="button">← Last<span class="lg"> week</span></button><button data-wk="0" type="button" aria-pressed="${isNow}">This week</button><button data-wk="7" type="button">Next<span class="lg"> week</span> →</button></div><div class="seg" role="group" aria-label="Lab group">${[['','Both'],['G1','G1'],['G2','G2']].map(([v,n])=>`<button data-grp="${v}" type="button" aria-pressed="${grp===v}">${n}</button>`).join('')}</div><a class="btn p" href="#admin" data-goadm="ann">Post a notice</a></div></div>
 ${nextUp(up)}
 <div class="wk">${list}<section aria-label="Calendar"><div class="calhd"><h2>Day by day</h2>${key}</div><div class="calw" tabindex="0"><div class="box cal">${cols}</div></div></section></div>
 <section class="posted"><div class="sec"><h2 style="font:inherit">Posted this week</h2><a href="#announcements">See all ${S.ann.length} notices</a></div><div class="notes">${bySort(an).slice(0,3).map(noteCard).join('')||'<p class="box empty">Nothing posted this week.</p>'}</div></section>`}
@@ -473,7 +474,7 @@ ${l.length?`<table class="tbl"><thead><tr><th scope="col">What it is</th><th sco
 // Details panel for a regular class, a one-off item or a notice
 function openDetail(key){const[t,id,d]=key.split(':');let course,kind,title,rows=[],note=null,extra='';
 if(t==='slot'){const s=S.slots.find(x=>x.id===id);if(!s)return;const off=S.sched.find(x=>x.date===d&&x.kind==='Holiday'&&x.course===s.course);
-course=s.course;kind=off?'Class (cancelled)':'Class';title=cn(s.course);rows=[['When',`${dLong(d)}, ${span(s.start,s.end)}`],['Where',s.room||'—'],['Repeats',`Every ${DAYS[s.day]}`]];
+course=s.course;kind=off?'Class (cancelled)':'Class';title=cn(s.course);rows=[['When',`${dLong(d)}, ${span(s.start,s.end)}`],['Where',s.room||'—'],['Group',s.g||'Whole class'],['Repeats',`Every ${DAYS[s.day]}`]];
 if(off)rows.push(['Why',off.notes||'No class on this day']);note=off?noteOf(off):null}
 else if(t==='item'){const x=S.sched.find(y=>y.id===id);if(!x)return;course=x.course;kind=KLABEL[x.kind];title=x.title;
 rows=[['When',`${dLong(x.date)}${x.time?', '+x.time:''}`]];if(x.movedFrom)rows.push(['Moved from',`${dLong(x.movedFrom.date)}${x.movedFrom.time?', '+x.movedFrom.time:''}`]);rows.push(['Course',cn(x.course)]);if(x.notes)rows.push(['Notes',x.notes]);note=noteOf(x)}
@@ -502,7 +503,7 @@ ann:`<form class="box panel${ea?' editing':''}" id="fa"><h2>${ea?'Edit notice':'
 <div class="opt-new"><label>What is it?<select name="nkind">${kopt()}</select></label><div class="f2"><label>Date<input type="date" name="ndate" value="${today}"></label><label>Time (optional)<input name="ntime" placeholder="8:00 AM"></label></div></div></fieldset>
 <label class="c" style="margin-top:16px"><input type="checkbox" name="pin" ${ea&&ea.pin?'checked':''}>Pin it to the top</label><label class="c"><input type="checkbox" name="push" ${ea?'':'checked'}>${ea?'Send a push notification about the change':'Send a push notification'}</label><button class="btn p">${ea?'Save changes':'Post notice'}</button>${ea?cancel:''}</form>`,
 sched:`<form class="box panel${ei?' editing':''}" id="fs"><h2>${ei?'Edit calendar item':'Add to the calendar'}</h2><p class="hint">${ei?'Changing the date or time marks it as moved.':'For one-off things. Regular classes go in Class.'}</p><label>Course<select name="course">${opts(ei&&ei.course)}</select></label><label>What is it?<select name="kind">${kopt(ei&&ei.kind)}</select></label><label>Title<input name="title" value="${ei?esc(ei.title):''}" required></label><div class="f2"><label>Date<input type="date" name="date" value="${ei?ei.date:today}" required></label><label>Time (optional)<input name="time" value="${ei?esc(ei.time):''}" placeholder="8:00 AM"></label></div>${ei&&ei.movedFrom?`<p class="hint">Originally ${dShort(ei.movedFrom.date)}${ei.movedFrom.time?', '+esc(ei.movedFrom.time):''}. Set it back to clear the Moved label.</p>`:''}<label>Notes (optional)<textarea name="notes" rows="3" placeholder="What to bring, what it covers, where to submit">${ei?esc(ei.notes):''}</textarea></label><button class="btn p">${ei?'Save changes':'Add to the calendar'}</button>${ei?cancel:''}</form>`,
-slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class':'Add a class'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
+slots:`<form class="box panel slotf${es?' editing':''}" id="fsl"><h2>${es?'Edit class':'Add a class'}</h2><p class="hint">Repeats every week on the calendar.</p><label>Course<select name="course">${opts(es&&es.course)}</select></label><label>Day<select name="day">${DAYS.map((n,i)=>`<option value="${i}" ${es&&es.day===i?'selected':''}>${n}</option>`).join('')}</select></label><label>Group<select name="g">${[['','Whole class'],['G1','G1 only'],['G2','G2 only']].map(([v,n])=>`<option value="${v}" ${es&&es.g===v?'selected':''}>${n}</option>`).join('')}</select></label><div class="f3"><label>Starts<input name="start" value="${es?esc(es.start):''}" placeholder="7:30 AM" required></label><label>Ends<input name="end" value="${es?esc(es.end):''}" placeholder="9:00 AM" required></label><label>Room<input name="room" value="${es?esc(es.room):''}" placeholder="Room 304"></label></div><button class="btn p">${es?'Save changes':'Add to schedule'}</button>${es?'<button type="button" class="cancel" data-cancel-edit>Cancel editing</button>':''}</form>`,
 res:`<form class="box panel" id="fr"><h2>Add a file</h2><label>Course<select name="course">${opts()}</select></label><label>Title<input name="title" required></label><div class="f2"><label>Type<input name="cat" placeholder="Slides" required></label><label>Week (optional)<input name="week" placeholder="Week 3"></label></div><label>File<input type="file" name="file"></label><label>Or a link<input type="url" name="url" placeholder="https://"></label><button class="btn p">Add file</button></form>`,
 courses:`<form class="box panel" id="fcs"><h2>Your 9 courses</h2><p class="hint">Type each course’s name and a short code of up to ${CODE_MAX} characters. Each keeps its colour everywhere.</p>${S.courses.map((c,i)=>`<div class="crow">${sw(c.id)}<input name="name${i}" value="${esc(c.name)}" aria-label="Course ${i+1} name" required><input name="code${i}" value="${esc(c.code)}" aria-label="Course ${i+1} code" maxlength="${CODE_MAX}" required></div>`).join('')}<button class="btn p">Save courses</button></form>`};
 let list;
@@ -510,7 +511,7 @@ if(adm==='ann')list=['Notices',S.ann.length,bySort(S.ann).map(a=>{const x=itemOf
 return row(a.course,esc(a.title)+(p?`<span class="st">${a.done?'Done':'Passed'}</span>`:a.pin?'<span class="st" style="background:#111;color:#fff">Pinned</span>':''),`${fmt(a.date,{day:'numeric',month:'short'})}${x?' · on the calendar '+dShort(x.date):''}`,`<button class="btn s" data-edit-ann="${a.id}" type="button">Edit</button><button class="btn s" data-done="${a.id}" type="button">${a.done?'Undo done':'Mark done'}</button>${del('ann:'+a.id)}`,(p?'past':'')+(a.id===editAnn?' editing':''))}).join('')];
 else if(adm==='sched')list=['Calendar',sch.length,sch.map(x=>row(x.course,esc(x.title),`${KLABEL[x.kind]} · ${dShort(x.date)}${x.time?' · '+esc(x.time):''}${x.movedFrom?' · moved from '+dShort(x.movedFrom.date):''}${noteOf(x)?' · has a notice':''}`,`<button class="btn s" data-edit-item="${x.id}" type="button">Edit</button>${del('sched:'+x.id)}`,(x.date<today?'past':'')+(x.id===editItem?' editing':''))).join('')];
 else if(adm==='slots')list=['Weekly classes',S.slots.length,DAYS.map((n,i)=>{const l=S.slots.filter(s=>s.day===i).sort((a,b)=>mins(a.start)-mins(b.start));
-return l.length?`<div class="dayhd">${n}</div>`+l.map(s=>row(s.course,esc(span(s.start,s.end)),`${esc(cn(s.course))}${s.room?' · '+esc(s.room):''}`,`<button class="btn s" data-edit-slot="${s.id}" type="button">Edit</button>${del('slots:'+s.id)}`,s.id===editSlot?'editing':'')).join(''):''}).join('')];
+return l.length?`<div class="dayhd">${n}</div>`+l.map(s=>row(s.course,esc(span(s.start,s.end)),`${esc(cn(s.course))}${s.g?' · '+s.g:''}${s.room?' · '+esc(s.room):''}`,`<button class="btn s" data-edit-slot="${s.id}" type="button">Edit</button>${del('slots:'+s.id)}`,s.id===editSlot?'editing':'')).join(''):''}).join('')];
 else if(adm==='res')list=['Files',S.res.length,S.res.map(r=>row(r.course,esc(r.title),`${esc(r.cat)}${r.week?' · '+esc(r.week):''}`,del('res:'+r.id))).join('')];
 else list=['Courses',S.courses.length,S.courses.map(c=>row(c.id,esc(c.name),`${plural(S.slots.filter(s=>s.course===c.id).length,'class a week','classes a week')} · ${plural(S.ann.filter(a=>a.course===c.id).length,'notice','notices')} · ${plural(S.res.filter(r=>r.course===c.id).length,'file','files')}`,'')).join('')];
 const [lt,n,rows]=list,tabs=[['ann','Notice'],['sched','Calendar'],['slots','Class'],['res','File'],['courses','Courses']];
@@ -534,6 +535,7 @@ if(t.dataset.open){openDetail(t.dataset.open);return}
 if(t.hasAttribute('data-close')){dlg.close();return}
 if(t.dataset.wk!==undefined){weekStart=t.dataset.wk==='0'?sun(today):addD(weekStart,+t.dataset.wk);render()}
 if(t.dataset.fc){fc=t.dataset.fc;render()}
+if(t.dataset.grp!==undefined){grp=t.dataset.grp;try{localStorage.setItem('classhub-grp',grp)}catch(e){}render()}
 if(t.dataset.sel){const id=t.dataset.sel;sel=id==='all'?[]:sel.includes(id)?sel.filter(x=>x!==id):[...sel,id];
 if(sel.length===S.courses.length)sel=[];sel.sort((a,b)=>cIdx(a)-cIdx(b));render()}
 if(t.dataset.adm){adm=t.dataset.adm;editSlot=editAnn=editItem=null;render()}
@@ -558,7 +560,7 @@ if(f.id==='fs'){const v={course:d.course,title:d.title,kind:d.kind,notes:d.notes
 if(editItem){const x=S.sched.find(y=>y.id===editItem);Object.assign(x,v);moveItem(x,d.date,time);editItem=null;save();render();toast(x.movedFrom?'Saved. Shown as moved from '+dShort(x.movedFrom.date):'Saved')}
 else{S.sched.push({id:uid(),...v,date:d.date,time});save();render();toast('Added to the calendar')}}
 if(f.id==='fsl'){if(mins(d.start)<0||mins(d.end)<0||mins(d.end)<=mins(d.start)){toast('Use times like 7:30 AM, with the end after the start');return}
-const v={course:d.course,day:+d.day,start:d.start.trim().toUpperCase(),end:d.end.trim().toUpperCase(),room:d.room.trim()};
+const v={course:d.course,day:+d.day,start:d.start.trim().toUpperCase(),end:d.end.trim().toUpperCase(),room:d.room.trim(),g:d.g||''};
 if(editSlot){Object.assign(S.slots.find(s=>s.id===editSlot),v);editSlot=null;toast('Class saved')}else{S.slots.push({id:uid(),...v});toast('Added to the weekly schedule')}save();render()}
 if(f.id==='fcs'){S.courses.forEach((c,i)=>{c.name=d['name'+i].trim()||c.name;c.code=(d['code'+i].trim()||c.code).slice(0,CODE_MAX)});save();render();toast('Courses saved')}});
 function askPush(){if(!window.Notification){toast('This browser does not support notifications');return}

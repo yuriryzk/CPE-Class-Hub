@@ -61,9 +61,13 @@ student accounts, email notifications, archiving past semesters, analytics.
 - **Download the schedule as an image:** a button on Schedule that saves the shown week, for the selected
   courses, as a PNG.
 - **Remembering picked courses (Schedule and Notices):** the selection is saved in the visitor's browser
-  (`localStorage`, no login) and also written into the page link (`?course=microP,CNS`). Opening a link with
+  (`localStorage`, no login) and also written into the page link (`?course=MICROP,CNS`). Opening a link with
   courses shows those courses and saves them; opening the plain site uses the saved picks, or all courses if
   none are saved. Picking "All" clears both. It is per device: clearing browser data or switching phones resets it.
+- **Lab groups (G1 / G2):** five courses (MICROP, CNS, CEDD, HDL, ELEC) split the class into two groups with
+  their own lab times. Schedule has a "Both / G1 / G2" switch; "Both" shows every class with its group tagged,
+  G1 or G2 hides the other group's labs. The choice is saved in the visitor's browser like the course picks.
+  One choice covers all five courses.
 
 ## 3. Architecture
 
@@ -112,10 +116,10 @@ unless noted. Times of day are Postgres `time`; dates are `date` (Asia/Manila ca
 | --- | --- | --- |
 | slot | smallint | 1–9, unique; decides order and colour |
 | name | text | 1–80 characters |
-| code | text | 1–8 characters, letters (either case, kept as typed, such as "microP"), digits and hyphen, unique |
+| code | text | 1–8 characters, letters (either case, kept as typed), digits and hyphen, unique |
 | color | text | fixed per slot, in this order: red #ff6b6b, orange #ff9f43, yellow #ffd93d, yellow-green #b8e62e, green #3ddc97, blue #5b8cff, purple #a78bfa, pink #ff7ec7, lavender #c6c3ff; not editable in the app |
 
-Seeded during setup with the nine courses of the semester, in slot order: Microprocessors (microP), Project Management (PM), CpE Laws and Professional Practice (LAWS), Basic Occupational Health and Safety (BOHS), Introduction to HDL (HDL), Computer Networks and Security (CNS), Methods of Research (MOR), Computer Engineering Drafting and Design (CEDD), Elective 1 (ELEC). Never inserted or deleted from the app.
+Seeded during setup with the nine courses of the semester, in slot order: Microprocessors (MICROP), Project Management (PM), CpE Laws and Professional Practice (LAWS), Basic Occupational Health and Safety (BOHS), Introduction to HDL (HDL), Computer Networks and Security (CNS), Methods of Research (MOR), Computer Engineering Drafting and Design (CEDD), Elective 1 (ELEC). Never inserted or deleted from the app.
 
 ### `class_slots` (the weekly schedule)
 | column | type | rules |
@@ -125,6 +129,7 @@ Seeded during setup with the nine courses of the semester, in slot order: Microp
 | starts_at | time | |
 | ends_at | time | must be after `starts_at` |
 | room | text | optional, up to 40 characters |
+| lab_group | text | optional: empty = whole class, or `G1` / `G2` for that group only. Used by MICROP, CNS, CEDD, HDL and ELEC labs; a lecture both groups attend together stays empty |
 
 ### `calendar_items` (one-off things)
 | column | type | rules |
