@@ -6,5 +6,6 @@ test("home renders the header and hides notifications", async ({ page }) => {
   for (const name of ["Schedule", "Notices", "Files"]) {
     await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
   }
+  await expect(page.getByRole("link", { name: "Officer sign in" })).toHaveAttribute("href", "/login");
   await expect(page.getByText("Turn on notifications")).toHaveCount(0);
 });
