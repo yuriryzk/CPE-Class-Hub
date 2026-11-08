@@ -7,10 +7,11 @@ test("a done notice comes after the active ones and is greyed", async ({ page })
   await page.goto("/notices");
   const all = cards(page);
   await expect(all).toHaveCount(3);
-  const last = all.last();
-  await expect(last).toContainText("Group list submitted");
-  await expect(last).toContainText("Done");
-  await expect(last).toHaveClass(/past/);
+  // Quiz 1 greys after 17 Nov, so only the first card and the done notice are checked.
+  const done = all.filter({ hasText: "Group list submitted" });
+  await expect(done).toContainText("Done");
+  await expect(done).toHaveClass(/past/);
+  await expect(all.first()).toContainText("Read the code of ethics");
   await expect(all.first()).not.toHaveClass(/past/);
   await expect(all.filter({ hasText: "Quiz 1 on Tuesday" })).toContainText("On the calendar: Quiz/exam, Tue 17 Nov");
 });

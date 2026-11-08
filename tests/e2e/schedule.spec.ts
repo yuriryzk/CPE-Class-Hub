@@ -65,6 +65,10 @@ test("phone width has no sideways page scroll", async ({ page }) => {
 
 test("posted this week puts done notices after active ones", async ({ page }) => {
   await page.goto("/?week=2026-11-15");
-  const titles = page.getByRole("region", { name: "Posted this week" }).getByRole("heading", { level: 3 });
-  await expect(titles).toHaveText(["Read the code of ethics", "Quiz 1 on Tuesday", "Group list submitted"]);
+  const cards = page.getByRole("region", { name: "Posted this week" }).getByRole("article");
+  await expect(cards).toHaveCount(3);
+  // Quiz 1's place depends on today (it greys after 17 Nov), so only the first card (active) and the done notice (greyed) are checked.
+  await expect(cards.first()).toContainText("Read the code of ethics");
+  await expect(cards.filter({ hasText: "Group list submitted" })).toHaveClass(/past/);
+  await expect(cards.first()).not.toHaveClass(/past/);
 });

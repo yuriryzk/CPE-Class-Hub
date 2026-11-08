@@ -2,6 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "tests/e2e",
+  workers: 1, // admin specs rename shared rows, so nothing runs beside them
   use: { baseURL: "http://localhost:3000" },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
