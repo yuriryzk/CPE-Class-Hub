@@ -5,9 +5,12 @@
 .nav a{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;text-decoration:none;font-weight:600;border:var(--bw) solid transparent}
 .nav a:hover{border-color:var(--ink)}
 .nav a[aria-current=page]{background:var(--ink);color:#fff}
-.end{margin-left:auto}
+.end{margin-left:auto;display:flex;align-items:center;gap:8px;white-space:nowrap}
 @media(max-width:900px){
 .top{height:56px}
+.who{display:none}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(64px + env(safe-area-inset-bottom,0px));padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:#fff;border-top:3px solid var(--ink);gap:4px}
 .nav a{flex:1;justify-content:center;padding:0;font-size:14px}
 }
+/* Signed in on a narrow phone: Admin and Sign out need the room, so the logo stands alone */
+@media(max-width:480px){.top:has(.who) .mark span{display:none}}

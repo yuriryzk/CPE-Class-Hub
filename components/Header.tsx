@@ -17,9 +17,9 @@ export default async function Header() {
       <div className={s.end}>
         {officer ? (
           <>
-            <span>{officer.name}</span>{" "}
-            <Link className="btn s" href="/admin">Admin</Link>{" "}
-            <form action="/auth/signout" method="post" style={{ display: "inline" }}>
+            <span className={s.who}>{officer.name}</span>
+            <Link className="btn s" href="/admin">Admin</Link>
+            <form action="/auth/signout" method="post">
               <button className="btn s">Sign out</button>
             </form>
           </>
