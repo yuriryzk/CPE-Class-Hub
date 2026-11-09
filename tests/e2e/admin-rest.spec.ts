@@ -53,6 +53,39 @@ test.describe("head officer", () => {
     }
   });
 
+  test("an instructor shows in a class's details, not on the calendar card", async ({ page }) => {
+    const form = page.getByRole("form", { name: "Your courses" });
+    const save = async (name: string) => {
+      await page.goto("/admin/courses");
+      await form.getByLabel("Course 6 instructor").fill(name);
+      await form.getByRole("button", { name: "Save courses" }).click();
+      await expect(page.getByRole("status")).toHaveText("Courses saved");
+    };
+    try {
+      await save("Engr. E2E Santos");
+      await page.goto("/?week=2026-11-15");
+      const card = page.getByRole("region", { name: "Calendar" }).getByRole("button", { name: /Computer Networks and Security/ }).first();
+      await expect(card).not.toContainText("Santos");
+      await card.click();
+      await expect(page.getByRole("dialog").getByText("Engr. E2E Santos")).toBeVisible();
+    } finally {
+      await save("");
+    }
+  });
+
+  test("files list sorts by course, General last, and remembers it", async ({ page }) => {
+    await page.goto("/admin/files");
+    const sort = page.getByRole("region", { name: "Files" }).getByRole("group", { name: "Sort" });
+    await expect(sort.getByRole("button", { name: "Most recent" })).toHaveAttribute("aria-pressed", "true");
+    await sort.getByRole("button", { name: "By course" }).click();
+    await expect(sort.getByRole("button", { name: "By course" })).toHaveAttribute("aria-pressed", "true");
+    const titles = page.getByRole("region", { name: "Files" }).locator("b");
+    await expect(titles.first()).toHaveText("Lab manual"); // MICROP, the first course
+    await expect(titles.last()).toHaveText("Class master list"); // General
+    await page.reload();
+    await expect(sort.getByRole("button", { name: "By course" })).toHaveAttribute("aria-pressed", "true");
+  });
+
   test("semester: change the weeks, add and remove a break, refuse bad breaks", async ({ page }) => {
     await page.goto("/admin/courses");
     const sem = page.getByRole("form", { name: "Semester" });

@@ -12,9 +12,9 @@ const breaks = [
 const slot = (id: string, course_id: string, weekday: number, starts_at: string, lab_group: Slot["lab_group"] = ""): Slot =>
   ({ id, course_id, weekday, starts_at, ends_at: "23:00:00", room: null, lab_group });
 const item = (id: string, course_id: string, kind: Item["kind"], on_date: string, at_time: string | null = null, class_slot_id: string | null = null, lab_group: Item["lab_group"] = ""): Item =>
-  ({ id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id, lab_group });
+  ({ created_at: "", id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id, lab_group });
 const notice = (id: string, over: Partial<Notice> = {}): Notice =>
-  ({ id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, lab_group: "", ...over });
+  ({ created_at: "", id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, lab_group: "", ...over });
 const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, linkedItems: [], term, breaks });
 const ids = (es: ReturnType<typeof dayEntries>) =>
   es.map((e) => (e.t === "slot" ? e.slot.id : e.item.id));

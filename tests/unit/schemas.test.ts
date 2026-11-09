@@ -26,7 +26,7 @@ describe("slotSchema", () => {
 
 describe("courseSchema", () => {
   it("accepts a valid code and rejects long or odd ones", () => {
-    expect(courseSchema.parse({ name: "Networks", code: "CNS-1" })).toEqual({ name: "Networks", code: "CNS-1" });
+    expect(courseSchema.parse({ name: "Networks", code: "CNS-1" })).toEqual({ name: "Networks", code: "CNS-1", instructor: "" });
     expect(msgs(courseSchema.safeParse({ name: "X", code: "TOOLONGCODE" }))).toContain("Codes are up to 8 characters");
     expect(courseSchema.safeParse({ name: "X", code: "A B" }).success).toBe(false);
   });
@@ -87,7 +87,8 @@ describe("termSchema and breakSchema", () => {
 
 describe("coursesSchema", () => {
   it("reads the numbered rows and reports errors on the row that has them", () => {
-    expect(coursesSchema.parse({ id0: "a", name0: " Math ", code0: "MATH" })).toEqual([{ id: "a", name: "Math", code: "MATH" }]);
+    expect(coursesSchema.parse({ id0: "a", name0: " Math ", code0: "MATH", instructor0: " Engr. Cruz " }))
+      .toEqual([{ id: "a", name: "Math", code: "MATH", instructor: "Engr. Cruz" }]);
     const r = coursesSchema.safeParse({ id0: "a", name0: "Math", code0: "TOOLONGCODE" });
     expect(r.success).toBe(false);
     expect(r.error?.issues[0].path).toEqual(["code0"]);

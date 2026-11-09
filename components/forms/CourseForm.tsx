@@ -17,7 +17,7 @@ export default function CourseForm({ courses }: { courses: Course[] }) {
   return (
     <form className={`box ${s.panel}`} aria-label="Your courses" onSubmit={onSubmit} noValidate>
       <h2>Your {courses.length} courses</h2>
-      <p className={s.hint}>Type each course&apos;s name and a short code of up to 8 characters. Each keeps its colour everywhere.</p>
+      <p className={s.hint}>Type each course&apos;s name, a short code of up to 8 characters, and its instructor. Each keeps its colour everywhere.</p>
       {courses.map((c, i) => (
         <div key={c.id}>
           <div className={s.crow}>
@@ -25,9 +25,11 @@ export default function CourseForm({ courses }: { courses: Course[] }) {
             <input type="hidden" name={`id${i}`} value={c.id} />
             <input name={`name${i}`} defaultValue={c.name} aria-label={`Course ${i + 1} name`} maxLength={80} required />
             <input name={`code${i}`} defaultValue={c.code} aria-label={`Course ${i + 1} code`} maxLength={8} required />
+            <input className={s.ins} name={`instructor${i}`} defaultValue={c.instructor} aria-label={`Course ${i + 1} instructor`} placeholder="Instructor (optional)" maxLength={80} />
           </div>
           {err(`name${i}`)}
           {err(`code${i}`)}
+          {err(`instructor${i}`)}
         </div>
       ))}
       <button className={`btn p ${s.save}`} disabled={busy}>Save courses</button>

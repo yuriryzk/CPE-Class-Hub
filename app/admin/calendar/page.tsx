@@ -5,12 +5,13 @@ import AdminRow from "@/components/AdminRow";
 import ConfirmDelete from "@/components/ConfirmDelete";
 import ItemForm from "@/components/forms/ItemForm";
 import { KIND } from "@/lib/types";
-import { loadCourses, loadItems, loadNotices } from "@/lib/data";
+import { loadCourses, loadItems, loadNotices, loadSort } from "@/lib/data";
+import { sortRows } from "@/lib/sort";
 import { formatShort, formatTime, fromPgTime, manilaToday } from "@/lib/time";
 
 export default async function AdminCalendar({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
   const { edit } = await searchParams;
-  const [courses, items, notices] = await Promise.all([loadCourses(), loadItems(), loadNotices()]);
+  const [courses, items, notices, sort] = await Promise.all([loadCourses(), loadItems(), loadNotices(), loadSort("calendar")]);
   const today = manilaToday();
   const editing = items.find((x) => x.id === edit);
 
@@ -20,8 +21,9 @@ export default async function AdminCalendar({ searchParams }: { searchParams: Pr
       form={<ItemForm key={editing?.id ?? "new"} courses={courses} today={today} item={editing} />}
       list="Calendar"
       count={items.length}
+      sort={sort}
     >
-      {items.map((x) => (
+      {sortRows(items, sort, courses.map((c) => c.id)).map((x) => (
         <AdminRow
           key={x.id}
           course={courses.find((c) => c.id === x.course_id)}

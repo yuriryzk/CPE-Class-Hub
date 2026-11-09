@@ -79,6 +79,7 @@ export const fileSchema = z.object({
 export const courseSchema = z.object({
   name: text(1, 80),
   code: z.string().trim().regex(/^[A-Za-z0-9-]{1,8}$/, CODE_MSG),
+  instructor: z.string().trim().max(80, "Instructor names are up to 80 characters").default(""),
 });
 
 export const termSchema = z.object({ starts_on: sunday, week_count: num(1, 52) });
@@ -87,11 +88,11 @@ export const breakSchema = z.object({ starts_on: sunday, label: text(1, 60) });
 
 export const officerSchema = z.object({ email: z.string().trim().toLowerCase().pipe(z.email()) });
 
-/** The Courses form: rows named id0/name0/code0 ... id8/name8/code8. Errors land on name{i} / code{i}. */
+/** The Courses form: rows named id0/name0/code0/instructor0 ... Errors land on name{i} / code{i} / instructor{i}. */
 export const coursesSchema = z.record(z.string(), z.unknown()).transform((d, ctx) => {
-  const rows: { id: string; name: string; code: string }[] = [];
+  const rows: { id: string; name: string; code: string; instructor: string }[] = [];
   for (let i = 0; d[`id${i}`] !== undefined; i++) {
-    const p = courseSchema.safeParse({ name: d[`name${i}`], code: d[`code${i}`] });
+    const p = courseSchema.safeParse({ name: d[`name${i}`], code: d[`code${i}`], instructor: d[`instructor${i}`] });
     if (p.success) rows.push({ id: String(d[`id${i}`]), ...p.data });
     else for (const x of p.error.issues) ctx.issues.push({ code: "custom", path: [`${String(x.path[0])}${i}`], message: x.message, input: d });
   }

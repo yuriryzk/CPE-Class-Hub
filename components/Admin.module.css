@@ -24,7 +24,9 @@
 .calopt:has(input[value=link]:checked) .optLink,.calopt:has(input[value=new]:checked) .optNew{display:block}
 /* Lists: fixed columns so codes, titles and actions line up whatever the code's length */
 .rows{overflow:hidden}
-.rh{display:flex;align-items:center;padding:14px 18px;background:var(--soft);border-bottom:var(--bw) solid var(--ink);font:800 20px/1 var(--head)}
+.rh{display:flex;align-items:center;padding:14px 18px;background:var(--soft);border-bottom:var(--bw) solid var(--ink);font:800 20px/1 var(--head);gap:10px 14px;flex-wrap:wrap}
+.rh .seg{font:600 14px/1 var(--font-body),sans-serif}
+.rh .seg>*{height:32px;padding:0 12px}
 .rh span{margin-left:auto;font:600 15px/1 var(--font-body),sans-serif;color:var(--muted)}
 .row{display:grid;grid-template-columns:100px minmax(0,1fr) 270px;gap:16px;align-items:center;padding:12px 18px;border-top:1.5px solid #cfcfca}
 .rh+.row{border-top:0}
@@ -47,6 +49,7 @@
 .panel+.panel{margin-top:var(--gap)}
 .panel .crow{display:grid;grid-template-columns:24px 1fr 112px;gap:10px;align-items:center;margin-top:10px}
 .panel .crow input{height:40px;margin-top:0}
+.panel .crow .ins{grid-column:2/-1;height:36px;font-size:14px}
 .sw{width:24px;height:24px;border-radius:6px;border:2px solid var(--ink)}
 .breaks{list-style:none;padding:0;margin:12px 0 0}
 .breaks li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1.5px solid #cfcfca}

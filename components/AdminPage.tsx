@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getOfficer } from "@/lib/auth";
+import type { AdminSort } from "@/lib/sort";
 import s from "./Admin.module.css";
+import SortSwitch from "./SortSwitch";
 
 const TABS = [
   ["notices", "Notice"],
@@ -12,8 +14,8 @@ const TABS = [
 ] as const;
 
 /** Admin layout: tabs and the form on the left, the list on the right. */
-export default async function AdminPage({ tab, form, list, count, children }: {
-  tab: (typeof TABS)[number][0]; form: React.ReactNode; list: string; count: number; children: React.ReactNode;
+export default async function AdminPage({ tab, form, list, count, sort, children }: {
+  tab: (typeof TABS)[number][0]; form: React.ReactNode; list: string; count: number; sort?: AdminSort; children: React.ReactNode;
 }) {
   const head = (await getOfficer())?.role === "head";
   return (
@@ -29,7 +31,7 @@ export default async function AdminPage({ tab, form, list, count, children }: {
           {form}
         </div>
         <section className={`box ${s.rows}`} aria-label={list}>
-          <div className={s.rh}>{list}<span>{count} {count === 1 ? "item" : "items"}</span></div>
+          <div className={s.rh}>{list}<span>{count} {count === 1 ? "item" : "items"}</span>{sort && <SortSwitch list={tab} value={sort} />}</div>
           {count ? children : <p className="empty">Nothing here yet.</p>}
         </section>
       </div>

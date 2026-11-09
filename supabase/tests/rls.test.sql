@@ -1,5 +1,5 @@
 begin;
-select plan(21);
+select plan(23);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -74,6 +74,13 @@ select throws_ok(
     'code', case code when 'PM' then 'CNS' when 'CNS' then 'PM' else code end)) from courses))$$,
   '23505', null, 'swapping two course codes is refused');
 select is((select string_agg(code, ',' order by slot) from courses where code in ('PM', 'CNS')), 'PM,CNS', 'a refused save leaves both codes unchanged');
+
+-- save_courses also sets the instructor; a row without one keeps it.
+select lives_ok(
+  $$select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM', 'instructor', 'Engr. Cruz')))$$,
+  'officer sets an instructor');
+select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM')));
+select is((select instructor from courses where code = 'PM'), 'Engr. Cruz', 'a save without the instructor keeps it');
 
 -- one cancel per class per day
 select has_index('calendar_items', 'calendar_items_slot_day_key', 'a class is cancelled at most once per day');

@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { SORT_COOKIE, type AdminSort } from "./sort";
 import { serverClient } from "./supabase/server";
 import { addDays } from "./time";
 import type { Course, FileRow, Item, Notice, Slot, Term, TermBreak } from "./types";
@@ -84,6 +86,11 @@ export async function loadItemsByIds(ids: string[]): Promise<Item[]> {
 export async function loadItems(): Promise<Item[]> {
   const db = await serverClient();
   return run("calendar", db.from("calendar_items").select("*").order("on_date").order("at_time", { nullsFirst: true }));
+}
+
+/** The order this browser picked for an admin list; "recent" unless "By course" was chosen. */
+export async function loadSort(list: string): Promise<AdminSort> {
+  return (await cookies()).get(SORT_COOKIE(list))?.value === "course" ? "course" : "recent";
 }
 
 /** Every weekly class, for the admin list. */

@@ -5,11 +5,20 @@
 .key i{width:26px;height:16px;border-radius:4px;background:#fff;border:2px solid var(--ink)}
 .calw{overflow-x:auto;padding:0 4px 4px 0}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1060px;overflow:hidden}
+/* Tablets: three days in view, swipe for the rest. max-content lets the box grow past the screen so it can scroll. */
 @media(max-width:900px){
 .calw{scroll-snap-type:x mandatory}
-.cal{--n:3;grid-template-columns:repeat(7,calc((100vw - 2*var(--pad) - 9px) / var(--n)));min-width:0}
+.cal{grid-template-columns:repeat(7,calc((100vw - 2*var(--pad) - 9px) / 3));min-width:0;width:max-content}
 }
-@media(max-width:640px){.cal{--n:2}}
+/* Phones: the days stack, Sunday to Saturday, one full-width block each. */
+@media(max-width:640px){
+.calw{overflow:visible;scroll-snap-type:none;padding:0}
+.cal{grid-template-columns:minmax(0,1fr);width:auto}
+.cal>div{border-left:0;border-top:var(--bw) solid var(--ink);min-height:0}
+.cal>div:first-child{border-top:0}
+}
 /* Download image: fixed desktop layout regardless of the screen */
 .wide .calw{overflow:visible}
-.wide .cal{grid-template-columns:repeat(7,minmax(0,1fr));min-width:0}
+.wide .cal{grid-template-columns:repeat(7,minmax(0,1fr));min-width:0;width:auto}
+.wide .cal>div{border-top:0;border-left:var(--bw) solid var(--ink);min-height:420px}
+.wide .cal>div:first-child{border-left:0}

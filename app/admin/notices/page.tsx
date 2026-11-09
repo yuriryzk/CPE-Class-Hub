@@ -5,13 +5,14 @@ import AdminRow from "@/components/AdminRow";
 import s from "@/components/Admin.module.css";
 import ConfirmDelete, { ActionButton } from "@/components/ConfirmDelete";
 import NoticeForm from "@/components/forms/NoticeForm";
-import { loadCourses, loadItems, loadNotices } from "@/lib/data";
+import { loadCourses, loadItems, loadNotices, loadSort } from "@/lib/data";
+import { sortRows } from "@/lib/sort";
 import { addDays, formatShort, manilaToday } from "@/lib/time";
-import { isPastNotice, sortNotices } from "@/lib/week";
+import { isPastNotice } from "@/lib/week";
 
 export default async function AdminNotices({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
   const { edit } = await searchParams;
-  const [courses, notices, items] = await Promise.all([loadCourses(), loadNotices(), loadItems()]);
+  const [courses, notices, items, sort] = await Promise.all([loadCourses(), loadNotices(), loadItems(), loadSort("notices")]);
   const today = manilaToday();
   const editing = notices.find((n) => n.id === edit);
   // Linkable: recent or upcoming items that no other notice points at (one notice per item).
@@ -25,8 +26,9 @@ export default async function AdminNotices({ searchParams }: { searchParams: Pro
       form={<NoticeForm key={editing?.id ?? "new"} courses={courses} items={linkable} today={today} notice={editing} />}
       list="Notices"
       count={notices.length}
+      sort={sort}
     >
-      {sortNotices(notices, items, today).map((n) => {
+      {sortRows(notices, sort, courses.map((c) => c.id)).map((n) => {
         const x = items.find((i) => i.id === n.calendar_item_id);
         const past = isPastNotice(n, items, today);
         return (

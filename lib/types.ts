@@ -5,6 +5,7 @@ export type Course = {
   name: string;
   code: string;
   color: string;
+  instructor: string; // '' when not set
 };
 
 export type Slot = {
@@ -18,6 +19,7 @@ export type Slot = {
 };
 
 export type Item = {
+  created_at: string;
   id: string;
   course_id: string;
   kind: 'quiz_exam' | 'due' | 'no_class' | 'extra_class';
@@ -32,6 +34,7 @@ export type Item = {
 };
 
 export type Notice = {
+  created_at: string;
   id: string;
   course_id: string;
   title: string;
@@ -45,6 +48,7 @@ export type Notice = {
 };
 
 export type FileRow = {
+  created_at: string;
   id: string;
   course_id: string | null;
   title: string;

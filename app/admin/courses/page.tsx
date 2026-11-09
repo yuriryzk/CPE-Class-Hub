@@ -22,7 +22,7 @@ export default async function AdminCourses() {
           key={c.id}
           course={c}
           title={c.name}
-          details={`${plural(of(slots, c.id), "class a week", "classes a week")} · ${plural(of(notices, c.id), "notice", "notices")} · ${plural(of(files, c.id), "file", "files")}`}
+          details={`${c.instructor ? `${c.instructor} · ` : ""}${plural(of(slots, c.id), "class a week", "classes a week")} · ${plural(of(notices, c.id), "notice", "notices")} · ${plural(of(files, c.id), "file", "files")}`}
           actions={null}
         />
       ))}

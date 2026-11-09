@@ -92,6 +92,7 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
     }
   }
   const c = courses.find((x) => x.id === course);
+  if (c?.instructor) rows.push(["Instructor", c.instructor]);
   const own = files?.filter((f) => f.course_id === course) ?? [];
   const notePast = note && isPastNotice(note, items, today);
 
