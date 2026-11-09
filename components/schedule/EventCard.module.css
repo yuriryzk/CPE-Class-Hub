@@ -10,11 +10,7 @@
 .due{border-style:dashed;border-left-style:solid}
 .due small i{background:var(--ink);color:#fff}
 .off{background:repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 8px)}
-.note{background:#fffef7}
-.note:hover b{text-decoration:underline}
 .nx{box-shadow:3px 3px 0 var(--ink);transform:translate(-2px,-2px)}
-.cx{background:#f3f3f0;border-style:dashed}
-.cx b{text-decoration:line-through;color:#666}
 .mv{background:#fff;color:#111;border:1.5px solid #111;border-radius:4px;padding:0 4px;font-size:12px;font-weight:700}
 .nb{border:1.5px solid currentColor;border-radius:4px;padding:0 4px;font-size:12px;font-weight:700}
 /* Inside a course box: lighter border, no repeated tag */
@@ -22,5 +18,4 @@
 .in :global(.tag){display:none}
 .in.test{border-color:var(--ink)}
 .in.due{border:1.5px dashed var(--ink)}
-.in.cx{border-style:dashed}
 @media(prefers-reduced-motion:no-preference){.ev{transition:transform .08s,box-shadow .08s,background-color .1s}}

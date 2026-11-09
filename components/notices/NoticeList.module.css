@@ -6,4 +6,12 @@
 .tbl td:first-child{font-weight:700;border-left:8px solid var(--c)}
 .tbl a{font-weight:700;text-underline-offset:3px}
 .past{filter:grayscale(1);opacity:.6}
+.row{cursor:pointer}
+.row:hover td{background:var(--soft)}
+.open{all:unset;cursor:pointer;font-weight:600}
+.open:after{content:" \25BE";font-size:12px}
+.open[aria-expanded=true]:after{content:" \25B4"}
+.open:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tbl .body td{border-top:0;padding-top:0;white-space:pre-wrap}
+.tbl .body td:first-child{font-weight:400}
 @media(max-width:640px){.pad{padding:14px}.tbl{display:block;overflow-x:auto}}

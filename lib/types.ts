@@ -28,6 +28,7 @@ export type Item = {
   moved_from_date: string | null;
   moved_from_time: string | null;
   class_slot_id: string | null;
+  lab_group: '' | 'G1' | 'G2';
 };
 
 export type Notice = {
@@ -40,6 +41,7 @@ export type Notice = {
   done: boolean;
   calendar_item_id: string | null;
   created_by: string | null;
+  lab_group: '' | 'G1' | 'G2';
 };
 
 export type FileRow = {
@@ -56,6 +58,9 @@ export type FileRow = {
 
 export type Term = { starts_on: string; week_count: number };
 export type TermBreak = { starts_on: string; label: string };
+
+/** Colour of class-wide (General) files: the site's cyan. */
+export const GENERAL = '#22d3ee';
 
 /** Kind labels shown to people. Lives here, not in a client component, so server pages can read it. */
 export const KIND: Record<Item['kind'], string> = { quiz_exam: 'Quiz/exam', due: 'Due', no_class: 'No class', extra_class: 'Extra class' };

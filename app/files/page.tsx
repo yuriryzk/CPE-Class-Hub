@@ -1,6 +1,7 @@
 import { loadCourses, loadFiles, LoadError } from "@/lib/data";
 import FileTable from "@/components/files/FileTable";
 import Tabs, { TabPanel } from "@/components/Tabs";
+import { GENERAL } from "@/lib/types";
 
 export const revalidate = 60;
 
@@ -26,7 +27,7 @@ export default async function Files({ searchParams }: { searchParams: Promise<{ 
     <main>
       <div className="title"><h1>Files</h1></div>
       <Tabs label="Files by course" base="/files" courses={courses} counts={counts} sel={picked?.code ?? "general"} />
-      <TabPanel title={picked?.name ?? "General"} count={noun} color={picked?.color}>
+      <TabPanel title={picked?.name ?? "General"} count={noun} color={picked?.color ?? GENERAL}>
         {shown.length ? <FileTable files={shown} courses={courses} /> : <p className="empty">No files for {picked?.name ?? "General"} yet.</p>}
       </TabPanel>
     </main>

@@ -28,6 +28,7 @@ export default async function AdminCalendar({ searchParams }: { searchParams: Pr
           title={x.title}
           details={[
             KIND[x.kind],
+            x.lab_group,
             formatShort(x.on_date),
             x.at_time && formatTime(fromPgTime(x.at_time)),
             x.moved_from_date && `moved from ${formatShort(x.moved_from_date)}`,

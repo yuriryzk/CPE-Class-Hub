@@ -7,9 +7,8 @@ import { WEEKDAYS } from "@/lib/time";
 import type { Course, Slot } from "@/lib/types";
 import s from "../Admin.module.css";
 import CourseSelect from "./CourseSelect";
+import GroupSelect from "./GroupSelect";
 import { useAdminForm } from "./useAdminForm";
-
-const GROUPS = [["", "Whole class"], ["G1", "G1 only"], ["G2", "G2 only"]];
 
 /** Add or edit a weekly class. */
 export default function SlotForm({ courses, slot }: { courses: Course[]; slot?: Slot }) {
@@ -31,9 +30,7 @@ export default function SlotForm({ courses, slot }: { courses: Course[]; slot?: 
         <label>Day
           <select name="weekday" defaultValue={slot?.weekday}>{WEEKDAYS.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select>
         </label>
-        <label>Group
-          <select name="lab_group" defaultValue={slot?.lab_group}>{GROUPS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-        </label>
+        <GroupSelect value={slot?.lab_group} />
       </div>
       <div className={s.f2}>
         <label>Starts<input name="starts_at" defaultValue={slot ? pgTime(slot.starts_at) : ""} placeholder="8:00 AM" /></label>

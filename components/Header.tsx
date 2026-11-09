@@ -1,17 +1,16 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getOfficer } from "@/lib/auth";
-import { loadCourses } from "@/lib/data";
 import Nav from "./Nav";
 import s from "./Header.module.css";
 
 export default async function Header() {
   // The header must render even when the database is down.
-  const courses = await loadCourses().catch(() => []);
   const officer = await getOfficer().catch(() => null);
   return (
     <header className={s.top}>
       <Link className={s.mark} href="/" aria-label="Class Hub, home">
-        <i aria-hidden="true">{courses.map((c) => <b key={c.id} style={{ background: c.color }} />)}</i>
+        <Image src="/logo.png" width={36} height={36} alt="" priority />
         <span>Class Hub</span>
       </Link>
       <Nav />

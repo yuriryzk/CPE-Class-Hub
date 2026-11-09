@@ -15,13 +15,13 @@ export async function saveNotice(fd: FormData): Promise<ActionResult> {
     if (n.calendar === "new") {
       const { data, error } = await db
         .from("calendar_items")
-        .insert({ course_id: n.course_id, kind: n.new_kind, title: n.title, on_date: n.new_date, at_time: n.new_time })
+        .insert({ course_id: n.course_id, kind: n.new_kind, title: n.title, on_date: n.new_date, at_time: n.new_time, lab_group: n.lab_group })
         .select("id")
         .single();
       if (error) throw error;
       itemId = newItem = data.id;
     }
-    const row = { course_id: n.course_id, title: n.title, body: n.body, posted_on: n.posted_on, pinned: n.pinned, calendar_item_id: itemId };
+    const row = { course_id: n.course_id, title: n.title, body: n.body, posted_on: n.posted_on, lab_group: n.lab_group, pinned: n.pinned, calendar_item_id: itemId };
     const { error } = id
       ? await db.from("notices").update(row).eq("id", id)
       : await db.from("notices").insert({ ...row, created_by: officer.email });

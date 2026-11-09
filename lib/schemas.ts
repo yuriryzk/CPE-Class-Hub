@@ -14,6 +14,7 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a date like 2026-11-15
 const sunday = date.refine((d) => weekdayOf(d) === 7, "Must be a Sunday");
 const num = (min: number, max: number) => z.coerce.number().int().min(min).max(max);
 const kind = z.enum(["quiz_exam", "due", "no_class", "extra_class"]);
+const group = z.enum(["", "G1", "G2"]);
 
 const minutes = z.string().transform((s, ctx) => {
   const m = parseTime(s);
@@ -31,6 +32,7 @@ export const itemSchema = z.object({
   on_date: date,
   at_time: optTime,
   notes: optText(2000),
+  lab_group: group.default(""),
 });
 
 export const noticeSchema = z
@@ -39,6 +41,7 @@ export const noticeSchema = z
     title: text(1, 120),
     body: text(1, 4000),
     posted_on: date,
+    lab_group: group.default(""),
     pinned: checkbox,
     calendar: z.enum(["none", "link", "new"]),
     calendar_item_id: z.preprocess(blank, z.string().optional()).transform((v) => v ?? null),
@@ -60,7 +63,7 @@ export const slotSchema = z
     starts_at: minutes,
     ends_at: minutes,
     room: optText(40),
-    lab_group: z.enum(["", "G1", "G2"]),
+    lab_group: group,
   })
   .refine((s) => s.ends_at > s.starts_at, { path: ["ends_at"], message: "End time must be after the start time" })
   .transform((s) => ({ ...s, starts_at: toPgTime(s.starts_at), ends_at: toPgTime(s.ends_at) }));

@@ -20,42 +20,32 @@ export const Tag = ({ c }: { c?: Course }) => (
   <span className="tag" style={{ "--c": c?.color ?? "#ddd" } as React.CSSProperties} title={c?.name}>{c?.code ?? "—"}</span>
 );
 
-type Props = { e: Entry; date: string; course?: Course; inGroup?: boolean; next?: boolean; noticed?: boolean; past?: boolean };
+type Props = { e: Entry; date: string; course?: Course; inGroup?: boolean; next?: boolean; noticed?: boolean };
 
-export default function EventCard({ e, date, course, inGroup, next, noticed, past }: Props) {
+export default function EventCard({ e, date, course, inGroup, next, noticed }: Props) {
   const cls = [s.ev, inGroup && s.in];
   let body: React.ReactNode, open: () => void;
   if (e.t === "slot") {
-    cls.push(e.cancelled && s.cx);
     open = () => openDetail({ t: "slot", id: e.slot.id, date });
     body = (
       <>
         <b>{course?.name ?? "Course"}</b>
-        <small><i>{e.cancelled ? "Cancelled" : "Class"}{e.slot.lab_group && ` · ${e.slot.lab_group}`}</i>{timeSpan(e.slot)}</small>
+        <small><i>Class{e.slot.lab_group && ` · ${e.slot.lab_group}`}</i>{timeSpan(e.slot)}</small>
         {e.slot.room && <small>{e.slot.room}</small>}
       </>
     );
-  } else if (e.t === "item") {
+  } else {
     cls.push(KIND_CLASS[e.item.kind], next && s.nx);
     open = () => openDetail({ t: "item", id: e.item.id });
     body = (
       <>
         <b>{e.item.title}</b>
         <small>
-          <i>{KIND[e.item.kind]}</i>
+          <i>{KIND[e.item.kind]}{e.item.lab_group && ` · ${e.item.lab_group}`}</i>
           {e.item.at_time && pgTime(e.item.at_time)}
           {e.item.moved_from_date && <span className={s.mv}>Moved</span>}
           {noticed && <span className={s.nb}>Notice</span>}
         </small>
-      </>
-    );
-  } else {
-    cls.push(s.note, past && s.cx);
-    open = () => openDetail({ t: "note", id: e.notice.id });
-    body = (
-      <>
-        <b>{e.notice.title}</b>
-        <small><i>Notice</i></small>
       </>
     );
   }

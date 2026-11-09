@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { savePicks } from "@/components/schedule/PicksSync";
 import { codesParam, toggle } from "@/lib/picks";
-import type { Course } from "@/lib/types";
+import { GENERAL, type Course } from "@/lib/types";
 import s from "./Tabs.module.css";
 
 const sw = (c: string) => ({ "--c": c }) as React.CSSProperties;
@@ -38,14 +38,14 @@ export default function Tabs(p: Props) {
   }
   return (
     <nav className={s.tabs} aria-label={p.label}>
-      <Link href={`${p.base}?course=general`} className={s.ink} aria-current={p.sel === "general" ? "page" : undefined}>
-        General <small>{p.counts.general ?? 0}</small>
-      </Link>
       {p.courses.map((c) => (
         <Link key={c.id} href={`${p.base}?course=${c.code}`} title={c.name} style={sw(c.color)} aria-current={p.sel === c.code ? "page" : undefined}>
           <span className="sw" style={sw(c.color)} aria-hidden="true" />{c.code} <small>{p.counts[c.id] ?? 0}</small>
         </Link>
       ))}
+      <Link href={`${p.base}?course=general`} style={sw(GENERAL)} aria-current={p.sel === "general" ? "page" : undefined}>
+        <span className="sw" style={sw(GENERAL)} aria-hidden="true" />General <small>{p.counts.general ?? 0}</small>
+      </Link>
     </nav>
   );
 }

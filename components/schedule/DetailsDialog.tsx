@@ -10,7 +10,7 @@ import { isPastNotice, type WeekData } from "@/lib/week";
 import { KIND, pgTime, Tag, timeSpan } from "./EventCard";
 import s from "./DetailsDialog.module.css";
 
-export type DetailKey = { t: "slot"; id: string; date: string } | { t: "item"; id: string } | { t: "note"; id: string };
+export type DetailKey = { t: "slot"; id: string; date: string } | { t: "item"; id: string };
 
 const EVENT = "classhub:detail";
 /** Open the details panel for a calendar entry. Needs <DetailsDialog /> on the page. */
@@ -40,14 +40,29 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
   const today = manilaToday();
   const noteOf = (id: string) => notices.find((n) => n.calendar_item_id === id);
 
+  const run = async (act: () => Promise<ActionResult>, done: string) => {
+    setBusy(true);
+    try {
+      const r = await act();
+      toast(r.ok ? done : r.message);
+      if (r.ok) {
+        ref.current?.close();
+        router.refresh();
+      }
+    } catch {
+      toast("Couldn't save. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   let foot: React.ReactNode;
-  let course: string | undefined, kind = "", title = "", rows: [string, string][] = [], note: Notice | undefined, body: string | undefined;
+  let course: string | undefined, kind = "", title = "", rows: [string, string][] = [], note: Notice | undefined;
   if (key?.t === "slot") {
     const slot = week?.slots.find((x) => x.id === key.id);
     if (slot) {
-      const off = week?.items.find((i) => i.kind === "no_class" && i.on_date === key.date && i.course_id === slot.course_id && (!i.class_slot_id || i.class_slot_id === slot.id));
       course = slot.course_id;
-      kind = off ? "Class (cancelled)" : "Class";
+      kind = "Class";
       title = courses.find((c) => c.id === slot.course_id)?.name ?? "Course";
       rows = [
         ["When", `${formatLong(key.date)}, ${timeSpan(slot)}`],
@@ -55,49 +70,25 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
         ["Group", slot.lab_group || "Whole class"],
         ["Repeats", `Every ${formatLong(key.date).split(" ")[0]}`],
       ];
-      const run = async (act: () => Promise<ActionResult>, done: string) => {
-        setBusy(true);
-        try {
-          const r = await act();
-          toast(r.ok ? done : r.message);
-          if (r.ok) router.refresh();
-        } catch {
-          toast("Couldn't save. Try again.");
-        } finally {
-          setBusy(false);
-        }
-      };
-      foot = !off
-        ? <button type="button" className="btn s" disabled={busy} onClick={() => run(() => cancelSlotOn(slot.id, key.date), `Class cancelled for ${formatShort(key.date)}`)}>Cancel this class on {formatShort(key.date)} only</button>
-        : off.class_slot_id
-          ? <button type="button" className="btn s" disabled={busy} onClick={() => run(() => restoreSlotOn(off.id), "Class restored")}>Restore this class</button>
-          : <span>Cancelled for the whole course. Change it under Admin → Calendar.</span>;
-      if (off) {
-        rows.push(["Why", off.notes || "No class on this day"]);
-        note = noteOf(off.id);
-      }
+      foot = <button type="button" className="btn s" disabled={busy} onClick={() => run(() => cancelSlotOn(slot.id, key.date), `Class cancelled for ${formatShort(key.date)}`)}>Cancel this class on {formatShort(key.date)} only</button>;
     }
   } else if (key?.t === "item") {
     const x = items.find((i) => i.id === key.id);
     if (x) {
+      const slot = x.class_slot_id ? week?.slots.find((s) => s.id === x.class_slot_id) : undefined;
       course = x.course_id;
       kind = KIND[x.kind];
       title = x.title;
-      rows = [["When", at(x.on_date, x.at_time)]];
+      rows = [["When", slot ? `${formatLong(x.on_date)}, ${timeSpan(slot)}` : at(x.on_date, x.at_time)]];
       if (x.moved_from_date) rows.push(["Moved from", at(x.moved_from_date, x.moved_from_time)]);
       rows.push(["Course", courses.find((c) => c.id === x.course_id)?.name ?? ""]);
+      const group = slot?.lab_group || x.lab_group;
+      if (group) rows.push(["Group", group]);
       if (x.notes) rows.push(["Notes", x.notes]);
       note = noteOf(x.id);
-    }
-  } else if (key?.t === "note") {
-    const n = notices.find((n) => n.id === key.id);
-    if (n) {
-      course = n.course_id;
-      kind = "Notice";
-      title = n.title;
-      body = n.body;
-      rows = [["Posted", formatLong(n.posted_on)], ["Course", courses.find((c) => c.id === n.course_id)?.name ?? ""]];
-      if (isPastNotice(n, items, today)) rows.push(["Status", n.done ? "Done" : "Passed"]);
+      // A one-class cancel is undone here, since the cancelled class itself is no longer on the calendar.
+      if (x.kind === "no_class" && x.class_slot_id)
+        foot = <button type="button" className="btn s" disabled={busy} onClick={() => run(() => restoreSlotOn(x.id), "Class restored")}>Restore this class</button>;
     }
   }
   const c = courses.find((x) => x.id === course);
@@ -117,7 +108,6 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
             <button type="button" className={s.x} aria-label="Close" onClick={() => ref.current?.close()}>×</button>
           </div>
           <div className={s.db}>
-            {body && <p className={s.body}>{body}</p>}
             <dl>
               {rows.map(([k, v]) => <div key={k} className={s.row}><dt>{k}</dt><dd>{v}</dd></div>)}
             </dl>
@@ -125,7 +115,7 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
               <div className={`${s.lnote}${notePast ? ` ${s.past}` : ""}`}>
                 <h3>Notice: {note.title}</h3>
                 <p>{note.body}</p>
-                <p className={s.meta}>Posted {formatShort(note.posted_on)}{notePast ? ` · ${note.done ? "Done" : "Passed"}` : ""}</p>
+                <p className={s.meta}>{formatShort(note.posted_on)}{notePast ? ` · ${note.done ? "Done" : "Passed"}` : ""}</p>
               </div>
             )}
             {isOfficer && foot && <div className={s.foot}><p>Officers only</p>{foot}</div>}

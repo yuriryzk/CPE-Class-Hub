@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Item, Notice, Slot } from "@/lib/types";
 import {
-  dayEntries, groupByCourse, isPastNotice, movedFields, nextUp, sortNotices, termWeek, type WeekData,
+  dayEntries, groupByCourse, isPastNotice, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
 } from "@/lib/week";
 
 const term = { starts_on: "2026-11-15", week_count: 18 };
@@ -11,13 +11,13 @@ const breaks = [
 ];
 const slot = (id: string, course_id: string, weekday: number, starts_at: string, lab_group: Slot["lab_group"] = ""): Slot =>
   ({ id, course_id, weekday, starts_at, ends_at: "23:00:00", room: null, lab_group });
-const item = (id: string, course_id: string, kind: Item["kind"], on_date: string, at_time: string | null = null, class_slot_id: string | null = null): Item =>
-  ({ id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id });
+const item = (id: string, course_id: string, kind: Item["kind"], on_date: string, at_time: string | null = null, class_slot_id: string | null = null, lab_group: Item["lab_group"] = ""): Item =>
+  ({ id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id, lab_group });
 const notice = (id: string, over: Partial<Notice> = {}): Notice =>
-  ({ id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, ...over });
+  ({ id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, lab_group: "", ...over });
 const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, linkedItems: [], term, breaks });
 const ids = (es: ReturnType<typeof dayEntries>) =>
-  es.map((e) => (e.t === "slot" ? e.slot.id : e.t === "item" ? e.item.id : e.notice.id));
+  es.map((e) => (e.t === "slot" ? e.slot.id : e.item.id));
 
 describe("termWeek", () => {
   it("numbers weeks, labels breaks, null outside the term", () => {
@@ -38,29 +38,32 @@ describe("dayEntries", () => {
     expect(ids(dayEntries("2026-12-22", d, [], ""))).toEqual(["due"]);
   });
 
-  it("sorts by start time; untimed no_class sits at its course's class", () => {
+  it("sorts by start time; a cancelled class is left out and its untimed no_class takes its place", () => {
     const d = data(
       [slot("s1", "a", 2, "07:30:00"), slot("s2", "b", 2, "10:30:00")],
       [item("late", "a", "due", "2026-11-17", "13:00:00"), item("nc", "b", "no_class", "2026-11-17")],
     );
     const es = dayEntries("2026-11-17", d, [], "");
-    expect(ids(es)).toEqual(["s1", "s2", "nc", "late"]);
-    expect(es[1]).toMatchObject({ t: "slot", cancelled: true });
-    expect(es[2].m).toBe(630);
+    expect(ids(es)).toEqual(["s1", "nc", "late"]);
+    expect(es[1].m).toBe(630);
   });
 
-  it("whole-course no_class cancels every slot of the course that day", () => {
+  it("whole-course no_class removes every slot of the course that day", () => {
     const d = data([slot("g1", "a", 2, "08:00:00", "G1"), slot("g2", "a", 2, "10:00:00", "G2")], [item("nc", "a", "no_class", "2026-11-17")]);
-    const es = dayEntries("2026-11-17", d, [], "");
-    expect(es.filter((e) => e.t === "slot").every((e) => e.t === "slot" && e.cancelled)).toBe(true);
+    expect(ids(dayEntries("2026-11-17", d, [], ""))).toEqual(["nc"]);
   });
 
-  it("slot-specific no_class cancels only that slot and takes its start", () => {
+  it("slot-specific no_class removes only that slot and takes its start", () => {
     const d = data([slot("g1", "a", 2, "08:00:00", "G1"), slot("g2", "a", 2, "10:00:00", "G2")], [item("nc", "a", "no_class", "2026-11-17", null, "g1")]);
     const es = dayEntries("2026-11-17", d, [], "");
-    const cx = (id: string) => es.some((e) => e.t === "slot" && e.slot.id === id && e.cancelled);
-    expect([cx("g1"), cx("g2")]).toEqual([true, false]);
-    expect(es.find((e) => e.t === "item")!.m).toBe(480);
+    expect(ids(es)).toEqual(["nc", "g2"]);
+    expect(es[0].m).toBe(480);
+  });
+
+  it("group G1 hides G2-only items, keeps whole-class ones", () => {
+    const d = data([], [item("all", "a", "due", "2026-11-17"), item("only2", "a", "due", "2026-11-17", null, null, "G2")]);
+    expect(ids(dayEntries("2026-11-17", d, [], "G1"))).toEqual(["all"]);
+    expect(ids(dayEntries("2026-11-17", d, [], ""))).toEqual(["all", "only2"]);
   });
 
   it("group G2 hides G1 slots and their no_class items, keeps whole-class slots", () => {
@@ -76,18 +79,18 @@ describe("dayEntries", () => {
     expect(ids(dayEntries("2026-11-17", d, ["cns"], ""))).toEqual(["sc"]);
   });
 
-  it("adds unlinked notices after timed entries, skips linked ones", () => {
+  it("never puts notices on the calendar; a linked one shows through its item", () => {
     const d = data([slot("s", "a", 2, "08:00:00")], [item("i", "a", "due", "2026-11-17")], [
       notice("free", { posted_on: "2026-11-17" }),
       notice("linked", { posted_on: "2026-11-17", calendar_item_id: "i" }),
     ]);
-    expect(ids(dayEntries("2026-11-17", d, [], ""))).toEqual(["s", "i", "free"]);
+    expect(ids(dayEntries("2026-11-17", d, [], ""))).toEqual(["s", "i"]);
   });
 });
 
 describe("groupByCourse", () => {
   it("groups by first appearance", () => {
-    const e = (course: string, m: number) => ({ t: "note", notice: notice("x"), course, m }) as const;
+    const e = (course: string, m: number) => ({ t: "item", item: item("x", course, "due", "2026-11-17"), course, m }) as const;
     const out = groupByCourse([e("A", 450), e("B", 540), e("A", 780)]);
     expect(out.map((g) => g.map((x) => x.course))).toEqual([["A", "A"], ["B"]]);
   });
@@ -125,6 +128,18 @@ describe("notices", () => {
       notice("pin", { pinned: true, posted_on: "2026-11-02" }),
     ];
     expect(sortNotices(ns, items, "2026-11-10").map((n) => n.id)).toEqual(["pin", "new", "old", "done"]);
+  });
+  it("noticesByCourse: course order, then pinned, active before past, soonest first", () => {
+    const ns = [
+      notice("b-late", { course_id: "b", posted_on: "2026-11-20" }),
+      notice("a-done", { course_id: "a", posted_on: "2026-11-01", done: true }),
+      notice("a-late", { course_id: "a", posted_on: "2026-11-25" }),
+      notice("b-soon", { course_id: "b", posted_on: "2026-11-12" }),
+      notice("a-soon", { course_id: "a", posted_on: "2026-11-11" }),
+      notice("a-pin", { course_id: "a", posted_on: "2026-11-30", pinned: true }),
+    ];
+    expect(noticesByCourse(ns, items, "2026-11-10", ["b", "a"]).map((n) => n.id))
+      .toEqual(["b-soon", "b-late", "a-pin", "a-soon", "a-late", "a-done"]);
   });
 });
 

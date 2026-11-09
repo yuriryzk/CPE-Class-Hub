@@ -34,7 +34,7 @@ export default async function AdminNotices({ searchParams }: { searchParams: Pro
             key={n.id}
             course={courses.find((c) => c.id === n.course_id)}
             title={<>{n.title}{past ? <span className={s.st}>{n.done ? "Done" : "Passed"}</span> : n.pinned && <span className={`${s.st} ${s.pin}`}>Pinned</span>}</>}
-            details={`${formatShort(n.posted_on)}${x ? ` · on the calendar ${formatShort(x.on_date)}` : ""}`}
+            details={`${formatShort(n.posted_on)}${n.lab_group ? ` · ${n.lab_group}` : ""}${x ? ` · on the calendar ${formatShort(x.on_date)}` : ""}`}
             past={past}
             editing={n.id === editing?.id}
             actions={<>

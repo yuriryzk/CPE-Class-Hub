@@ -27,16 +27,21 @@ test.describe("officer", () => {
     await form.getByLabel("Course").selectOption({ label: "CNS · Computer Networks and Security" });
     await form.getByLabel("Title").fill(title);
     await form.getByLabel("Message").fill("Submit it on the class drive.");
-    await form.getByLabel("Show it on").fill("2026-11-16");
+    await form.locator('input[name="posted_on"]').fill("2026-11-16");
 
     // A zod message shows under the field.
     await form.getByLabel("Link it to a calendar item").check();
+    // The item list only offers the chosen course's items; LAWS has none in the seed data.
+    await form.getByLabel("Course").selectOption({ label: "LAWS · CpE Laws and Professional Practice" });
+    await expect(form.getByLabel("Calendar item").locator("option")).toHaveCount(1);
+    await form.getByLabel("Course").selectOption({ label: "CNS · Computer Networks and Security" });
     await form.getByRole("button", { name: "Post notice" }).click();
     await expect(form.getByText("Pick a calendar item")).toBeVisible();
 
     await form.getByLabel("Add it as a new calendar item").check();
     await form.getByLabel("What is it?").selectOption({ label: "Due" });
-    await form.getByLabel("Date").fill("2026-11-18");
+    await form.getByLabel("Group").selectOption({ label: "G2 only" });
+    await form.locator('input[name="new_date"]').fill("2026-11-18");
     await form.getByLabel("Time (optional)").fill("3:00 PM");
     await form.getByRole("button", { name: "Post notice" }).click();
     await expect(page.getByRole("status")).toHaveText("Posted and on the calendar");
@@ -45,6 +50,7 @@ test.describe("officer", () => {
     await page.goto("/?week=2026-11-15");
     const card = cal(page).getByRole("button", { name: new RegExp(title) });
     await expect(card).toBeVisible();
+    await expect(card).toContainText("Due · G2");
     await expect(card).not.toContainText("Moved");
 
     await page.goto("/admin/calendar");
@@ -57,7 +63,7 @@ test.describe("officer", () => {
     await edit.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("status")).toHaveText("Saved");
     await expect(page.getByRole("form", { name: "Add to the calendar" })).toBeVisible();
-    await expect(row).toContainText("Due · Fri 20 Nov · 3:00 PM · moved from Wed 18 Nov · has a notice");
+    await expect(row).toContainText("Due · G2 · Fri 20 Nov · 3:00 PM · moved from Wed 18 Nov · has a notice");
 
     await page.goto("/?week=2026-11-15");
     await expect(cal(page).getByRole("button", { name: new RegExp(title) })).toContainText("Moved");
@@ -76,10 +82,10 @@ test.describe("officer", () => {
     await form.getByLabel("Course").selectOption({ label: "CNS · Computer Networks and Security" });
     await form.getByLabel("Title").fill(title);
     await form.getByLabel("Message").fill("The item is weeks after this notice.");
-    await form.getByLabel("Show it on").fill("2026-11-16");
+    await form.locator('input[name="posted_on"]').fill("2026-11-16");
     await form.getByLabel("Add it as a new calendar item").check();
     await form.getByLabel("What is it?").selectOption({ label: "Due" });
-    await form.getByLabel("Date").fill("2026-12-08");
+    await form.locator('input[name="new_date"]').fill("2026-12-08");
     await form.getByRole("button", { name: "Post notice" }).click();
     await expect(page.getByRole("status")).toHaveText("Posted and on the calendar");
 

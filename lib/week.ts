@@ -3,13 +3,14 @@ import { addDays, fromPgTime, sundayOf, weekdayOf } from "./time";
 
 export type Group = "" | "G1" | "G2";
 export type Entry =
-  | { t: "slot"; slot: Slot; course: string; m: number; cancelled: boolean }
-  | { t: "item"; item: Item; course: string; m: number }
-  | { t: "note"; notice: Notice; course: string; m: number };
+  | { t: "slot"; slot: Slot; course: string; m: number }
+  | { t: "item"; item: Item; course: string; m: number };
 export type WeekData = { slots: Slot[]; items: Item[]; notices: Notice[]; /** items the notices link to, in any week; only `items` places things on days */ linkedItems: Item[]; term: Term; breaks: TermBreak[] };
 
 const UNTIMED = 9000;
-const NOTICE = 10000;
+
+/** True when the visitor picked a lab group and `g` is the other one. "" (whole class) always shows. */
+export const otherGroup = (g: Group, group: Group) => !!(group && g && g !== group);
 
 /** Week number, a break's label, or null outside the term. `weekStart` is a Sunday. */
 export function termWeek(weekStart: string, term: Term, breaks: TermBreak[]): number | string | null {
@@ -24,31 +25,30 @@ export function termWeek(weekStart: string, term: Term, breaks: TermBreak[]): nu
 }
 
 export function dayEntries(date: string, d: WeekData, sel: string[], group: Group): Entry[] {
-  const hidden = (s: Slot | undefined) => !!(s && group && s.lab_group && s.lab_group !== group);
+  const hidden = (s: Slot | undefined) => !!s && otherGroup(s.lab_group, group);
   const isBreak = typeof termWeek(sundayOf(date), d.term, d.breaks) === "string";
   const wd = weekdayOf(date);
   const dayItems = d.items.filter((i) => i.on_date === date);
   const cancels = (s: Slot) =>
     dayItems.some((i) => i.kind === "no_class" && i.course_id === s.course_id && (!i.class_slot_id || i.class_slot_id === s.id));
 
-  const slots: Entry[] = (isBreak ? [] : d.slots)
-    .filter((s) => s.weekday === wd && !hidden(s))
-    .map((s) => ({ t: "slot", slot: s, course: s.course_id, m: fromPgTime(s.starts_at), cancelled: cancels(s) }));
+  const daySlots = (isBreak ? [] : d.slots).filter((s) => s.weekday === wd && !hidden(s));
+  // A cancelled class is left out; its "No class" item stands in for it at the same time.
+  const slots: Entry[] = daySlots
+    .filter((s) => !cancels(s))
+    .map((s) => ({ t: "slot", slot: s, course: s.course_id, m: fromPgTime(s.starts_at) }));
   const slotOf = (i: Item) => (i.class_slot_id ? d.slots.find((s) => s.id === i.class_slot_id) : undefined);
   const classStart = (course: string) =>
-    Math.min(UNTIMED, ...slots.filter((e) => e.course === course).map((e) => e.m));
+    Math.min(UNTIMED, ...daySlots.filter((s) => s.course_id === course).map((s) => fromPgTime(s.starts_at)));
   const items: Entry[] = dayItems
-    .filter((i) => !hidden(slotOf(i)))
+    .filter((i) => !otherGroup(i.lab_group, group) && !hidden(slotOf(i)))
     .map((i) => {
       const s = slotOf(i);
       const m = i.at_time ? fromPgTime(i.at_time) : s ? fromPgTime(s.starts_at) : classStart(i.course_id);
       return { t: "item", item: i, course: i.course_id, m };
     });
-  const notes: Entry[] = d.notices
-    .filter((n) => n.posted_on === date && !n.calendar_item_id)
-    .map((n) => ({ t: "note", notice: n, course: n.course_id, m: NOTICE }));
 
-  return [...slots, ...items, ...notes].filter((e) => !sel.length || sel.includes(e.course)).sort((a, b) => a.m - b.m);
+  return [...slots, ...items].filter((e) => !sel.length || sel.includes(e.course)).sort((a, b) => a.m - b.m);
 }
 
 export function groupByCourse(entries: Entry[]): Entry[][] {
@@ -74,6 +74,14 @@ export function isPastNotice(n: Notice, items: Item[], todayISO: string): boolea
 export function sortNotices(ns: Notice[], items: Item[], todayISO: string): Notice[] {
   const past = (n: Notice) => Number(isPastNotice(n, items, todayISO));
   return [...ns].sort((a, b) => past(a) - past(b) || Number(b.pinned) - Number(a.pinned) || b.posted_on.localeCompare(a.posted_on));
+}
+
+/** Notices page order: grouped by course in `courseIds` order; in each course pinned first, past or done last, soonest date first. */
+export function noticesByCourse(ns: Notice[], items: Item[], todayISO: string, courseIds: string[]): Notice[] {
+  const rank = (n: Notice) => courseIds.indexOf(n.course_id);
+  const past = (n: Notice) => Number(isPastNotice(n, items, todayISO));
+  return [...ns].sort((a, b) =>
+    rank(a) - rank(b) || past(a) - past(b) || Number(b.pinned) - Number(a.pinned) || a.posted_on.localeCompare(b.posted_on));
 }
 
 /** New moved_from_* after moving an item to nextDate/nextTime; keeps the first original, clears when back. */

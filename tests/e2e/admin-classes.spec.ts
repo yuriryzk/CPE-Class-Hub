@@ -33,15 +33,18 @@ test.describe("officer", () => {
     await expect(dlg.getByText("Officers only")).toBeVisible();
     await dlg.getByRole("button", { name: "Cancel this class on Thu 19 Nov only" }).click();
     await expect(page.getByRole("status")).toHaveText("Class cancelled for Thu 19 Nov");
-    await expect(dlg.getByRole("button", { name: "Restore this class" })).toBeVisible();
-    await dlg.getByRole("button", { name: "Close" }).click();
-    await expect(thisWeek).toContainText("Cancelled");
+    await expect(dlg).toBeHidden();
+    // The cancelled class leaves the calendar; its "No class" item stands in.
+    await expect(thisWeek).toHaveCount(0);
+    const off = page.getByRole("region", { name: "Calendar" }).getByRole("button").filter({ hasText: "No class · G2" });
+    await expect(off).toBeVisible();
     await expect(await card("2026-11-22")).toContainText("Class · G2");
 
-    await (await card("2026-11-15")).click();
+    await page.goto("/?week=2026-11-15");
+    await off.click();
     await page.getByRole("dialog").getByRole("button", { name: "Restore this class" }).click();
     await expect(page.getByRole("status")).toHaveText("Class restored");
-    await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
+    await expect(off).toHaveCount(0);
     await expect(await card("2026-11-15")).toContainText("Class · G2");
 
     await page.goto("/admin/classes");

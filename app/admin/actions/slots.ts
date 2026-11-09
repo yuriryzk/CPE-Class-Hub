@@ -27,11 +27,11 @@ export async function cancelSlotOn(slotId: string, date: string): Promise<Action
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, message: "Pick a valid date" };
   return withOfficer(async () => {
     const db = await serverClient();
-    const { data: slot, error } = await db.from("class_slots").select("course_id, weekday").eq("id", slotId).single();
+    const { data: slot, error } = await db.from("class_slots").select("course_id, weekday, lab_group").eq("id", slotId).single();
     if (error) throw error;
     if (slot.weekday !== weekdayOf(date)) throw new Error("Date is not on the class's weekday");
     const { error: e2 } = await db.from("calendar_items").insert({
-      course_id: slot.course_id, kind: "no_class", title: "No class", on_date: date, class_slot_id: slotId,
+      course_id: slot.course_id, kind: "no_class", title: "No class", on_date: date, class_slot_id: slotId, lab_group: slot.lab_group,
     });
     if (e2 && e2.code !== "23505") throw e2; // already cancelled for that day
   });

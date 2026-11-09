@@ -1,7 +1,5 @@
 .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:28px;background:var(--card);border-bottom:3px solid var(--ink);height:68px;padding:0 var(--pad)}
 .mark{display:flex;align-items:center;gap:10px;text-decoration:none}
-.mark i{display:grid;grid-template-columns:repeat(3,8px);gap:2px;padding:4px;background:var(--ink);border-radius:6px}
-.mark i b{width:8px;height:8px;border-radius:2px}
 .mark span{font:800 22px/1 var(--head);letter-spacing:-.02em}
 .nav{display:flex;gap:6px}
 .nav a{display:flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;text-decoration:none;font-weight:600;border:var(--bw) solid transparent}

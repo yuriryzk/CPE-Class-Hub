@@ -7,6 +7,7 @@ import { formatShort } from "@/lib/time";
 import type { Course, Item } from "@/lib/types";
 import s from "../Admin.module.css";
 import CourseSelect from "./CourseSelect";
+import GroupSelect from "./GroupSelect";
 import { useAdminForm } from "./useAdminForm";
 
 /** Add or edit a one-off calendar item. */
@@ -25,9 +26,12 @@ export default function ItemForm({ courses, today, item }: { courses: Course[]; 
       <p className={s.hint}>{item ? "Changing the date or time marks it as moved." : "For one-off things. Regular classes go in Class."}</p>
       {item && <input type="hidden" name="id" value={item.id} />}
       <CourseSelect courses={courses} value={item?.course_id} />
-      <label>What is it?
-        <select name="kind" defaultValue={item?.kind}>{Object.entries(KIND).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-      </label>
+      <div className={s.f2}>
+        <label>What is it?
+          <select name="kind" defaultValue={item?.kind}>{Object.entries(KIND).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+        </label>
+        <GroupSelect value={item?.lab_group} />
+      </div>
       <label>Title<input name="title" defaultValue={item?.title} maxLength={120} required /></label>
       {err("title")}
       <div className={s.f2}>

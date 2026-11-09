@@ -1,25 +1,25 @@
 "use client";
 import { addDays } from "@/lib/time";
-import type { Course } from "@/lib/types";
-import { dayEntries, type WeekData } from "@/lib/week";
+import type { Course, Item } from "@/lib/types";
+import { dayEntries, otherGroup, type WeekData } from "@/lib/week";
 import DayColumn from "./DayColumn";
 import { useGroup } from "./GroupSwitch";
 import s from "./Calendar.module.css";
 
-export type CalendarProps = { week: WeekData; courses: Course[]; sel: string[]; today: string; weekStart: string; nextId: string | null };
+/** `upcoming`: Next up candidates in order; the first one in the visitor's lab group gets highlighted. */
+export type CalendarProps = { week: WeekData; courses: Course[]; sel: string[]; today: string; weekStart: string; upcoming: Item[] };
 
 const KEY: [string, React.CSSProperties][] = [
   ["Class", {}],
-  ["Cancelled", { background: "#f3f3f0", borderStyle: "dashed" }],
   ["Quiz or exam", { background: "#111" }],
   ["Due", { borderStyle: "dashed" }],
   ["No class", { background: "repeating-linear-gradient(135deg,#d9d9d4 0 2px,#fff 2px 6px)" }],
-  ["Notice", { background: "#fffef7" }],
 ];
 
 /** `wide` draws all seven days at desktop width whatever the screen, for the image download. */
-export default function Calendar({ week, courses, sel, today, weekStart, nextId, wide }: CalendarProps & { wide?: boolean }) {
+export default function Calendar({ week, courses, sel, today, weekStart, upcoming, wide }: CalendarProps & { wide?: boolean }) {
   const group = useGroup();
+  const nextId = upcoming.find((i) => !otherGroup(i.lab_group, group))?.id ?? null;
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   return (
     <section aria-label={wide ? undefined : "Calendar"} className={wide ? s.wide : undefined}>

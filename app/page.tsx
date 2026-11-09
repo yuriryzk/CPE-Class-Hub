@@ -47,9 +47,10 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const sub = (typeof tw === "number" ? `${formatUS(weekStart)} to ${formatUS(weekEnd)}` : `${formatLong(weekStart)} to ${formatLong(weekEnd)}`)
     + (typeof tw === "string" ? ` · ${tw}, no classes` : "")
     + (codes.length ? ` · showing ${andList(codes)}` : "");
-  const up = upcoming ? nextUp(upcoming, today, manilaNowMinutes(), sel) : null;
+  // All candidates: NextUp and the calendar drop the other lab group's items in the browser, where the group is known.
+  const up = upcoming ? nextUp(upcoming, today, manilaNowMinutes(), sel, upcoming.length) : null;
   const upNotices = (up && (await orNull(loadNoticesForItems(up.map((i) => i.id))))) || [];
-  const calProps = week && { week, courses: list, sel, today, weekStart, nextId: up?.[0]?.id ?? null };
+  const calProps = week && { week, courses: list, sel, today, weekStart, upcoming: up ?? [] };
 
   return (
     <main>
