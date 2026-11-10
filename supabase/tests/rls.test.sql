@@ -1,5 +1,5 @@
 begin;
-select plan(23);
+select plan(24);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -81,6 +81,10 @@ select lives_ok(
   'officer sets an instructor');
 select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM')));
 select is((select instructor from courses where code = 'PM'), 'Engr. Cruz', 'a save without the instructor keeps it');
+
+-- updated_at: an edit moves it past when the row was added (the footer's "Updated" time)
+update files set title = title || ' (edited)' where course_id is null;
+select ok((select bool_and(updated_at > created_at) from files where course_id is null), 'editing a row bumps updated_at');
 
 -- one cancel per class per day
 select has_index('calendar_items', 'calendar_items_slot_day_key', 'a class is cancelled at most once per day');

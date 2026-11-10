@@ -6,6 +6,10 @@ test("home renders the header and hides notifications", async ({ page }) => {
   for (const name of ["Schedule", "Notices", "Files"]) {
     await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
   }
-  await expect(page.getByRole("link", { name: "Officer sign in" })).toHaveAttribute("href", "/login");
+  const foot = page.getByRole("contentinfo");
+  await expect(foot.getByRole("link", { name: "Officer sign in" })).toHaveAttribute("href", "/login");
+  await expect(foot).toContainText("CPE 3C");
+  await expect(foot).toContainText(/Updated [A-Z][a-z]{2} \d+ [A-Z][a-z]{2}, \d+:\d\d [AP]M/);
+  await expect(foot).toContainText(/v\d+\.\d+\.\d+/);
   await expect(page.getByText("Turn on notifications")).toHaveCount(0);
 });

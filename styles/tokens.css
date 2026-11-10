@@ -1,13 +1,13 @@
 :root{--bg:#efefef;--card:#fff;--ink:#111;--muted:#4d4d4d;--soft:#e9e8e3;--r:10px;--bw:2.5px;--sh:4px 4px 0 var(--ink);--pad:32px;--gap:24px;
 --head:var(--font-head),"Arial Black",sans-serif;color-scheme:light;box-sizing:border-box}
 *,*:before,*:after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--font-body),system-ui,sans-serif;font-variant-numeric:tabular-nums}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--font-body),system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:100dvh;display:flex;flex-direction:column}
 h1,h2,h3,p{margin:0}
 a{color:inherit}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid #2f6bff;outline-offset:3px}
 .box{background:var(--card);border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh)}
-main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
+main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto;width:100%;flex:1 0 auto} /* grows so the footer sits at the bottom of short pages */
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 18px;border:var(--bw) solid var(--ink);border-radius:var(--r);background:var(--card);box-shadow:3px 3px 0 var(--ink);cursor:pointer;text-decoration:none;font-weight:700;white-space:nowrap;color:var(--ink)}
 .btn:hover{background:var(--soft)}
@@ -25,7 +25,7 @@ main{padding:32px var(--pad) 80px;max-width:1560px;margin:0 auto}
 
 @media(max-width:900px){
 :root{--pad:16px;--gap:18px}
-main{padding-top:22px;padding-bottom:100px}
+main{padding-top:22px;padding-bottom:32px}
 .toast{bottom:88px}
 .btn.s{height:36px;padding:0 12px;font-size:14px}
 }

@@ -15,7 +15,7 @@ export default async function Header() {
       </Link>
       <Nav />
       <div className={s.end}>
-        {officer ? (
+        {officer && (
           <>
             <span className={s.who}>{officer.name}</span>
             <Link className="btn s" href="/admin">Admin</Link>
@@ -23,8 +23,6 @@ export default async function Header() {
               <button className="btn s">Sign out</button>
             </form>
           </>
-        ) : (
-          <Link className="btn s" href="/login">Officer sign in</Link>
         )}
       </div>
     </header>

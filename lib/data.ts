@@ -88,6 +88,16 @@ export async function loadItems(): Promise<Item[]> {
   return run("calendar", db.from("calendar_items").select("*").order("on_date").order("at_time", { nullsFirst: true }));
 }
 
+/** The newest change to any course, class, calendar item, notice or file. Deletions leave no trace, so they don't count. */
+export async function loadLastUpdate(): Promise<string | null> {
+  const db = await serverClient();
+  const latest = (table: string) =>
+    run<{ updated_at: string }[]>("footer", db.from(table).select("updated_at").order("updated_at", { ascending: false }).limit(1));
+  const rows = await Promise.all(["courses", "class_slots", "calendar_items", "notices", "files"].map(latest));
+  const times = rows.flat().map((r) => r.updated_at);
+  return times.length ? times.reduce((a, b) => (Date.parse(a) > Date.parse(b) ? a : b)) : null;
+}
+
 /** The order this browser picked for an admin list; "recent" unless "By course" was chosen. */
 export async function loadSort(list: string): Promise<AdminSort> {
   return (await cookies()).get(SORT_COOKIE(list))?.value === "course" ? "course" : "recent";
