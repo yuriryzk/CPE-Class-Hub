@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { savePicks } from "@/components/schedule/PicksSync";
 import { codesParam, toggle } from "@/lib/picks";
 import { GENERAL, type Course } from "@/lib/types";
@@ -16,6 +17,15 @@ type Props = { label: string; base: string; courses: Course[]; counts: Record<st
 /** Folder tabs. Multi: tap several courses, remembered. Single: one tab, a plain link. */
 export default function Tabs(p: Props) {
   const router = useRouter();
+  const single = p.multi ? null : p.sel;
+  // On a phone the row scrolls sideways; bring the one chosen tab (General is last) into view.
+  // Not for multi-pick rows, where jumping back to the first pick would fight the next tap.
+  useEffect(() => {
+    if (!single) return;
+    const row = document.querySelector<HTMLElement>("[data-tabs]");
+    const tab = row?.querySelector<HTMLElement>("[aria-current=page]");
+    if (row && tab) row.scrollLeft = tab.offsetLeft - 16;
+  }, [single]);
   if (p.multi) {
     const pick = (id: string | "all") => {
       const ids = toggle(p.sel, id, p.courses.length);
@@ -24,7 +34,7 @@ export default function Tabs(p: Props) {
       router.push(codes ? `${p.base}?${new URLSearchParams({ course: codes })}` : p.base, { scroll: false });
     };
     return (
-      <div className={s.tabs} role="group" aria-label={p.label}>
+      <div className={s.tabs} role="group" aria-label={p.label} data-tabs>
         <button type="button" className={`${s.all} ${s.ink}`} aria-pressed={!p.sel.length} onClick={() => pick("all")}>
           <span className="sw" aria-hidden="true" />All <small>{p.counts.all}</small>
         </button>
@@ -37,7 +47,7 @@ export default function Tabs(p: Props) {
     );
   }
   return (
-    <nav className={s.tabs} aria-label={p.label}>
+    <nav className={s.tabs} aria-label={p.label} data-tabs>
       {p.courses.map((c) => (
         <Link key={c.id} href={`${p.base}?course=${c.code}`} title={c.name} style={sw(c.color)} aria-current={p.sel === c.code ? "page" : undefined}>
           <span className="sw" style={sw(c.color)} aria-hidden="true" />{c.code} <small>{p.counts[c.id] ?? 0}</small>
