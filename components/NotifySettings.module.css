@@ -1,0 +1,9 @@
+.link{all:unset;cursor:pointer;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.link:focus-visible{outline:3px solid #2f6bff;outline-offset:3px}
+.note{border:2px solid var(--ink);border-radius:10px;padding:12px 14px;background:#fffef7}
+.set{border:2px solid var(--ink);border-radius:10px;padding:6px 14px 14px;margin:0}
+.set legend{font-weight:700;padding:0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px 12px;margin-top:8px}
+.row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:4px}
+.opt{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer}
+.opt input{width:18px;height:18px;margin:0;accent-color:var(--ink)}

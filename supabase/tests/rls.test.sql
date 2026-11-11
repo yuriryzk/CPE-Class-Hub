@@ -1,5 +1,5 @@
 begin;
-select plan(24);
+select plan(30);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -94,6 +94,24 @@ set local request.jwt.claims = '{"email":"head@test.local"}';
 select lives_ok($$insert into officers (email, role) values ('new@test.local', 'officer')$$, 'head inserts an officer');
 delete from officers where email = 'head@test.local';
 select is((select count(*)::int from officers where email = 'head@test.local'), 1, 'head cannot delete own row');
+
+-- push_subscriptions: only the server's service role reads or writes them; the daily claim hands each phone out once a day
+reset role;
+insert into push_subscriptions (endpoint, p256dh, auth) values ('https://push.test/a', 'k', 'a');
+create temp table manila as select (now() at time zone 'Asia/Manila')::date as today;
+grant select on manila to anon, authenticated, service_role;
+set local role anon;
+select throws_ok($$select count(*) from push_subscriptions$$, '42501', null, 'anon cannot read push subscriptions');
+select throws_ok($$insert into push_subscriptions (endpoint, p256dh, auth) values ('https://push.test/b', 'k', 'a')$$,
+  '42501', null, 'anon cannot add push subscriptions directly');
+select throws_ok($$select * from claim_push_digests(current_date)$$, '42501', null, 'anon cannot run the daily claim');
+set local role authenticated;
+set local request.jwt.claims = '{"email":"officer@test.local"}';
+select throws_ok($$select count(*) from push_subscriptions$$, '42501', null, 'officers cannot read push subscriptions');
+set local role service_role;
+select is((select count(*)::int from claim_push_digests((select today from manila))), 1, 'the first run of the day claims the phone');
+select is((select count(*)::int from claim_push_digests((select today from manila))), 0, 'a second run the same day claims nothing');
+reset role;
 
 select * from finish();
 rollback;

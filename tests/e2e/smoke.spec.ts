@@ -11,5 +11,7 @@ test("home renders the header and hides notifications", async ({ page }) => {
   await expect(foot).toContainText("CPE 3C");
   await expect(foot).toContainText(/Updated [A-Z][a-z]{2} \d+ [A-Z][a-z]{2}, \d+:\d\d [AP]M/);
   await expect(foot).toContainText(/v\d+\.\d+\.\d+/);
-  await expect(page.getByText("Turn on notifications")).toHaveCount(0);
+  // Notifications are opt-in: the panel stays closed until the footer link is used.
+  await expect(foot.getByRole("button", { name: "Notifications" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Notifications" })).toBeHidden();
 });

@@ -4,6 +4,7 @@ import { resolvePicks } from "@/lib/picks";
 import { addDays, formatLong, formatShort, formatUS, manilaNowMinutes, manilaToday, sundayOf } from "@/lib/time";
 import type { Course } from "@/lib/types";
 import { nextUp, termWeek } from "@/lib/week";
+import OfflineNote from "@/components/OfflineNote";
 import Calendar from "@/components/schedule/Calendar";
 import CourseFilter from "@/components/schedule/CourseFilter";
 import DetailsDialog from "@/components/schedule/DetailsDialog";
@@ -54,6 +55,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
 
   return (
     <main>
+      <OfflineNote />
       <PicksSync course={course ?? null} courses={list} />
       <div className="title">
         <h1>{heading}</h1>

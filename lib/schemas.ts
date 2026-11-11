@@ -86,6 +86,21 @@ export const termSchema = z.object({ starts_on: sunday, week_count: num(1, 52) }
 
 export const breakSchema = z.object({ starts_on: sunday, label: text(1, 60) });
 
+/** A browser push subscription plus the classmate's choices; courses empty = every course. */
+export const pushSchema = z.object({
+  // Only the browsers' push services, so nobody can make the nightly job call an address of their choosing.
+  endpoint: z.string().max(1000).regex(
+    /^https:\/\/(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|[\w.-]+\.push\.apple\.com|[\w.-]+\.notify\.windows\.com)\/\S+$/,
+    "Not a browser push address",
+  ),
+  keys: z.object({
+    p256dh: z.string().regex(/^[\w-]{1,200}=*$/),
+    auth: z.string().regex(/^[\w-]{1,100}=*$/),
+  }),
+  courses: z.array(z.uuid()).max(9),
+  lab_group: group,
+});
+
 export const officerSchema = z.object({ email: z.string().trim().toLowerCase().pipe(z.email()) });
 
 /** The Courses form: rows named id0/name0/code0/instructor0 ... Errors land on name{i} / code{i} / instructor{i}. */

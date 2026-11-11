@@ -2,17 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import pkg from "@/package.json";
 import { getOfficer } from "@/lib/auth";
-import { loadLastUpdate, loadTerm } from "@/lib/data";
+import { loadCourses, loadLastUpdate, loadTerm } from "@/lib/data";
+import NotifySettings from "./NotifySettings";
 import { formatShort, formatTime, manilaNowMinutes, manilaToday, sundayOf } from "@/lib/time";
 import { termWeek } from "@/lib/week";
 import s from "./Footer.module.css";
 
 export default async function Footer() {
   // Like the header, the footer must render when the database is down; the parts it couldn't load are left out.
-  const [sem, last, officer] = await Promise.all([
+  const [sem, last, officer, courses] = await Promise.all([
     loadTerm().catch(() => null),
     loadLastUpdate().catch(() => null),
     getOfficer().catch(() => null),
+    loadCourses().catch(() => null),
   ]);
   const tw = sem && termWeek(sundayOf(manilaToday()), sem.term, sem.breaks);
   const week = typeof tw === "number" ? `Week ${tw} of ${sem!.term.week_count}` : tw; // a break's label; null outside the term
@@ -25,10 +27,11 @@ export default async function Footer() {
           {week && <span>{week}</span>}
           {at && <span>Updated {formatShort(manilaToday(at))}, {formatTime(manilaNowMinutes(at))}</span>}
         </p>
-        <p className={s.end}>
+        <div className={s.end}>
+          {courses && <NotifySettings courses={courses} />}
           {!officer && <Link href="/login">Officer sign in</Link>}
           <span>v{pkg.version}</span>
-        </p>
+        </div>
       </div>
     </footer>
   );

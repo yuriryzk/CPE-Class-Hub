@@ -48,6 +48,54 @@ You do every sign-up and paste every secret yourself. Do not commit `.env.local`
    - Sign in with the head officer's Google account, post a notice, and see it on Schedule.
    - Sign in with a Google account that is not on the list. You should see "This account isn't an officer".
 
+## Phone app and daily notifications
+
+Classmates can add Class Hub to their home screen, and opt in (footer, **Notifications**) to one summary a day, around
+7 PM Manila: tomorrow's quizzes and due dates, plus notices and deadlines posted since the last summary. They pick
+courses and Both / G1 / G2; no account. Nothing is sent on quiet days. The service worker (`public/sw.js`) also keeps
+the last Schedule page seen, so Schedule opens offline with a note saying so.
+
+How it fits together:
+
+- `push_subscriptions` (migration `0009`) holds each phone's push address and choices. Row-level security is on with
+  no policies, so visitors and officers cannot read or change it; only the server's service-role key can.
+- `app/actions/push.ts` saves or removes a subscription. `app/api/cron/digest` sends the summaries.
+- Vercel Cron calls the job once a day (`vercel.json`, `0 11 * * *` = 11:00 UTC = 7 PM Manila). On the free (Hobby)
+  plan Vercel runs it at any point within that hour, so summaries arrive between 7:00 and 7:59 PM. Cron runs only on
+  production deployments, and Vercel does not retry a failed run.
+- The job is safe to run twice: `claim_push_digests` gives each phone at most one summary per Manila day. Phones whose
+  push service answers 404 or 410 are deleted.
+
+### Set up (once)
+
+1. Generate keys: `npx web-push generate-vapid-keys`. Keep the private key secret.
+2. Make a cron secret: any long random string (for example `npx -y uuid` twice, joined).
+3. In Vercel, Settings, Environment Variables, add these for **Production**:
+   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase, Project Settings, API, `service_role` (secret) key. Server only.
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: the public key from step 1.
+   - `VAPID_PRIVATE_KEY`: the private key from step 1.
+   - `VAPID_SUBJECT`: `mailto:` plus an officer's email, for push services to contact.
+   - `CRON_SECRET`: the secret from step 2. Vercel sends it to the job; anyone without it gets 401.
+4. `npx supabase db push --remote` (migration `0009`), then deploy as in "Release an update".
+5. Check the job by hand: `curl -H "Authorization: Bearer <CRON_SECRET>" https://<your-site>/api/cron/digest`.
+   It answers with counts, for example `{"claimed":3,"sent":2,"skipped":1,"failed":0,"removed":0}`. A second call the
+   same day answers `"claimed":0`.
+
+For local work, `.env.local` needs the same five names (local values: the service key from `npx supabase status`).
+
+### Test on real devices
+
+- **Android (Chrome):** open the site, footer, Notifications, pick courses and a group, Turn on, allow. Install the app
+  from Chrome's menu. Run the job by hand (step 5) after posting a notice; the summary appears; tapping it opens Class Hub
+  on the right page.
+- **iPhone (iOS 16.4 or later):** in Safari, Notifications explains Add to Home Screen. Do that, open Class Hub from the
+  Home Screen icon, then Turn on and allow. Run the job; the summary appears. Sign in once more inside the home-screen
+  app if you are an officer (iOS keeps its sign-in apart from Safari).
+- **Desktop (Chrome, Edge, Firefox):** Turn on, run the job, see the summary while the browser is open.
+- **Choices:** a G1-only phone gets no G2-only items; a phone that picked MOR gets no CNS items; Save changes updates
+  them; Turn off stops the summaries.
+- **Offline:** open Schedule once, turn on airplane mode, open Class Hub again: the last week shows with the offline note.
+
 ## Release an update
 
 1. Run the tests (see above).
