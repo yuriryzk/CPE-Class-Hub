@@ -53,23 +53,27 @@ test.describe("head officer", () => {
     }
   });
 
-  test("an instructor shows in a class's details, not on the calendar card", async ({ page }) => {
+  test("instructor and course no. show in a class's details, not on the calendar card", async ({ page }) => {
     const form = page.getByRole("form", { name: "Your courses" });
-    const save = async (name: string) => {
+    const save = async (name: string, no: string) => {
       await page.goto("/admin/courses");
       await form.getByLabel("Course 6 instructor").fill(name);
+      await form.getByLabel("Course 6 course no.").fill(no);
       await form.getByRole("button", { name: "Save courses" }).click();
       await expect(page.getByRole("status")).toHaveText("Courses saved");
     };
     try {
-      await save("Engr. E2E Santos");
+      await save("Engr. E2E Santos", "CPE 399");
       await page.goto("/?week=2026-11-15");
       const card = page.getByRole("region", { name: "Calendar" }).getByRole("button", { name: /Computer Networks and Security/ }).first();
       await expect(card).not.toContainText("Santos");
+      await expect(card).not.toContainText("CPE 399");
       await card.click();
-      await expect(page.getByRole("dialog").getByText("Engr. E2E Santos")).toBeVisible();
+      const dlg = page.getByRole("dialog");
+      await expect(dlg.getByText("Engr. E2E Santos")).toBeVisible();
+      await expect(dlg.getByText("CPE 399")).toBeVisible();
     } finally {
-      await save("");
+      await save("", "");
     }
   });
 

@@ -2,7 +2,7 @@ import webpush from "web-push";
 import { buildDigest, sendAll, type PushSub } from "@/lib/push";
 import { adminClient } from "@/lib/supabase/admin";
 import { addDays, manilaToday } from "@/lib/time";
-import type { Course, Item, Notice } from "@/lib/types";
+import type { Course, Item, Notice, Slot, Term, TermBreak } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,20 +28,29 @@ export async function GET(req: Request) {
   const subs = (claimed ?? []) as PushSub[];
   if (!subs.length) return Response.json({ claimed: 0, sent: 0, skipped: 0, failed: 0, removed: 0 });
 
-  // Everything any claimed phone could need: notices posted since the oldest claim, and upcoming quizzes and dues.
-  const oldest = subs.map((s) => s.since).sort()[0];
-  const [courses, notices, upcoming] = await Promise.all([
+  // Tomorrow, the way the Schedule builds a day: every weekly slot, tomorrow's calendar items, the term and its breaks;
+  // then notices dated tomorrow or linked to one of tomorrow's items.
+  const tomorrow = addDays(today, 1);
+  const [courses, slots, items, term, breaks] = await Promise.all([
     db.from("courses").select("*"),
-    db.from("notices").select("*").gt("created_at", oldest).eq("done", false),
-    db.from("calendar_items").select("*").in("kind", ["quiz_exam", "due"]).gte("on_date", addDays(today, 1)),
+    db.from("class_slots").select("*").order("starts_at"),
+    db.from("calendar_items").select("*").eq("on_date", tomorrow),
+    db.from("term").select("starts_on, week_count").single(),
+    db.from("term_breaks").select("starts_on, label"),
   ]);
-  const failed = courses.error ?? notices.error ?? upcoming.error;
+  const failed = courses.error ?? slots.error ?? items.error ?? term.error ?? breaks.error;
   if (failed) return Response.json({ error: failed.message }, { status: 500 });
-  // Items the notices link to, so a notice about a passed quiz is left out.
-  const have = new Set((upcoming.data as Item[]).map((i) => i.id));
-  const linkIds = (notices.data as Notice[]).flatMap((n) => (n.calendar_item_id && !have.has(n.calendar_item_id) ? [n.calendar_item_id] : []));
-  const linked = linkIds.length ? await db.from("calendar_items").select("*").in("id", linkIds) : { data: [] };
-  const data = { courses: courses.data as Course[], notices: notices.data as Notice[], items: [...(upcoming.data as Item[]), ...((linked.data ?? []) as Item[])] };
+  const ids = (items.data as Item[]).map((i) => i.id);
+  const notices = await db.from("notices").select("*").eq("done", false)
+    .or(ids.length ? `posted_on.eq.${tomorrow},calendar_item_id.in.(${ids.join(",")})` : `posted_on.eq.${tomorrow}`);
+  if (notices.error) return Response.json({ error: notices.error.message }, { status: 500 });
+  const data = {
+    courses: courses.data as Course[],
+    week: {
+      slots: slots.data as Slot[], items: items.data as Item[], notices: notices.data as Notice[], linkedItems: [],
+      term: term.data as Term, breaks: breaks.data as TermBreak[],
+    },
+  };
 
   const result = await sendAll(
     subs,

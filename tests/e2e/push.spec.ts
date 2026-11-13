@@ -19,14 +19,17 @@ test("the daily summary route refuses calls without the cron secret", async ({ r
 
 test("the daily summary goes to each phone once a day", async ({ request }) => {
   expect(cronSecret, "CRON_SECRET in .env.local").not.toBe("");
-  // A phone subscribed long ago, so the seeded notices count as new. Nothing listens on port 9, so the send fails
-  // without reaching a real push service; the claim still counts, and a second run the same day claims nothing.
+  // Nothing listens on port 9, so a send fails without reaching a real push service. Whether tomorrow has anything
+  // (skipped) or not (failed send) depends on today's date; either way the phone is claimed once, and a second run the
+  // same day claims nothing.
   const endpoint = `https://127.0.0.1:9/e2e-${Date.now()}`;
   const db = admin();
-  await db.from("push_subscriptions").insert({ endpoint, p256dh: "BNc", auth: "abc", created_at: "2000-01-01T00:00:00Z" }).throwOnError();
+  await db.from("push_subscriptions").insert({ endpoint, p256dh: "BNc", auth: "abc" }).throwOnError();
   try {
     const run = async () => (await request.get("/api/cron/digest", { headers: { authorization: `Bearer ${cronSecret}` } })).json();
-    expect(await run()).toMatchObject({ claimed: 1, sent: 0, failed: 1, removed: 0 });
+    const first = await run();
+    expect(first).toMatchObject({ claimed: 1, sent: 0, removed: 0 });
+    expect(first.failed + first.skipped).toBe(1);
     expect(await run()).toMatchObject({ claimed: 0 });
   } finally {
     await db.from("push_subscriptions").delete().eq("endpoint", endpoint);

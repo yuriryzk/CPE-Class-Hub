@@ -51,8 +51,9 @@ You do every sign-up and paste every secret yourself. Do not commit `.env.local`
 ## Phone app and daily notifications
 
 Classmates can add Class Hub to their home screen, and opt in (footer, **Notifications**) to one summary a day, around
-7 PM Manila: tomorrow's quizzes and due dates, plus notices and deadlines posted since the last summary. They pick
-courses and Both / G1 / G2; no account. Nothing is sent on quiet days. The service worker (`public/sw.js`) also keeps
+7 PM Manila: tomorrow's classes and calendar items (quizzes, due dates, no-class days, extra classes) and notices
+dated tomorrow, built the same way the Schedule builds a day. They pick courses and Both / G1 / G2; no account. Nothing
+is sent when tomorrow is empty for them. The service worker (`public/sw.js`) also keeps
 the last Schedule page seen, so Schedule opens offline with a note saying so.
 
 How it fits together:
@@ -86,7 +87,7 @@ For local work, `.env.local` needs the same five names (local values: the servic
 ### Test on real devices
 
 - **Android (Chrome):** open the site, footer, Notifications, pick courses and a group, Turn on, allow. Install the app
-  from Chrome's menu. Run the job by hand (step 5) after posting a notice; the summary appears; tapping it opens Class Hub
+  from Chrome's menu. Run the job by hand (step 5) on a day before classes, or after posting a notice dated tomorrow; the summary appears; tapping it opens Class Hub
   on the right page.
 - **iPhone (iOS 16.4 or later):** in Safari, Notifications explains Add to Home Screen. Do that, open Class Hub from the
   Home Screen icon, then Turn on and allow. Run the job; the summary appears. Sign in once more inside the home-screen

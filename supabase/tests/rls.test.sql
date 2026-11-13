@@ -1,5 +1,5 @@
 begin;
-select plan(30);
+select plan(31);
 
 -- Setup as superuser: two test officers.
 insert into officers (email, role) values
@@ -75,12 +75,13 @@ select throws_ok(
   '23505', null, 'swapping two course codes is refused');
 select is((select string_agg(code, ',' order by slot) from courses where code in ('PM', 'CNS')), 'PM,CNS', 'a refused save leaves both codes unchanged');
 
--- save_courses also sets the instructor; a row without one keeps it.
+-- save_courses also sets the instructor and course no.; a row without them keeps them.
 select lives_ok(
-  $$select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM', 'instructor', 'Engr. Cruz')))$$,
-  'officer sets an instructor');
+  $$select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM', 'instructor', 'Engr. Cruz', 'course_no', 'CPE 308')))$$,
+  'officer sets an instructor and course no.');
 select save_courses(jsonb_build_array(jsonb_build_object('id', (select course_id from ctx), 'name', 'Project Management', 'code', 'PM')));
 select is((select instructor from courses where code = 'PM'), 'Engr. Cruz', 'a save without the instructor keeps it');
+select is((select course_no from courses where code = 'PM'), 'CPE 308', 'a save without the course no. keeps it');
 
 -- updated_at: an edit moves it past when the row was added (the footer's "Updated" time)
 update files set title = title || ' (edited)' where course_id is null;

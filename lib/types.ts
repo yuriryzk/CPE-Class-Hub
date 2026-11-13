@@ -6,6 +6,7 @@ export type Course = {
   code: string;
   color: string;
   instructor: string; // '' when not set
+  course_no: string; // the school's number, e.g. 'CPE 308'; '' when not set
 };
 
 export type Slot = {

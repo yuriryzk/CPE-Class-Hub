@@ -13,7 +13,7 @@ export default async function AdminCourses() {
   return (
     <AdminPage
       tab="courses"
-      form={<><CourseForm courses={courses} /><TermForm key={JSON.stringify([term, breaks])} term={term} breaks={breaks} /></>}
+      form={<><CourseForm courses={courses} /><TermForm term={term} breaks={breaks} /></>}
       list="Courses"
       count={courses.length}
     >

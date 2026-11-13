@@ -1,81 +1,91 @@
 import { describe, expect, it } from "vitest";
 import { buildDigest, sendAll, type DigestData } from "@/lib/push";
 import { pushSchema } from "@/lib/schemas";
-import type { Course, Item, Notice } from "@/lib/types";
+import type { Course, Item, Notice, Slot } from "@/lib/types";
 
-const TODAY = "2026-11-16"; // Monday; tomorrow is Tue 17 Nov
-const SINCE = "2026-11-15T11:00:00+00:00"; // last summary: Sun 7 PM Manila
-const NEW = "2026-11-16T03:00:00+00:00";
-const OLD = "2026-11-10T03:00:00+00:00";
+const TODAY = "2026-11-16"; // Monday; tomorrow is Tue 17 Nov (weekday 2), in Week 1
+const TERM = { starts_on: "2026-11-15", week_count: 18 };
+const BREAKS = [{ starts_on: "2026-12-20", label: "Christmas break" }];
 
-const course = (id: string, code: string): Course => ({ id, slot: 1, name: code, code, color: "#000", instructor: "" });
+const course = (id: string, code: string): Course => ({ id, slot: 1, name: code, code, color: "#000", instructor: "", course_no: "" });
+const slot = (id: string, over: Partial<Slot> = {}): Slot => ({
+  id, course_id: "cns", weekday: 2, starts_at: "09:00:00", ends_at: "10:30:00", room: null, lab_group: "", ...over,
+});
 const item = (id: string, over: Partial<Item> = {}): Item => ({
-  created_at: OLD, id, course_id: "cns", kind: "quiz_exam", title: id, on_date: "2026-11-17", at_time: null, notes: null,
+  created_at: "", id, course_id: "cns", kind: "quiz_exam", title: id, on_date: "2026-11-17", at_time: null, notes: null,
   moved_from_date: null, moved_from_time: null, class_slot_id: null, lab_group: "", ...over,
 });
 const notice = (id: string, over: Partial<Notice> = {}): Notice => ({
-  created_at: NEW, id, course_id: "cns", title: id, body: "", posted_on: TODAY, pinned: false, done: false,
+  created_at: "", id, course_id: "cns", title: id, body: "", posted_on: "2026-11-17", pinned: false, done: false,
   calendar_item_id: null, created_by: null, lab_group: "", ...over,
 });
-const data = (items: Item[] = [], notices: Notice[] = []): DigestData => ({ courses: [course("cns", "CNS"), course("mor", "MOR")], items, notices });
-const sub = (over: { courses?: string[]; lab_group?: "" | "G1" | "G2" } = {}) => ({ courses: [], lab_group: "" as const, since: SINCE, ...over });
+const data = (slots: Slot[] = [], items: Item[] = [], notices: Notice[] = []): DigestData => ({
+  courses: [course("cns", "CNS"), course("mor", "MOR")],
+  week: { slots, items, notices, linkedItems: [], term: TERM, breaks: BREAKS },
+});
+const sub = (over: { courses?: string[]; lab_group?: "" | "G1" | "G2" } = {}) => ({ courses: [], lab_group: "" as const, ...over });
 const lines = (d: ReturnType<typeof buildDigest>) => d?.body.split("\n") ?? [];
 
 describe("buildDigest", () => {
-  it("lists tomorrow's quizzes and due dates, with the time when there is one", () => {
-    const d = buildDigest(sub(), data([item("Quiz 2", { at_time: "09:00:00" }), item("Paper", { kind: "due" })]), TODAY);
-    expect(d?.title).toBe("Class Hub: 2 due or tested tomorrow");
-    expect(lines(d)).toEqual(["Tomorrow · CNS Quiz/exam: Quiz 2, 9:00 AM", "Tomorrow · CNS Due: Paper"]);
+  it("lists tomorrow's classes and calendar items in time order, with group and room", () => {
+    const d = buildDigest(sub(), data(
+      [slot("s1", { room: "ER 204" }), slot("s2", { course_id: "mor", starts_at: "07:30:00" }), slot("wed", { weekday: 3 })],
+      [item("Quiz 2", { at_time: "13:00:00" })],
+    ), TODAY);
+    expect(d?.title).toBe("Tomorrow, Tue 17 Nov");
+    expect(lines(d)).toEqual(["7:30 AM · MOR class", "9:00 AM · CNS class (ER 204)", "1:00 PM · CNS Quiz/exam: Quiz 2"]);
     expect(d?.url).toBe("/?week=2026-11-15");
   });
 
-  it("adds quizzes and dues created since the last summary, but not older ones or other kinds", () => {
-    const d = buildDigest(sub(), data([
-      item("Later quiz", { on_date: "2026-11-24", created_at: NEW }),
-      item("Old quiz", { on_date: "2026-11-24", created_at: OLD }),
-      item("No class", { kind: "no_class", on_date: "2026-11-17" }),
-    ]), TODAY);
-    expect(lines(d)).toEqual(["New · CNS Quiz/exam: Later quiz (Tue 24 Nov)"]);
-    expect(d?.title).toBe("Class Hub: what's new");
+  it("leaves out a cancelled class and lists its No class item at the class time", () => {
+    const d = buildDigest(sub(), data([slot("s1")], [item("No class", { kind: "no_class", class_slot_id: "s1" })]), TODAY);
+    expect(lines(d)).toEqual(["9:00 AM · CNS No class: No class"]);
   });
 
   it("keeps only the phone's courses; empty means every course", () => {
-    const d = data([item("cns quiz"), item("mor quiz", { course_id: "mor" })]);
-    expect(lines(buildDigest(sub({ courses: ["mor"] }), d, TODAY))).toEqual(["Tomorrow · MOR Quiz/exam: mor quiz"]);
+    const d = data([slot("cns"), slot("mor", { course_id: "mor" })]);
+    expect(lines(buildDigest(sub({ courses: ["mor"] }), d, TODAY))).toEqual(["9:00 AM · MOR class"]);
     expect(lines(buildDigest(sub(), d, TODAY))).toHaveLength(2);
   });
 
-  it("G1 and G2 phones skip the other group's items; whole-class items reach both", () => {
-    const d = data([item("all"), item("g1", { lab_group: "G1" }), item("g2", { lab_group: "G2" })],
-      [notice("g2 notice", { lab_group: "G2" })]);
-    const titles = (g: "" | "G1" | "G2") => lines(buildDigest(sub({ lab_group: g }), d, TODAY)).map((l) => l.split(": ")[1]);
-    expect(titles("G1")).toEqual(["all", "g1"]);
-    expect(titles("G2")).toEqual(["all", "g2", "g2 notice"]);
-    expect(titles("")).toEqual(["all", "g1", "g2", "g2 notice"]);
+  it("G1 and G2 phones skip the other group's classes, items and notices; whole-class ones reach both", () => {
+    const d = data(
+      [slot("all", { starts_at: "08:00:00" }), slot("g1", { lab_group: "G1", room: "Lab 2" }), slot("g2", { lab_group: "G2", starts_at: "13:00:00" })],
+      [item("G2 quiz", { lab_group: "G2", at_time: "15:00:00" })],
+      [notice("G1 notice", { lab_group: "G1" })],
+    );
+    expect(lines(buildDigest(sub({ lab_group: "G1" }), d, TODAY))).toEqual(
+      ["8:00 AM · CNS class", "9:00 AM · CNS class (G1, Lab 2)", "Notice · CNS: G1 notice"]);
+    expect(lines(buildDigest(sub({ lab_group: "G2" }), d, TODAY))).toEqual(
+      ["8:00 AM · CNS class", "1:00 PM · CNS class (G2)", "3:00 PM · CNS Quiz/exam: G2 quiz"]);
+    expect(lines(buildDigest(sub(), d, TODAY))).toHaveLength(5);
   });
 
-  it("lists new notices once: not old, not done, not passed, not when their calendar item is already listed", () => {
+  it("lists notices dated tomorrow once; a notice on tomorrow's item rides on that item's line", () => {
     const quiz = item("Quiz 2");
-    const past = item("Last week", { on_date: "2026-11-09" });
-    const d = buildDigest(sub(), data([quiz, past], [
-      notice("Fresh"),
-      notice("Old", { created_at: OLD }),
+    const d = buildDigest(sub(), data([], [quiz], [
+      notice("Tomorrow's"),
+      notice("Today's", { posted_on: TODAY }),
       notice("Done", { done: true }),
-      notice("Passed", { calendar_item_id: past.id }),
-      notice("About Quiz 2", { calendar_item_id: quiz.id }),
+      notice("Bring a pen", { calendar_item_id: quiz.id, posted_on: TODAY }),
+      notice("About next week", { calendar_item_id: "elsewhere" }),
     ]), TODAY);
-    expect(lines(d)).toEqual(["Tomorrow · CNS Quiz/exam: Quiz 2", "Notice · CNS: Fresh"]);
+    expect(lines(d)).toEqual([
+      "CNS Quiz/exam: Quiz 2 (notice: Bring a pen)",
+      "Notice · CNS: Tomorrow's",
+      "Notice · CNS: About next week",
+    ]);
   });
 
-  it("opens the notices page for notices only, filtered when there is one", () => {
-    expect(buildDigest(sub(), data([], [notice("One")]), TODAY)?.url).toBe("/notices?course=CNS");
-    expect(buildDigest(sub(), data([], [notice("A"), notice("B", { course_id: "mor" })]), TODAY)?.url).toBe("/notices");
+  it("has no classes in a break week, but still lists that day's items", () => {
+    const d = buildDigest(sub(), data([slot("s1")], [item("Verilog", { kind: "due", on_date: "2026-12-22" })]), "2026-12-21");
+    expect(lines(d)).toEqual(["CNS Due: Verilog"]);
   });
 
-  it("returns null when there is nothing, and caps the body at four lines", () => {
-    expect(buildDigest(sub(), data(), TODAY)).toBeNull();
-    const many = buildDigest(sub(), data(["a", "b", "c", "d", "e", "f"].map((t) => item(t))), TODAY);
-    expect(lines(many)).toHaveLength(5);
+  it("returns null when tomorrow is empty, and caps the body at six lines", () => {
+    expect(buildDigest(sub(), data([slot("wed", { weekday: 3 })]), TODAY)).toBeNull();
+    const many = buildDigest(sub(), data([], ["a", "b", "c", "d", "e", "f", "g", "h"].map((t) => item(t))), TODAY);
+    expect(lines(many)).toHaveLength(7);
     expect(lines(many).at(-1)).toBe("and 2 more");
   });
 });

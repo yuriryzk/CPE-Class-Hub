@@ -26,7 +26,7 @@ describe("slotSchema", () => {
 
 describe("courseSchema", () => {
   it("accepts a valid code and rejects long or odd ones", () => {
-    expect(courseSchema.parse({ name: "Networks", code: "CNS-1" })).toEqual({ name: "Networks", code: "CNS-1", instructor: "" });
+    expect(courseSchema.parse({ name: "Networks", code: "CNS-1" })).toEqual({ name: "Networks", code: "CNS-1", instructor: "", course_no: "" });
     expect(msgs(courseSchema.safeParse({ name: "X", code: "TOOLONGCODE" }))).toContain("Codes are up to 8 characters");
     expect(courseSchema.safeParse({ name: "X", code: "A B" }).success).toBe(false);
   });
@@ -87,8 +87,11 @@ describe("termSchema and breakSchema", () => {
 
 describe("coursesSchema", () => {
   it("reads the numbered rows and reports errors on the row that has them", () => {
-    expect(coursesSchema.parse({ id0: "a", name0: " Math ", code0: "MATH", instructor0: " Engr. Cruz " }))
-      .toEqual([{ id: "a", name: "Math", code: "MATH", instructor: "Engr. Cruz" }]);
+    expect(coursesSchema.parse({ id0: "a", name0: " Math ", code0: "MATH", instructor0: " Engr. Cruz ", course_no0: " CPE 308 " }))
+      .toEqual([{ id: "a", name: "Math", code: "MATH", instructor: "Engr. Cruz", course_no: "CPE 308" }]);
+    const long = coursesSchema.safeParse({ id0: "a", name0: "Math", code0: "MATH", course_no0: "X".repeat(21) });
+    expect(long.success).toBe(false);
+    expect(long.error?.issues[0].path).toEqual(["course_no0"]);
     const r = coursesSchema.safeParse({ id0: "a", name0: "Math", code0: "TOOLONGCODE" });
     expect(r.success).toBe(false);
     expect(r.error?.issues[0].path).toEqual(["code0"]);
