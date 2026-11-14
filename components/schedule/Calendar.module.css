@@ -38,7 +38,8 @@
 .tt .chip :global(.tag){height:18px;font-size:11px;padding:0 5px;margin-bottom:3px}
 .tt .chip small{font-size:11.5px;gap:4px}
 
-.tabs{display:none}
+/* Day tabs are for phones only. Two classes, so this beats the shared .seg{display:flex} whatever order the CSS loads in. */
+.live .tabs{display:none}
 
 /* Phones: one day at a time, picked with the day tabs; a taller hour so short blocks stay readable. */
 @media(max-width:640px){

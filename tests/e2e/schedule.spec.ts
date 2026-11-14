@@ -48,6 +48,7 @@ test("the timetable sizes classes by length and marks a timed quiz in the grid a
   expect(lab!.y).toBeGreaterThan(lecture!.y);
   await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ })).toHaveCount(2);
   await expect(cal(page).getByText("Also this day")).toBeVisible();
+  await expect(cal(page).getByRole("group", { name: "Day" })).toBeHidden(); // day tabs are for phones only
 });
 
 test("on a phone the day tabs show one day at a time", async ({ page }) => {
