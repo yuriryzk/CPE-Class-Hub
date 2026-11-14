@@ -1,12 +1,11 @@
 import { loadCourses, loadItemsByIds, loadNotices, LoadError } from "@/lib/data";
 import { resolvePicks } from "@/lib/picks";
-import { formatShort, manilaToday } from "@/lib/time";
-import { isPastNotice, noticesByCourse } from "@/lib/week";
+import { manilaToday } from "@/lib/time";
+import { noticesByCourse } from "@/lib/week";
 import GroupSwitch from "@/components/schedule/GroupSwitch";
 import PicksSync from "@/components/schedule/PicksSync";
-import { KIND } from "@/lib/types";
 import Tabs, { TabPanel } from "@/components/Tabs";
-import type { Row } from "@/components/notices/NoticeCard";
+import { noticeRows } from "@/components/notices/NoticeCard";
 import NoticeList from "@/components/notices/NoticeList";
 import ViewSwitch from "@/components/notices/ViewSwitch";
 
@@ -30,15 +29,7 @@ export default async function Notices({ searchParams }: { searchParams: Promise<
   const today = manilaToday();
   const sel = resolvePicks(course ?? null, null, courses).ids;
   const shown = noticesByCourse(notices.filter((n) => !sel.length || sel.includes(n.course_id)), items, today, courses.map((c) => c.id));
-  const rows: Row[] = shown.map((n) => {
-    const c = courses.find((c) => c.id === n.course_id);
-    const x = items.find((i) => i.id === n.calendar_item_id);
-    return {
-      id: n.id, code: c?.code ?? "", name: c?.name ?? "", color: c?.color ?? "#ddd", title: n.title, body: n.body, group: n.lab_group,
-      posted: n.posted_on, pinned: n.pinned, status: n.done ? "Done" : isPastNotice(n, items, today) ? "Passed" : "Active",
-      calendar: x ? `${KIND[x.kind]}, ${formatShort(x.on_date)}` : null,
-    };
-  });
+  const rows = noticeRows(shown, courses, items, today);
   const picked = courses.filter((c) => sel.includes(c.id));
   const counts: Record<string, number> = { all: notices.length };
   for (const n of notices) counts[n.course_id] = (counts[n.course_id] ?? 0) + 1;

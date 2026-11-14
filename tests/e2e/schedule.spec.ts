@@ -48,7 +48,8 @@ test("the timetable sizes classes by length and marks a timed quiz in the grid a
   expect(lab!.y).toBeGreaterThan(lecture!.y);
   await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ })).toHaveCount(2);
   await expect(cal(page).getByText("Also this day")).toBeVisible();
-  await expect(cal(page).getByRole("group", { name: "Day" })).toBeHidden(); // day tabs are for phones only
+  await expect(cal(page).getByRole("group", { name: "Day" })).toBeHidden(); // day tabs and the Day/Week switch are for phones only
+  await expect(cal(page).getByRole("group", { name: "Calendar view" })).toBeHidden();
 });
 
 test("on a phone the day tabs show one day at a time", async ({ page }) => {
@@ -62,6 +63,24 @@ test("on a phone the day tabs show one day at a time", async ({ page }) => {
   await expect(tabs.getByRole("button", { name: /Tue/ })).toHaveAttribute("aria-pressed", "true");
   await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).first()).toBeVisible();
   await expect(cal(page).getByRole("button", { name: /Microprocessors/ })).toHaveCount(0);
+});
+
+test("on a phone the Week view shows the whole timetable, scrolled sideways, and is remembered", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/?week=2026-11-15");
+  const views = cal(page).getByRole("group", { name: "Calendar view" });
+  await views.getByRole("button", { name: "Week" }).click();
+  await expect(cal(page).getByRole("group", { name: "Day" })).toHaveCount(0); // day tabs only in Day view
+  // Monday's and Tuesday's cards are both there at once, and only the timetable scrolls sideways.
+  await expect(cal(page).getByRole("button", { name: /Microprocessors/ }).first()).toBeVisible();
+  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).first()).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const scroller = cal(page).locator('[tabindex="0"]');
+  expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth && el.scrollLeft > 0)).toBe(true); // opened on Monday
+  await page.reload();
+  await expect(views.getByRole("button", { name: "Week" })).toHaveAttribute("aria-pressed", "true");
+  await views.getByRole("button", { name: "Day" }).click();
+  await expect(cal(page).getByRole("group", { name: "Day" })).toBeVisible();
 });
 
 test("a card opens its details and Escape closes them", async ({ page }) => {

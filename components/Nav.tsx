@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import s from "./Header.module.css";
 
-const LINKS = [["/", "Schedule"], ["/notices", "Notices"], ["/files", "Files"]] as const;
+const LINKS = [["/", "Schedule"], ["/notices", "Notices"], ["/files", "Files"], ["/courses", "Courses"]] as const;
 
 export default function Nav() {
   const path = usePathname();

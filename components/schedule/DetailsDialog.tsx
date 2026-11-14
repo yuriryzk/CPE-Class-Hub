@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cancelSlotOn, restoreSlotOn } from "@/app/admin/actions/slots";
@@ -135,6 +136,7 @@ export default function DetailsDialog({ week, upcoming, upNotices, courses, file
                 </ul>
               ) : <p className={s.meta}>No files for this course yet.</p>}
             </div>
+            {c && <p><Link className={s.course} href={`/courses/${c.code}`} onClick={() => ref.current?.close()}>View {c.code} course page →</Link></p>}
           </div>
         </>
       )}

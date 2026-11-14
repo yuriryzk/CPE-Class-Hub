@@ -38,13 +38,21 @@
 .tt .chip :global(.tag){height:18px;font-size:11px;padding:0 5px;margin-bottom:3px}
 .tt .chip small{font-size:11.5px;gap:4px}
 
-/* Day tabs are for phones only. Two classes, so this beats the shared .seg{display:flex} whatever order the CSS loads in. */
-.live .tabs{display:none}
+/* Day/Week switch and day tabs are for phones only. Two classes, so this beats the shared .seg{display:flex} whatever
+   order the CSS loads in. */
+.live .tabs,.live .views{display:none}
 
 /* Phones: one day at a time, picked with the day tabs; a taller hour so short blocks stay readable. */
 @media(max-width:640px){
 .calw{overflow:visible;padding:0}
-.live .tabs{display:flex;margin-bottom:12px}
+.live .tabs,.live .views{display:flex;margin-bottom:12px}
+.live .views>*{flex:1}
+/* Week: the desktop timetable at desktop size, scrolled sideways, hours pinned on the left. Pinning needs the
+   table box not to clip (overflow visible) and to be the reference for the scroll position (position relative). */
+.live.week .calw{overflow-x:auto;padding:0 4px 4px 0}
+.live.week .tt{--hr:44px;grid-template-columns:48px repeat(7,118px);min-width:max-content;overflow:visible;position:relative}
+.live.week .corner,.live.week .axis,.live.week .alsoh{position:sticky;left:0;z-index:3;border-right:var(--bw) solid var(--ink)}
+.live.week .corner,.live.week .axis{background:var(--card)}
 .live .tabs>*{flex-direction:column;padding:0;line-height:1.15;font-size:14px}
 .live .tabs small{font-size:11px;font-weight:600}
 .live .tt{--hr:52px;grid-template-columns:48px minmax(0,1fr);min-width:0}
