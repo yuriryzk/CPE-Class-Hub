@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Item, Notice, Slot } from "@/lib/types";
 import {
-  dayEntries, groupByCourse, isPastNotice, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
+  dayEntries, dayTimetable, isPastNotice, lanes, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
 } from "@/lib/week";
 
 const term = { starts_on: "2026-11-15", week_count: 18 };
@@ -88,11 +88,66 @@ describe("dayEntries", () => {
   });
 });
 
-describe("groupByCourse", () => {
-  it("groups by first appearance", () => {
-    const e = (course: string, m: number) => ({ t: "item", item: item("x", course, "due", "2026-11-17"), course, m }) as const;
-    const out = groupByCourse([e("A", 450), e("B", 540), e("A", 780)]);
-    expect(out.map((g) => g.map((x) => x.course))).toEqual([["A", "A"], ["B"]]);
+describe("dayTimetable", () => {
+  const cls = (id: string, course: string, start: string, end: string, lab_group: Slot["lab_group"] = ""): Slot =>
+    ({ ...slot(id, course, 2, start, lab_group), ends_at: end });
+  const placed = (t: ReturnType<typeof dayTimetable>) =>
+    t.blocks.map((b) => `${b.e.t === "slot" ? b.e.slot.id : b.e.item.id} ${b.start}-${b.end} ${b.lane}/${b.lanes}${b.cancelledBy ? " x" : ""}`);
+
+  it("puts classes in the grid by their real times, keeping a cancelled one with the item that cancels it", () => {
+    const d = data(
+      [cls("lec", "a", "07:30:00", "09:00:00"), cls("lab", "b", "13:00:00", "16:00:00")],
+      [item("nc", "b", "no_class", "2026-11-17", null, "lab")],
+    );
+    const t = dayTimetable("2026-11-17", d, [], "");
+    expect(placed(t)).toEqual(["lec 450-540 0/1", "lab 780-960 0/1 x"]);
+    expect(t.blocks[1].cancelledBy?.id).toBe("nc");
+    expect(t.extras.map((i) => i.id)).toEqual(["nc"]);
+  });
+
+  it("lets a quiz during its own course's class take over that class; other timed items get an hour; untimed only below", () => {
+    const d = data([cls("lec", "a", "09:00:00", "10:30:00")], [
+      item("quiz", "a", "quiz_exam", "2026-11-17", "09:30:00"),
+      item("extra", "b", "extra_class", "2026-11-17", "17:00:00"),
+      item("due", "a", "due", "2026-11-17"),
+    ]);
+    const t = dayTimetable("2026-11-17", d, [], "");
+    expect(placed(t)).toEqual(["quiz 540-630 0/1", "extra 1020-1080 0/1"]);
+    expect(t.extras.map((i) => i.id)).toEqual(["quiz", "extra", "due"]);
+  });
+
+  it("keeps a quiz beside another course's class, and away from a cancelled one", () => {
+    const d = data([cls("other", "b", "09:00:00", "10:30:00"), cls("off", "a", "13:00:00", "16:00:00")], [
+      item("quiz", "a", "quiz_exam", "2026-11-17", "09:00:00"),
+      item("late", "a", "quiz_exam", "2026-11-17", "13:00:00"),
+      item("nc", "a", "no_class", "2026-11-17", null, "off"),
+    ]);
+    expect(placed(dayTimetable("2026-11-17", d, [], ""))).toEqual(
+      ["other 540-630 0/2", "quiz 540-600 1/2", "off 780-960 0/2 x", "late 780-840 1/2"]);
+  });
+
+  it("splits overlapping G1 and G2 labs side by side, but only for the visitor's group when one is picked", () => {
+    const d = data([cls("g1", "a", "13:00:00", "16:00:00", "G1"), cls("g2", "a", "13:00:00", "16:00:00", "G2")]);
+    expect(placed(dayTimetable("2026-11-17", d, [], ""))).toEqual(["g1 780-960 0/2", "g2 780-960 1/2"]);
+    expect(placed(dayTimetable("2026-11-17", d, [], "G2"))).toEqual(["g2 780-960 0/1"]);
+  });
+
+  it("follows the course filter and has no classes in a break week", () => {
+    const d = data([cls("a1", "a", "08:00:00", "10:00:00"), cls("b1", "b", "08:00:00", "10:00:00")], [item("due", "b", "due", "2026-12-22")]);
+    expect(placed(dayTimetable("2026-11-17", d, ["b"], ""))).toEqual(["b1 480-600 0/1"]);
+    const brk = dayTimetable("2026-12-22", d, [], "");
+    expect(brk.blocks).toEqual([]);
+    expect(brk.extras.map((i) => i.id)).toEqual(["due"]);
+  });
+});
+
+describe("lanes", () => {
+  it("gives overlapping runs their own lane count and reuses freed lanes", () => {
+    const out = lanes([
+      { id: "a", start: 0, end: 60 }, { id: "b", start: 30, end: 90 }, { id: "c", start: 60, end: 120 }, // one run of 3, 2 lanes
+      { id: "d", start: 200, end: 260 }, // alone
+    ]);
+    expect(out.map((x) => `${x.id}:${x.lane}/${x.lanes}`)).toEqual(["a:0/2", "b:1/2", "c:0/2", "d:0/1"]);
   });
 });
 

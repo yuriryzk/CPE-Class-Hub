@@ -31,7 +31,7 @@ test("a course link filters, is saved, and comes back on the plain site", async 
   await page.goto("/?week=2026-11-15&course=cns");
   const filter = page.getByRole("navigation", { name: "Your courses" });
   await expect(filter.getByRole("button", { name: /^CNS/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ })).toBeVisible();
+  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).first()).toBeVisible();
   for (const code of ["MICROP", "MOR", "PM", "LAWS", "HDL"]) {
     await expect(cal(page).getByText(code, { exact: true })).toHaveCount(0);
   }
@@ -39,9 +39,33 @@ test("a course link filters, is saved, and comes back on the plain site", async 
   await expect(page).toHaveURL(/[?&]course=CNS(&|$)/);
 });
 
+test("the timetable sizes classes by length and marks a timed quiz in the grid and the row below", async ({ page }) => {
+  await page.goto("/?week=2026-11-15");
+  const block = (name: RegExp) => cal(page).getByRole("button", { name }).first();
+  const lecture = await block(/MICROP 7:30–9:00/).boundingBox(); // 1½ hours
+  const lab = await block(/MICROP 1:00–4:00/).boundingBox(); // 3 hours
+  expect(lab!.height / lecture!.height).toBeGreaterThan(1.9);
+  expect(lab!.y).toBeGreaterThan(lecture!.y);
+  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ })).toHaveCount(2);
+  await expect(cal(page).getByText("Also this day")).toBeVisible();
+});
+
+test("on a phone the day tabs show one day at a time", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/?week=2026-11-15");
+  const tabs = cal(page).getByRole("group", { name: "Day" });
+  await tabs.getByRole("button", { name: /Mon/ }).click();
+  await expect(cal(page).getByRole("button", { name: /Microprocessors/ }).first()).toBeVisible();
+  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ })).toHaveCount(0);
+  await tabs.getByRole("button", { name: /Tue/ }).click();
+  await expect(tabs.getByRole("button", { name: /Tue/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).first()).toBeVisible();
+  await expect(cal(page).getByRole("button", { name: /Microprocessors/ })).toHaveCount(0);
+});
+
 test("a card opens its details and Escape closes them", async ({ page }) => {
   await page.goto("/?week=2026-11-15");
-  await cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).click();
+  await cal(page).getByRole("button", { name: /Quiz 1: OSI model/ }).first().click();
   const dlg = page.getByRole("dialog");
   await expect(dlg).toBeVisible();
   await expect(dlg.getByText("When", { exact: true })).toBeVisible();

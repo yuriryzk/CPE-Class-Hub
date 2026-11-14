@@ -48,7 +48,7 @@ test.describe("officer", () => {
     await expect(list(page, "Notices").getByText(title)).toBeVisible();
 
     await page.goto("/?week=2026-11-15");
-    const card = cal(page).getByRole("button", { name: new RegExp(title) });
+    const card = cal(page).getByRole("button", { name: new RegExp(title) }).first(); // in the grid at its time; also in the row below
     await expect(card).toBeVisible();
     await expect(card).toContainText("Due · G2");
     await expect(card).not.toContainText("Moved");
@@ -66,7 +66,7 @@ test.describe("officer", () => {
     await expect(row).toContainText("Due · G2 · Fri 20 Nov · 3:00 PM · moved from Wed 18 Nov · has a notice");
 
     await page.goto("/?week=2026-11-15");
-    await expect(cal(page).getByRole("button", { name: new RegExp(title) })).toContainText("Moved");
+    await expect(cal(page).getByRole("button", { name: new RegExp(title) }).first()).toContainText("Moved");
 
     await page.goto("/admin/calendar");
     await confirmDelete(page, row, title);

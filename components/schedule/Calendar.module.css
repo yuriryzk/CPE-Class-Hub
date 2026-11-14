@@ -4,21 +4,53 @@
 .key span{display:inline-flex;align-items:center;gap:6px}
 .key i{width:26px;height:16px;border-radius:4px;background:#fff;border:2px solid var(--ink)}
 .calw{overflow-x:auto;padding:0 4px 4px 0}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1060px;overflow:hidden}
-/* Tablets: three days in view, swipe for the rest. max-content lets the box grow past the screen so it can scroll. */
-@media(max-width:900px){
-.calw{scroll-snap-type:x mandatory}
-.cal{grid-template-columns:repeat(7,calc((100vw - 2*var(--pad) - 9px) / 3));min-width:0;width:max-content}
-}
-/* Phones: the days stack, Sunday to Saturday, one full-width block each. */
+
+/* Timetable: a time axis, then seven days. Row 1 day names, row 2 the 7 AM–8 PM grid, row 3 each day's one-off items.
+   --hr is one hour's height: a 1½-hour class is 66px on desktop, room for its tag, a one-line name and its time;
+   2–3 hour classes (88–132px) also fit a two-line name and the room. */
+.tt{--hr:44px;display:grid;grid-template-columns:56px repeat(7,minmax(118px,1fr));grid-template-rows:auto calc(var(--hr) * 13) auto;min-width:888px;overflow:hidden}
+.corner{grid-column:1;grid-row:1;border-bottom:var(--bw) solid var(--ink)}
+.axis{grid-column:1;grid-row:2;position:relative}
+.axis span{position:absolute;right:6px;transform:translateY(2px);font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.alsoh{grid-column:1;grid-row:3;border-top:var(--bw) solid var(--ink);padding:10px 6px;font-size:11px;font-weight:700;line-height:1.2;color:var(--muted);background:#fffef7}
+.dn{grid-row:1;border-left:var(--bw) solid var(--ink);border-bottom:var(--bw) solid var(--ink);padding:10px 12px;display:flex;align-items:baseline;gap:8px;background:var(--card)}
+.dn b{font:800 26px/1 var(--head)}
+.dn span{font-weight:600;font-size:15px}
+.dn.today{background:var(--ink);color:#fff}
+.dn em{font-style:normal;margin-left:auto;background:#fff;color:var(--ink);border-radius:999px;padding:0 8px;font-size:13px;font-weight:700}
+.col{grid-row:2;position:relative;border-left:var(--bw) solid var(--ink);background:repeating-linear-gradient(to bottom,#e4e4df 0 1px,transparent 1px var(--hr))}
+.also{grid-row:3;border-left:var(--bw) solid var(--ink);border-top:var(--bw) solid var(--ink);padding:8px 6px;display:flex;flex-direction:column;gap:6px;background:#fffef7}
+.we{background-color:#f7f7f4}
+.dn.we{background:#f7f7f4}
+.dn.today.we{background:var(--ink)}
+.none{color:var(--muted);font-size:13px;padding:2px 4px}
+
+/* Cards placed in the grid: absolutely positioned by Calendar.tsx, compact so a 1-hour block still reads. */
+.tt .blk{position:absolute;display:flex;flex-direction:column;justify-content:flex-start;padding:4px 6px;font-size:12px;line-height:1.25;overflow:hidden;z-index:1}
+.tt .blk>*{flex-shrink:0} /* when a block is short, cut off its last lines, never squeeze the name away */
+.tt .blk :global(.tag){height:18px;font-size:11px;padding:0 5px;margin-bottom:0}
+.tt .blk b{margin-top:2px}
+.tt .blk b{font-size:12.5px;-webkit-line-clamp:1}
+.tt .blk.tall b{-webkit-line-clamp:2}
+.tt .blk small{font-size:11.5px;margin-top:1px;gap:4px}
+.tt .blk.narrow>small{display:none}
+.tt .chip{font-size:12px;padding:5px 7px}
+.tt .chip :global(.tag){height:18px;font-size:11px;padding:0 5px;margin-bottom:3px}
+.tt .chip small{font-size:11.5px;gap:4px}
+
+.tabs{display:none}
+
+/* Phones: one day at a time, picked with the day tabs; a taller hour so short blocks stay readable. */
 @media(max-width:640px){
-.calw{overflow:visible;scroll-snap-type:none;padding:0}
-.cal{grid-template-columns:minmax(0,1fr);width:auto}
-.cal>div{border-left:0;border-top:var(--bw) solid var(--ink);min-height:0}
-.cal>div:first-child{border-top:0}
+.calw{overflow:visible;padding:0}
+.live .tabs{display:flex;margin-bottom:12px}
+.live .tabs>*{flex-direction:column;padding:0;line-height:1.15;font-size:14px}
+.live .tabs small{font-size:11px;font-weight:600}
+.live .tt{--hr:52px;grid-template-columns:48px minmax(0,1fr);min-width:0}
+.live .tt>[data-off]{display:none}
+.live .tt>[data-on]{grid-column:2 !important}
 }
-/* Download image: fixed desktop layout regardless of the screen */
+
+/* Download image: the whole week at desktop size, whatever the screen */
 .wide .calw{overflow:visible}
-.wide .cal{grid-template-columns:repeat(7,minmax(0,1fr));min-width:0;width:auto}
-.wide .cal>div{border-top:0;border-left:var(--bw) solid var(--ink);min-height:420px}
-.wide .cal>div:first-child{border-left:0}
+.wide .tt{grid-template-columns:56px repeat(7,minmax(0,1fr));min-width:0}
