@@ -14,7 +14,7 @@ export function noticeRows(notices: Notice[], courses: Course[], items: Item[], 
     const c = courses.find((c) => c.id === n.course_id);
     const x = items.find((i) => i.id === n.calendar_item_id);
     return {
-      id: n.id, code: c?.code ?? "", name: c?.name ?? "", color: c?.color ?? "#ddd", title: n.title, body: n.body, group: n.lab_group,
+      id: n.id, code: c?.code ?? "General", name: c?.name ?? "the whole class", color: c?.color ?? "#ddd", title: n.title, body: n.body, group: n.lab_group,
       posted: n.posted_on, pinned: n.pinned, status: n.done ? "Done" : isPastNotice(n, items, today) ? "Passed" : "Active",
       calendar: x ? `${KIND[x.kind]}, ${formatShort(x.on_date)}` : null,
     };

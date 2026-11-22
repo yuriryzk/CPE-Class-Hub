@@ -21,7 +21,7 @@ export function buildDigest(sub: Pick<PushSub, "courses" | "lab_group">, d: Dige
   // Picks of courses that no longer exist (a phone that saved them last semester) count as every course.
   const picks = sub.courses.filter((id) => d.courses.some((c) => c.id === id));
   const notices = d.week.notices.filter(
-    (n) => !n.done && (!picks.length || picks.includes(n.course_id)) && !otherGroup(n.lab_group, sub.lab_group),
+    (n) => !n.done && (!picks.length || (n.course_id !== null && picks.includes(n.course_id))) && !otherGroup(n.lab_group, sub.lab_group),
   );
   const entries = dayEntries(tomorrow, d.week, picks, sub.lab_group).filter((e) => e.t === "slot" || e.item.kind !== "no_class");
   const noted = new Set(["quiz_exam", "due"]);

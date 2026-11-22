@@ -43,7 +43,7 @@ export type Item = {
 export type Notice = {
   created_at: string;
   id: string;
-  course_id: string;
+  course_id: string | null; // null = whole class ("General"), like files
   title: string;
   body: string;
   posted_on: string;

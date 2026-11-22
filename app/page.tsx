@@ -57,7 +57,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
   const up = upcoming ? nextUp(upcoming, today, manilaNowMinutes(), sel, upcoming.length) : null;
   const upNotices = (up && (await orNull(loadNoticesForItems(up.map((i) => i.id))))) || [];
   const calProps = week && { week, courses: list, sel, today, weekStart, upcoming: up ?? [] };
-  const posted = week ? week.notices.filter((n) => n.posted_on >= weekStart && n.posted_on <= weekEnd && (!sel.length || sel.includes(n.course_id))) : [];
+  const posted = week ? week.notices.filter((n) => n.posted_on >= weekStart && n.posted_on <= weekEnd && (!sel.length || (n.course_id !== null && sel.includes(n.course_id)))) : [];
   const weekItems = week ? [...week.items, ...week.linkedItems] : [];
 
   return (

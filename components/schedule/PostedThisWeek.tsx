@@ -25,7 +25,7 @@ export default function PostedThisWeek({ notices, items, courses, today }: { not
           const past = isPastNotice(n, items, today);
           return (
             <article key={n.id} className={`box ${s.note}${past ? ` ${s.past}` : ""}`} style={{ "--c": c?.color ?? "#ddd" } as React.CSSProperties}>
-              <div className={s.hd}>{c?.code}{n.lab_group && ` ${n.lab_group}`} · {c?.name}<small>{formatShort(n.posted_on)}</small></div>
+              <div className={s.hd}>{c ? `${c.code}${n.lab_group ? ` ${n.lab_group}` : ""} · ${c.name}` : "General"}<small>{formatShort(n.posted_on)}</small></div>
               <div className={s.bd}>
                 {past ? <span className={s.pin} style={{ background: "var(--muted)" }}>{n.done ? "Done" : "Passed"}</span> : n.pinned && <span className={s.pin}>Pinned</span>}
                 <h3>{n.title}</h3>

@@ -145,7 +145,7 @@ export function sortNotices(ns: Notice[], items: Item[], todayISO: string): Noti
 
 /** Notices page order: grouped by course in `courseIds` order; in each course pinned first, past or done last, soonest date first. */
 export function noticesByCourse(ns: Notice[], items: Item[], todayISO: string, courseIds: string[]): Notice[] {
-  const rank = (n: Notice) => courseIds.indexOf(n.course_id);
+  const rank = (n: Notice) => (n.course_id === null ? courseIds.length : courseIds.indexOf(n.course_id)); // General notices last
   const past = (n: Notice) => Number(isPastNotice(n, items, todayISO));
   return [...ns].sort((a, b) =>
     rank(a) - rank(b) || past(a) - past(b) || Number(b.pinned) - Number(a.pinned) || a.posted_on.localeCompare(b.posted_on));

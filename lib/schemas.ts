@@ -37,7 +37,8 @@ export const itemSchema = z.object({
 
 export const noticeSchema = z
   .object({
-    course_id: z.string().min(1),
+    // Empty means the whole class ("General"); only a new calendar item needs a course.
+    course_id: z.preprocess(blank, z.string().min(1).optional()).transform((v) => v ?? null),
     title: text(1, 120),
     body: text(1, 4000),
     posted_on: date,
@@ -54,6 +55,8 @@ export const noticeSchema = z
       ctx.addIssue({ code: "custom", path: ["calendar_item_id"], message: "Pick a calendar item" });
     if (n.calendar === "new" && !(n.new_kind && n.new_date))
       ctx.addIssue({ code: "custom", path: ["new_date"], message: "Fill in the calendar item" });
+    if (n.calendar === "new" && !n.course_id)
+      ctx.addIssue({ code: "custom", path: ["course_id"], message: "Pick a course for the calendar item" });
   });
 
 export const slotSchema = z

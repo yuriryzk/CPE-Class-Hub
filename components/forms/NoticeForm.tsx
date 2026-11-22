@@ -20,13 +20,15 @@ export default function NoticeForm({ courses, items, today, notice }: { courses:
     base: "/admin/notices",
     editing: !!notice,
   });
-  const [course, setCourse] = useState(notice?.course_id ?? courses[0]?.id);
+  // "" is General (whole class); only used to filter the linkable calendar items.
+  const [course, setCourse] = useState(notice ? (notice.course_id ?? "") : (courses[0]?.id ?? ""));
   const heading = notice ? "Edit notice" : "Post a notice";
   return (
-    <form className={`box ${s.panel}${notice ? ` ${s.editing}` : ""}`} aria-label={heading} onSubmit={onSubmit} onReset={() => setCourse(notice?.course_id ?? courses[0]?.id)} noValidate>
+    <form className={`box ${s.panel}${notice ? ` ${s.editing}` : ""}`} aria-label={heading} onSubmit={onSubmit} onReset={() => setCourse(notice ? (notice.course_id ?? "") : (courses[0]?.id ?? ""))} noValidate>
       <h2>{heading}</h2>
       {notice && <input type="hidden" name="id" value={notice.id} />}
-      <CourseSelect courses={courses} value={notice?.course_id} onChange={setCourse} />
+      <CourseSelect courses={courses} value={notice ? notice.course_id : courses[0]?.id} onChange={setCourse} general />
+      {err("course_id")}
       <label>Title<input name="title" defaultValue={notice?.title} maxLength={120} required /></label>
       {err("title")}
       <label>Message<textarea name="body" rows={4} defaultValue={notice?.body} maxLength={4000} required /></label>
@@ -45,7 +47,7 @@ export default function NoticeForm({ courses, items, today, notice }: { courses:
           <label>Calendar item
             <select name="calendar_item_id" defaultValue={notice?.calendar_item_id ?? ""}>
               <option value="">Choose an item</option>
-              {items.filter((x) => x.course_id === course).map((x) => (
+              {(course ? items.filter((x) => x.course_id === course) : items).map((x) => (
                 <option key={x.id} value={x.id}>
                   {KIND[x.kind]} · {x.title} · {formatShort(x.on_date)}{x.at_time ? `, ${pgTime(x.at_time)}` : ""}
                 </option>
