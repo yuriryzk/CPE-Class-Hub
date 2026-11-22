@@ -7,6 +7,7 @@ import { nextUp, sortNotices, termWeek } from "@/lib/week";
 import OfflineNote from "@/components/OfflineNote";
 import Calendar from "@/components/schedule/Calendar";
 import CourseFilter from "@/components/schedule/CourseFilter";
+import CopyWeek from "@/components/schedule/CopyWeek";
 import DetailsDialog from "@/components/schedule/DetailsDialog";
 import DaySummary from "@/components/schedule/DaySummary";
 import DownloadPng from "@/components/schedule/DownloadPng";
@@ -74,6 +75,7 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
           <WeekNav weekStart={weekStart} thisWeek={sundayOf(today)} course={course} />
           <GroupSwitch />
           {calProps && <DownloadPng {...calProps} title={`${heading} · ${sub}`} name={typeof tw === "number" ? String(tw) : weekStart} />}
+          {calProps && <CopyWeek week={calProps.week} courses={list} sel={sel} weekStart={weekStart} title={`${heading} · ${sub}`} />}
         </div>
       </div>
       <div className="dt">{up ? <NextUp items={up} courses={list} today={today} wide /> : <Failed what="calendar" href={here} />}</div>

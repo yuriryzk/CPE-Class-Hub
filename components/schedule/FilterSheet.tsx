@@ -4,6 +4,7 @@ import CourseChips from "@/components/CourseChips";
 import { courseCounts } from "@/lib/day";
 import type { Course } from "@/lib/types";
 import type { CalendarProps } from "./Calendar";
+import CopyWeek from "./CopyWeek";
 import DownloadPng from "./DownloadPng";
 import GroupSwitch, { useGroup } from "./GroupSwitch";
 import { FILTER_EVENT } from "./HeaderTools";
@@ -36,7 +37,10 @@ export default function FilterSheet({ courses, sel, weekParam, cal, title, name 
       <GroupSwitch />
       <h3>Key</h3>
       <Legend />
-      {cal && <div className={s.dl}><DownloadPng {...cal} title={title} name={name} /></div>}
+      {cal && <div className={s.dl}>
+        <DownloadPng {...cal} title={title} name={name} />
+        <CopyWeek week={cal.week} courses={cal.courses} sel={cal.sel} weekStart={cal.weekStart} title={title} />
+      </div>}
     </dialog>
   );
 }
