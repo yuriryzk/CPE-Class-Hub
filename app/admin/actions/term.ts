@@ -37,7 +37,7 @@ export async function removeBreak(startsOn: string): Promise<ActionResult> {
   });
 }
 
-/** Head officer only: new dates, and last semester cleared (see start_semester). Courses get fresh copies to rename. */
+/** Head officer only: new dates, last semester moved to the Archive (see start_semester). Courses get fresh copies to rename. */
 export async function startSemester(fd: FormData): Promise<ActionResult> {
   const p = termSchema.safeParse(Object.fromEntries(fd));
   if (!p.success) return { ok: false, message: p.error.issues[0].message };

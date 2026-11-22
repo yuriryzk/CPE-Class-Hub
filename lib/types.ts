@@ -7,6 +7,7 @@ export type Course = {
   color: string;
   instructor: string; // '' when not set
   course_no: string; // the school's number, e.g. 'CPE 308'; '' when not set
+  archived_in: string | null; // the archived semester this course belongs to; null = live
 };
 
 export type Slot = {
@@ -69,6 +70,9 @@ export type FileRow = {
 
 export type Term = { starts_on: string; week_count: number };
 export type TermBreak = { starts_on: string; label: string };
+
+/** A past semester kept read-only under /archive; `breaks` is the jsonb snapshot stored in archived_semesters. */
+export type ArchivedSemester = Term & { id: string; archived_at: string; breaks: TermBreak[] };
 
 /** Colour of class-wide (General) files: the site's cyan. */
 export const GENERAL = '#22d3ee';

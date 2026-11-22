@@ -110,7 +110,8 @@ If a release breaks the site, open Vercel, Deployments, the previous one, and ch
 ## Backups
 
 A GitHub Action (`.github/workflows/backup.yml`) saves the live database every night at 2 AM. The free Supabase plan keeps
-no backups, and Start a new semester can't be undone, so set this up before the semester ends. The repo is public, so
+no backups. Start a new semester moves the old term to the Archive instead of wiping it, but edits still can't be
+undone, so set this up before the semester ends. The repo is public, so
 each backup is encrypted with a passphrase only you hold.
 
 ### Set up (once)

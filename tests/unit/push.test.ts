@@ -7,7 +7,7 @@ const TODAY = "2026-11-16"; // Monday; tomorrow is Tue 17 Nov (weekday 2), in We
 const TERM = { starts_on: "2026-11-15", week_count: 18 };
 const BREAKS = [{ starts_on: "2026-12-20", label: "Christmas break" }];
 
-const course = (id: string, code: string): Course => ({ id, slot: 1, name: code, code, color: "#000", instructor: "", course_no: "" });
+const course = (id: string, code: string): Course => ({ id, slot: 1, name: code, code, color: "#000", instructor: "", course_no: "", archived_in: null });
 const slot = (id: string, over: Partial<Slot> = {}): Slot => ({
   id, course_id: "cns", weekday: 2, starts_at: "09:00:00", ends_at: "10:30:00", room: null, lab_group: "", online: false, ...over,
 });
