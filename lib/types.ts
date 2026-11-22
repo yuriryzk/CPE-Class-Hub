@@ -78,3 +78,14 @@ export const KIND: Record<Item['kind'], string> = { quiz_exam: 'Quiz/exam', due:
 
 /** A classmate's report from "Something wrong?"; `about` names the class or item, built by the server. */
 export type Report = { id: string; created_at: string; course_id: string; about: string; message: string; done: boolean };
+
+/** An officer's duty: the label, who holds it, and its week label or date (neither = ongoing). */
+export type DutyAssignment = {
+  id: string;
+  created_at: string;
+  duty: string;
+  assignee_email: string;
+  week_label: string | null;
+  on_date: string | null; // 'YYYY-MM-DD'
+  notes: string | null;
+};

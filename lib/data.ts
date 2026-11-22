@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { SORT_COOKIE, type AdminSort } from "./sort";
 import { serverClient } from "./supabase/server";
 import { addDays } from "./time";
-import type { Course, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
+import type { Course, DutyAssignment, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
 import type { WeekData } from "./week";
 
 /** One block failed to load; the page shows "Couldn't load the {what}. Try again." for that block only. */
@@ -124,4 +124,10 @@ export async function loadTerm(): Promise<{ term: Term; breaks: TermBreak[] }> {
 export async function loadReports(): Promise<Report[]> {
   const db = await serverClient();
   return run("reports", db.from("reports").select("*").order("done").order("created_at", { ascending: false }));
+}
+
+/** Officer duty assignments: dated ones soonest first, ongoing ones last, newest first within each. */
+export async function loadDuty(): Promise<DutyAssignment[]> {
+  const db = await serverClient();
+  return run("duty roster", db.from("duty_assignments").select("*").order("on_date", { nullsFirst: false }).order("created_at", { ascending: false }));
 }

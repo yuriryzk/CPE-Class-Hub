@@ -33,3 +33,7 @@ insert into files (course_id, title, file_type, url) values
   ((select id from courses where code = 'CNS'), 'Packet Tracer download', 'Link', 'https://www.netacad.com'),
   ((select id from courses where code = 'MICROP'), 'Lab manual', 'PDF', 'https://example.com/microp-lab-manual.pdf'),
   (null, 'Class master list', 'Sheet', 'https://example.com/master-list');
+
+insert into duty_assignments (duty, assignee_email, week_label, notes) values
+  ('BLT', 'officer@test.local', 'Week 1', null),
+  ('Room cleaning', 'plain@test.local', 'Every Friday', 'Cafeteria and CR');

@@ -111,6 +111,15 @@ export const pushSchema = z.object({
 
 export const officerSchema = z.object({ email: z.string().trim().toLowerCase().pipe(z.email()) });
 
+/** A duty assignment: label, the officer's email, and an optional week label or date (neither = ongoing). */
+export const dutySchema = z.object({
+  duty: text(1, 80),
+  assignee_email: z.string().trim().toLowerCase().pipe(z.email()),
+  week_label: optText(60),
+  on_date: z.preprocess(blank, date.optional()).transform((v) => v ?? null),
+  notes: optText(500),
+});
+
 /** The Courses form: rows named id0/name0/code0/instructor0/course_no0 ... Errors land on the field name plus {i}. */
 export const coursesSchema = z.record(z.string(), z.unknown()).transform((d, ctx) => {
   const rows: { id: string; name: string; code: string; instructor: string; course_no: string }[] = [];

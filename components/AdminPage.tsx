@@ -11,6 +11,7 @@ const TABS = [
   ["files", "File"],
   ["courses", "Courses"],
   ["reports", "Reports"],
+  ["duty", "Duty"],
   ["officers", "Officers"], // head officer only
 ] as const;
 

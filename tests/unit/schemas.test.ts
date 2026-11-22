@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  breakSchema, courseSchema, coursesSchema, fileSchema, itemSchema, noticeSchema, officerSchema, reportSchema, slotSchema, termSchema,
+  breakSchema, courseSchema, coursesSchema, dutySchema, fileSchema, itemSchema, noticeSchema, officerSchema, reportSchema, slotSchema, termSchema,
 } from "@/lib/schemas";
 
 const msgs = (r: { error?: { issues: { message: string }[] } }) => r.error?.issues.map((i) => i.message) ?? [];
@@ -113,5 +113,19 @@ describe("reportSchema", () => {
     expect(reportSchema.safeParse({ slot_id: id, message: "Room is ER 204" }).success).toBe(false); // no date
     expect(reportSchema.safeParse({ item_id: id, message: "ok" }).success).toBe(false);
     expect(reportSchema.safeParse({ item_id: id, message: "x".repeat(501) }).success).toBe(false);
+  });
+});
+
+describe("dutySchema", () => {
+  it("lowercases the email and maps empty optionals to null", () => {
+    expect(dutySchema.parse({ duty: "BLT", assignee_email: "A@B.com", week_label: "", on_date: "", notes: "" })).toEqual({
+      duty: "BLT", assignee_email: "a@b.com", week_label: null, on_date: null, notes: null,
+    });
+  });
+  it("rejects a missing duty, a bad email and a bad date", () => {
+    expect(dutySchema.safeParse({ assignee_email: "a@b.com" }).success).toBe(false);
+    expect(dutySchema.safeParse({ duty: "BLT", assignee_email: "not-an-email" }).success).toBe(false);
+    const r = dutySchema.safeParse({ duty: "BLT", assignee_email: "a@b.com", on_date: "Nov 20" });
+    expect(msgs(r)).toContain("Use a date like 2026-11-15");
   });
 });
