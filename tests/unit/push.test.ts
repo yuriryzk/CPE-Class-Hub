@@ -16,7 +16,7 @@ const item = (id: string, over: Partial<Item> = {}): Item => ({
   moved_from_date: null, moved_from_time: null, class_slot_id: null, lab_group: "", ...over,
 });
 const notice = (id: string, over: Partial<Notice> = {}): Notice => ({
-  created_at: "", id, course_id: "cns", title: id, body: "", posted_on: "2026-11-17", pinned: false, done: false,
+  created_at: "", id, course_id: "cns", title: id, body: "", posted_on: "2026-11-17", expires_on: null, pinned: false, done: false,
   calendar_item_id: null, created_by: null, lab_group: "", ...over,
 });
 const data = (slots: Slot[] = [], items: Item[] = [], notices: Notice[] = []): DigestData => ({

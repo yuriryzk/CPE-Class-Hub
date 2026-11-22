@@ -47,6 +47,7 @@ export type Notice = {
   title: string;
   body: string;
   posted_on: string;
+  expires_on: string | null; // last day the notice shows; null = never expires
   pinned: boolean;
   done: boolean;
   calendar_item_id: string | null;

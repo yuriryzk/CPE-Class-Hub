@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { SORT_COOKIE, type AdminSort } from "./sort";
 import { serverClient } from "./supabase/server";
-import { addDays } from "./time";
+import { addDays, manilaToday } from "./time";
 import type { Course, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
-import type { WeekData } from "./week";
+import { isExpiredNotice, type WeekData } from "./week";
 
 /** One block failed to load; the page shows "Couldn't load the {what}. Try again." for that block only. */
 export class LoadError extends Error {
@@ -41,10 +41,10 @@ export async function loadWeek(weekStart: string): Promise<WeekData> {
   ]);
   const ids = items.map((i) => i.id);
   const inWeek = `and(posted_on.gte.${weekStart},posted_on.lte.${weekEnd})`;
-  const notices = await run<Notice[]>(
+  const notices = (await run<Notice[]>(
     "calendar",
     db.from("notices").select("*").eq("done", false).or(ids.length ? `${inWeek},calendar_item_id.in.(${ids.join(",")})` : inWeek),
-  );
+  )).filter((n) => !isExpiredNotice(n, manilaToday()));
   const linkedIds = notices.flatMap((n) => (n.calendar_item_id ? [n.calendar_item_id] : []));
   const linkedItems = await loadItemsByIds(linkedIds);
   return { slots, items, notices, linkedItems, term, breaks, slotChanges };
@@ -63,7 +63,8 @@ export async function loadUpcoming(today: string): Promise<Item[]> {
 export async function loadNoticesForItems(ids: string[]): Promise<Notice[]> {
   if (!ids.length) return [];
   const db = await serverClient();
-  return run("calendar", db.from("notices").select("*").eq("done", false).in("calendar_item_id", ids));
+  return (await run("calendar", db.from("notices").select("*").eq("done", false).in("calendar_item_id", ids)))
+    .filter((n) => !isExpiredNotice(n, manilaToday()));
 }
 
 export async function loadNotices(): Promise<Notice[]> {

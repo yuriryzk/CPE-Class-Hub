@@ -1,7 +1,7 @@
 import { loadCourses, loadItemsByIds, loadNotices, LoadError } from "@/lib/data";
 import { resolvePicks } from "@/lib/picks";
 import { manilaToday } from "@/lib/time";
-import { noticesByCourse } from "@/lib/week";
+import { isExpiredNotice, noticesByCourse } from "@/lib/week";
 import GroupSwitch from "@/components/schedule/GroupSwitch";
 import PicksSync from "@/components/schedule/PicksSync";
 import Tabs, { TabPanel } from "@/components/Tabs";
@@ -20,8 +20,14 @@ export default async function Notices({ searchParams }: { searchParams: Promise<
   const { course } = await searchParams;
   let data;
   try {
-    // Done notices only show on their course page.
-    const [courses, notices] = await Promise.all([loadCourses(), loadNotices().then((ns) => ns.filter((n) => !n.done))]);
+    // Done and expired notices only show on their course page.
+    const [courses, notices] = await Promise.all([
+      loadCourses(),
+      loadNotices().then((ns) => {
+        const t = manilaToday();
+        return ns.filter((n) => !n.done && !isExpiredNotice(n, t));
+      }),
+    ]);
     const items = await loadItemsByIds(notices.flatMap((n) => (n.calendar_item_id ? [n.calendar_item_id] : [])));
     data = { courses, notices, items };
   } catch (e) {

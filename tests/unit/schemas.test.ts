@@ -77,6 +77,12 @@ describe("noticeSchema", () => {
     expect(noticeSchema.safeParse({ ...n, calendar: "new" }).success).toBe(false);
     expect(noticeSchema.safeParse({ ...n, calendar: "new", new_kind: "due", new_date: "2026-11-20", new_time: "9:00 AM" }).success).toBe(true);
   });
+  it("takes an optional expiry date; empty means never", () => {
+    expect(noticeSchema.parse(n).expires_on).toBeNull();
+    expect(noticeSchema.parse({ ...n, expires_on: "" }).expires_on).toBeNull();
+    expect(noticeSchema.parse({ ...n, expires_on: "2026-11-20" }).expires_on).toBe("2026-11-20");
+    expect(noticeSchema.safeParse({ ...n, expires_on: "11/20/2026" }).success).toBe(false);
+  });
 });
 
 describe("termSchema and breakSchema", () => {

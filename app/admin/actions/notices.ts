@@ -21,7 +21,7 @@ export async function saveNotice(fd: FormData): Promise<ActionResult> {
       if (error) throw error;
       itemId = newItem = data.id;
     }
-    const row = { course_id: n.course_id, title: n.title, body: n.body, posted_on: n.posted_on, lab_group: n.lab_group, pinned: n.pinned, calendar_item_id: itemId };
+    const row = { course_id: n.course_id, title: n.title, body: n.body, posted_on: n.posted_on, expires_on: n.expires_on, lab_group: n.lab_group, pinned: n.pinned, calendar_item_id: itemId };
     const { error } = id
       ? await db.from("notices").update(row).eq("id", id)
       : await db.from("notices").insert({ ...row, created_by: officer.email });

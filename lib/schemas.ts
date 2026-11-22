@@ -41,6 +41,7 @@ export const noticeSchema = z
     title: text(1, 120),
     body: text(1, 4000),
     posted_on: date,
+    expires_on: z.preprocess(blank, date.optional()).transform((v) => v ?? null),
     lab_group: group.default(""),
     pinned: checkbox,
     calendar: z.enum(["none", "link", "new"]),

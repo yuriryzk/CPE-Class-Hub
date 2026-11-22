@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Item, Notice, Slot } from "@/lib/types";
 import {
-  dayEntries, dayTimetable, isPastNotice, slotOn, lanes, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
+  dayEntries, dayTimetable, isExpiredNotice, isPastNotice, slotOn, lanes, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
 } from "@/lib/week";
 
 const term = { starts_on: "2026-11-15", week_count: 18 };
@@ -14,7 +14,7 @@ const slot = (id: string, course_id: string, weekday: number, starts_at: string,
 const item = (id: string, course_id: string, kind: Item["kind"], on_date: string, at_time: string | null = null, class_slot_id: string | null = null, lab_group: Item["lab_group"] = ""): Item =>
   ({ created_at: "", id, course_id, kind, title: id, on_date, at_time, notes: null, moved_from_date: null, moved_from_time: null, class_slot_id, lab_group });
 const notice = (id: string, over: Partial<Notice> = {}): Notice =>
-  ({ created_at: "", id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", pinned: false, done: false, calendar_item_id: null, created_by: null, lab_group: "", ...over });
+  ({ created_at: "", id, course_id: "a", title: id, body: "", posted_on: "2026-11-10", expires_on: null, pinned: false, done: false, calendar_item_id: null, created_by: null, lab_group: "", ...over });
 const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, linkedItems: [], term, breaks, slotChanges: [] });
 const ids = (es: ReturnType<typeof dayEntries>) =>
   es.map((e) => (e.t === "slot" ? e.slot.id : e.item.id));
@@ -204,6 +204,14 @@ describe("notices", () => {
     expect(isPastNotice(notice("n", { calendar_item_id: "y" }), items, "2026-11-10")).toBe(true);
     expect(isPastNotice(notice("n", { calendar_item_id: "t" }), items, "2026-11-10")).toBe(false);
     expect(isPastNotice(notice("n"), items, "2026-11-10")).toBe(false);
+  });
+  it("isExpiredNotice: hidden the day after expires_on; isPastNotice counts it", () => {
+    const exp = notice("n", { expires_on: "2026-11-10" });
+    expect(isExpiredNotice(exp, "2026-11-10")).toBe(false); // expires_on is the last day it shows
+    expect(isExpiredNotice(exp, "2026-11-11")).toBe(true);
+    expect(isExpiredNotice(notice("n"), "2026-11-11")).toBe(false);
+    expect(isPastNotice(exp, items, "2026-11-11")).toBe(true);
+    expect(isPastNotice(exp, items, "2026-11-10")).toBe(false);
   });
   it("sortNotices: active, pinned, newest first", () => {
     const ns = [

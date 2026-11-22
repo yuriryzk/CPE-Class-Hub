@@ -1,11 +1,11 @@
 import { formatShort } from "@/lib/time";
 import { KIND, type Course, type Item, type Notice } from "@/lib/types";
-import { isPastNotice } from "@/lib/week";
+import { isExpiredNotice, isPastNotice } from "@/lib/week";
 import s from "../schedule/PostedThisWeek.module.css";
 
 export type Row = {
   id: string; code: string; name: string; color: string; title: string; body: string; group: Notice["lab_group"];
-  posted: string; pinned: boolean; status: "Active" | "Done" | "Passed"; calendar: string | null;
+  posted: string; pinned: boolean; status: "Active" | "Done" | "Passed" | "Expired"; calendar: string | null;
 };
 
 /** Notices as card/list rows. `items` must include the items the notices link to, so passed ones show as Passed. */
@@ -15,7 +15,8 @@ export function noticeRows(notices: Notice[], courses: Course[], items: Item[], 
     const x = items.find((i) => i.id === n.calendar_item_id);
     return {
       id: n.id, code: c?.code ?? "", name: c?.name ?? "", color: c?.color ?? "#ddd", title: n.title, body: n.body, group: n.lab_group,
-      posted: n.posted_on, pinned: n.pinned, status: n.done ? "Done" : isPastNotice(n, items, today) ? "Passed" : "Active",
+      posted: n.posted_on, pinned: n.pinned,
+      status: n.done ? "Done" : isExpiredNotice(n, today) ? "Expired" : isPastNotice(n, items, today) ? "Passed" : "Active",
       calendar: x ? `${KIND[x.kind]}, ${formatShort(x.on_date)}` : null,
     };
   });

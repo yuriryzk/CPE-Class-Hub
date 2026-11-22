@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { buildDigest, sendAll, type PushSub } from "@/lib/push";
+import { isExpiredNotice } from "@/lib/week";
 import { adminClient } from "@/lib/supabase/admin";
 import { addDays, manilaToday } from "@/lib/time";
 import type { Course, Item, Notice, Slot, SlotChange, Term, TermBreak } from "@/lib/types";
@@ -44,10 +45,11 @@ export async function GET(req: Request) {
   const ids = (items.data as Item[]).map((i) => i.id);
   const notices = await db.from("notices").select("*").eq("done", false).in("calendar_item_id", ids);
   if (notices.error) return Response.json({ error: notices.error.message }, { status: 500 });
+  const live = (notices.data as Notice[]).filter((n) => !isExpiredNotice(n, today));
   const data = {
     courses: courses.data as Course[],
     week: {
-      slots: slots.data as Slot[], items: items.data as Item[], notices: notices.data as Notice[], linkedItems: [],
+      slots: slots.data as Slot[], items: items.data as Item[], notices: live, linkedItems: [],
       term: term.data as Term, breaks: breaks.data as TermBreak[], slotChanges: slotChanges.data as SlotChange[],
     },
   };

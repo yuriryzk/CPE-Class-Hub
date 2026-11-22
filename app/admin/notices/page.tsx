@@ -8,7 +8,7 @@ import NoticeForm from "@/components/forms/NoticeForm";
 import { loadCourses, loadItems, loadNotices, loadSort } from "@/lib/data";
 import { sortRows } from "@/lib/sort";
 import { addDays, formatShort, manilaToday } from "@/lib/time";
-import { isPastNotice } from "@/lib/week";
+import { isExpiredNotice, isPastNotice } from "@/lib/week";
 
 export default async function AdminNotices({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
   const { edit } = await searchParams;
@@ -28,26 +28,29 @@ export default async function AdminNotices({ searchParams }: { searchParams: Pro
       count={notices.length}
       sort={sort}
     >
-      {/* Done notices go last in either order; the sort is stable, so each part keeps the chosen order. */}
-      {sortRows(notices, sort, courses.map((c) => c.id)).sort((a, b) => Number(a.done) - Number(b.done)).map((n) => {
-        const x = items.find((i) => i.id === n.calendar_item_id);
-        const past = isPastNotice(n, items, today);
-        return (
-          <AdminRow
-            key={n.id}
-            course={courses.find((c) => c.id === n.course_id)}
-            title={<>{n.title}{past ? <span className={s.st}>{n.done ? "Done" : "Passed"}</span> : n.pinned && <span className={`${s.st} ${s.pin}`}>Pinned</span>}</>}
-            details={`${formatShort(n.posted_on)}${n.lab_group ? ` · ${n.lab_group}` : ""}${x ? ` · on the calendar ${formatShort(x.on_date)}` : ""}`}
-            past={past}
-            editing={n.id === editing?.id}
-            actions={<>
-              <Link className="btn s" href={`/admin/notices?edit=${n.id}`}>Edit</Link>
-              <ActionButton label={n.done ? "Undo done" : "Mark done"} action={toggleNoticeDone.bind(null, n.id)} done={n.done ? "Back to active" : "Marked as done"} />
-              <ConfirmDelete title={n.title} action={deleteNotice.bind(null, n.id)} />
-            </>}
-          />
-        );
-      })}
+      {/* Done and expired notices go last in either order; the sort is stable, so each part keeps the chosen order. */}
+      {sortRows(notices, sort, courses.map((c) => c.id))
+        .sort((a, b) => Number(a.done || isExpiredNotice(a, today)) - Number(b.done || isExpiredNotice(b, today)))
+        .map((n) => {
+          const x = items.find((i) => i.id === n.calendar_item_id);
+          const past = isPastNotice(n, items, today);
+          const expired = !n.done && isExpiredNotice(n, today);
+          return (
+            <AdminRow
+              key={n.id}
+              course={courses.find((c) => c.id === n.course_id)}
+              title={<>{n.title}{n.done ? <span className={s.st}>Done</span> : expired ? <span className={s.st}>Expired</span> : past ? <span className={s.st}>Passed</span> : n.pinned && <span className={`${s.st} ${s.pin}`}>Pinned</span>}</>}
+              details={`${formatShort(n.posted_on)}${n.expires_on ? ` · expires ${formatShort(n.expires_on)}` : ""}${n.lab_group ? ` · ${n.lab_group}` : ""}${x ? ` · on the calendar ${formatShort(x.on_date)}` : ""}`}
+              past={past}
+              editing={n.id === editing?.id}
+              actions={<>
+                <Link className="btn s" href={`/admin/notices?edit=${n.id}`}>Edit</Link>
+                <ActionButton label={n.done ? "Undo done" : "Mark done"} action={toggleNoticeDone.bind(null, n.id)} done={n.done ? "Back to active" : "Marked as done"} />
+                <ConfirmDelete title={n.title} action={deleteNotice.bind(null, n.id)} />
+              </>}
+            />
+          );
+        })}
     </AdminPage>
   );
 }

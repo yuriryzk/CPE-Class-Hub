@@ -133,9 +133,14 @@ export function nextUp(items: Item[], todayISO: string, nowMin: number, sel: str
     .slice(0, n);
 }
 
+/** An expired notice is past its `expires_on` (the last day it showed) and drops off the public surfaces. */
+export function isExpiredNotice(n: Notice, todayISO: string): boolean {
+  return n.expires_on !== null && n.expires_on < todayISO;
+}
+
 export function isPastNotice(n: Notice, items: Item[], todayISO: string): boolean {
   const linked = n.calendar_item_id ? items.find((i) => i.id === n.calendar_item_id) : undefined;
-  return n.done || (!!linked && linked.on_date < todayISO);
+  return n.done || isExpiredNotice(n, todayISO) || (!!linked && linked.on_date < todayISO);
 }
 
 export function sortNotices(ns: Notice[], items: Item[], todayISO: string): Notice[] {

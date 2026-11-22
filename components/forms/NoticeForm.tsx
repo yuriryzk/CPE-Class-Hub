@@ -36,6 +36,11 @@ export default function NoticeForm({ courses, items, today, notice }: { courses:
         <GroupSelect value={notice?.lab_group} />
       </div>
       {err("posted_on")}
+      <div className={s.f2}>
+        <label>Expires (optional)<input type="date" name="expires_on" defaultValue={notice?.expires_on ?? ""} /></label>
+        <p className={s.hint}>The last day it shows; hidden everywhere after. Empty = never expires.</p>
+      </div>
+      {err("expires_on")}
       <fieldset className={s.calopt}>
         <legend>Calendar</legend>
         <label className={s.radio}><input type="radio" name="calendar" value="none" defaultChecked={!notice?.calendar_item_id} />Don&apos;t add it to the calendar</label>
