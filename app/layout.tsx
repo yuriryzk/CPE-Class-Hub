@@ -13,7 +13,7 @@ const body = localFont({ src: "./fonts/figtree-latin.woff2", weight: "400 700", 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cpe-class-hub.vercel.app"), // full image links in link previews
   title: "Class Hub",
-  description: "CPE 3C’s schedule, notices, files and courses in one place.",
+  description: "CPE 3C’s schedule, notices, files, photos and courses in one place.",
   appleWebApp: { capable: true, title: "Class Hub" }, // opens full screen from the iPhone home screen
 };
 // Before paint: the phones' Schedule view, and a theme the visitor picked (none = follow the device), so nothing flashes.

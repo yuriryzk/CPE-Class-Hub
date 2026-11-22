@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  breakSchema, courseSchema, coursesSchema, fileSchema, itemSchema, noticeSchema, officerSchema, reportSchema, slotSchema, termSchema,
+  breakSchema, courseSchema, coursesSchema, fileSchema, itemSchema, noticeSchema, officerSchema, photoSchema, reportSchema, slotSchema, termSchema,
 } from "@/lib/schemas";
 
 const msgs = (r: { error?: { issues: { message: string }[] } }) => r.error?.issues.map((i) => i.message) ?? [];
@@ -44,6 +44,18 @@ describe("fileSchema", () => {
     for (const url of ["javascript:alert(1)", "http://x.com"]) {
       expect(msgs(fileSchema.safeParse({ ...f, url }))).toContain("Links must start with https://");
     }
+  });
+});
+
+describe("photoSchema", () => {
+  const p = { title: "Relay finals", album: "Intrams 2026", taken_on: "", url: "https://x.com/a.jpg" };
+  it("maps an empty date to null", () => {
+    expect(photoSchema.parse(p)).toEqual({ title: "Relay finals", album: "Intrams 2026", taken_on: null, url: "https://x.com/a.jpg" });
+    expect(photoSchema.parse({ ...p, taken_on: "2026-11-15" }).taken_on).toBe("2026-11-15");
+  });
+  it("requires https and a date when one is given", () => {
+    expect(msgs(photoSchema.safeParse({ ...p, url: "javascript:alert(1)" }))).toContain("Links must start with https://");
+    expect(photoSchema.safeParse({ ...p, taken_on: "15/11/2026" }).success).toBe(false);
   });
 });
 

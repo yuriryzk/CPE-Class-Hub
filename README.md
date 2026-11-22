@@ -1,6 +1,6 @@
 # Class Hub
 
-A small website for CPE 3C: this week's schedule, notices, files and officers. Anyone can read it; only officers (signed in with Google) can post and edit.
+A small website for CPE 3C: this week's schedule, notices, files, photos and officers. Anyone can read it; only officers (signed in with Google) can post and edit.
 
 ## Run it locally
 

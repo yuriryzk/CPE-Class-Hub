@@ -83,6 +83,13 @@ export const fileSchema = z.object({
   url: z.string().trim().regex(/^https:\/\/.+/, HTTPS_MSG),
 });
 
+export const photoSchema = z.object({
+  title: text(1, 120),
+  album: text(1, 60),
+  taken_on: z.preprocess(blank, date.optional()).transform((v) => v ?? null),
+  url: z.string().trim().regex(/^https:\/\/.+/, HTTPS_MSG),
+});
+
 export const courseSchema = z.object({
   name: text(1, 80),
   code: z.string().trim().regex(/^[A-Za-z0-9-]{1,8}$/, CODE_MSG),

@@ -9,6 +9,7 @@ const TABS = [
   ["calendar", "Calendar"],
   ["classes", "Class"],
   ["files", "File"],
+  ["photos", "Photos"],
   ["courses", "Courses"],
   ["reports", "Reports"],
   ["officers", "Officers"], // head officer only

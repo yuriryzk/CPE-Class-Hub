@@ -33,3 +33,8 @@ insert into files (course_id, title, file_type, url) values
   ((select id from courses where code = 'CNS'), 'Packet Tracer download', 'Link', 'https://www.netacad.com'),
   ((select id from courses where code = 'MICROP'), 'Lab manual', 'PDF', 'https://example.com/microp-lab-manual.pdf'),
   (null, 'Class master list', 'Sheet', 'https://example.com/master-list');
+
+insert into photos (title, album, taken_on, url) values
+  ('Opening ceremony', 'Intrams 2026', '2026-11-14', 'https://example.com/photos/intrams-1.jpg'),
+  ('Relay finals', 'Intrams 2026', '2026-11-15', 'https://example.com/photos/intrams-2.jpg'),
+  ('Org trip to Tagaytay', 'Org Trip', null, 'https://example.com/photos/trip-1.jpg');

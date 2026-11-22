@@ -67,6 +67,16 @@ export type FileRow = {
   mime_type: string | null;
 };
 
+/** A photo on the wall: an image link, its event album, and when it was taken (null when unknown). */
+export type PhotoRow = {
+  created_at: string;
+  id: string;
+  title: string;
+  album: string;
+  taken_on: string | null; // 'YYYY-MM-DD'
+  url: string;
+};
+
 export type Term = { starts_on: string; week_count: number };
 export type TermBreak = { starts_on: string; label: string };
 

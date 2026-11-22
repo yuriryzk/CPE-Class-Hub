@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { SORT_COOKIE, type AdminSort } from "./sort";
 import { serverClient } from "./supabase/server";
 import { addDays } from "./time";
-import type { Course, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
+import type { Course, FileRow, Item, Notice, PhotoRow, Report, Slot, SlotChange, Term, TermBreak } from "./types";
 import type { WeekData } from "./week";
 
 /** One block failed to load; the page shows "Couldn't load the {what}. Try again." for that block only. */
@@ -76,6 +76,11 @@ export async function loadFiles(): Promise<FileRow[]> {
   return run("files", db.from("files").select("*").order("created_at", { ascending: false }));
 }
 
+export async function loadPhotos(): Promise<PhotoRow[]> {
+  const db = await serverClient();
+  return run("photos", db.from("photos").select("*").order("created_at", { ascending: false }));
+}
+
 /** The calendar items notices point at, so Notices can tell which are past. */
 export async function loadItemsByIds(ids: string[]): Promise<Item[]> {
   if (!ids.length) return [];
@@ -94,7 +99,7 @@ export async function loadLastUpdate(): Promise<string | null> {
   const db = await serverClient();
   const latest = (table: string) =>
     run<{ updated_at: string }[]>("footer", db.from(table).select("updated_at").order("updated_at", { ascending: false }).limit(1));
-  const rows = await Promise.all(["courses", "class_slots", "slot_groups", "calendar_items", "notices", "files"].map(latest));
+  const rows = await Promise.all(["courses", "class_slots", "slot_groups", "calendar_items", "notices", "files", "photos"].map(latest));
   const times = rows.flat().map((r) => r.updated_at);
   return times.length ? times.reduce((a, b) => (Date.parse(a) > Date.parse(b) ? a : b)) : null;
 }
