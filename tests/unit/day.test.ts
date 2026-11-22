@@ -127,3 +127,11 @@ describe("breakable", () => {
     expect(breakable("Microprocessors").replace(/­/g, "")).toBe("Microprocessors");
   });
 });
+
+describe("courseCounts groups", () => {
+  it("narrows the load by the browse filter's groups", () => {
+    const d = data([slot("a", "cns", 1, "09:00:00", "10:00:00", "G1"), slot("c", "cns", 3, "09:00:00", "10:00:00", "G2"), slot("w", "mor", 1, "11:00:00", "12:00:00")]);
+    expect(courseCounts(d, WEEK, "", ["G1"])).toEqual({ all: 2, cns: 1, mor: 1 });
+    expect(courseCounts(d, WEEK, "", [])).toEqual({ all: 3, cns: 2, mor: 1 });
+  });
+});

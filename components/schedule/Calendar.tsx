@@ -4,10 +4,11 @@ import { hourRange } from "@/lib/day";
 import { addDays, formatShort } from "@/lib/time";
 import { useView } from "./view";
 import type { Course, Item } from "@/lib/types";
-import { dayTimetable, otherGroup, type WeekData } from "@/lib/week";
+import { dayTimetable, filterWeek, otherGroup, type WeekData } from "@/lib/week";
 import EventCard from "./EventCard";
 import Legend from "./Legend";
 import { useGroup } from "./GroupSwitch";
+import { useViewFilter } from "./ViewFilter";
 import s from "./Calendar.module.css";
 
 /** `upcoming`: Next up candidates in order; the first one in the visitor's lab group gets highlighted. */
@@ -31,16 +32,18 @@ const at = (min: number) => `calc(var(--hr) * (${min / 60} - var(--h0)))`;
  */
 export default function Calendar({ week, courses, sel, today, weekStart, upcoming, wide }: CalendarProps & { wide?: boolean }) {
   const group = useGroup();
+  const vf = useViewFilter(); // the browse filter (ViewFilter chips): narrows this grid only
+  const shown = filterWeek(week, vf.courses, vf.groups);
   const nextId = upcoming.find((i) => !otherGroup(i.lab_group, group))?.id ?? null;
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const todayIdx = days.indexOf(today);
   const view = useView(); // phones only: re-scroll to today when the Week view is shown
   const scroller = useRef<HTMLDivElement>(null);
   const course = (id: string) => courses.find((c) => c.id === id);
-  const noticed = (id: string) => week.notices.some((n) => n.calendar_item_id === id);
-  const plan = days.map((d) => dayTimetable(d, week, sel, group));
+  const noticed = (id: string) => shown.notices.some((n) => n.calendar_item_id === id);
+  const plan = days.map((d) => dayTimetable(d, shown, sel, group, vf.groups));
   // Phones' Week view trims the grid to this week's hours (applied by CSS only there); hours outside it are marked.
-  const range = hourRange(week, weekStart);
+  const range = hourRange(shown, weekStart, vf.groups);
   const trim = { "--h0p": range.first / 60, "--hsp": (range.last - range.first) / 60 } as React.CSSProperties;
   const tone = (i: number) => [i === 0 || i === 6 ? s.we : "", days[i] === today ? s.today : ""].join(" ");
 

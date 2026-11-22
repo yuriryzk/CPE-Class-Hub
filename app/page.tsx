@@ -19,6 +19,7 @@ import PicksSync from "@/components/schedule/PicksSync";
 import WeekDir from "@/components/schedule/WeekDir";
 import PostedThisWeek from "@/components/schedule/PostedThisWeek";
 import WeekNav from "@/components/schedule/WeekNav";
+import ViewFilter from "@/components/schedule/ViewFilter";
 import s from "./page.module.css";
 
 export const revalidate = 60;
@@ -77,6 +78,8 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
         </div>
       </div>
       <div className="dt">{up ? <NextUp items={up} courses={list} today={today} wide /> : <Failed what="calendar" href={here} />}</div>
+      {/* Desktop's browse filter; phones get the same chips in the Filter sheet */}
+      {courses && week && <div className="dt"><ViewFilter courses={list} week={week} weekStart={weekStart} /></div>}
       <div className={`swap ${s.wk}`}>
         {courses ? <div className="dt"><CourseFilter courses={list} sel={sel} week={week} weekStart={weekStart} weekParam={weekParam} /></div> : <Failed what="courses" href={here} />}
         <div className="v-week swap">

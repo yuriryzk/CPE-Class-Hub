@@ -12,6 +12,17 @@ const UNTIMED = 9000;
 /** True when the visitor picked a lab group and `g` is the other one. "" (whole class) always shows. */
 export const otherGroup = (g: Group, group: Group) => !!(group && g && g !== group);
 
+/** The lab groups the schedule's browse filter can pick; [] shows every group. */
+export type GroupSet = ("G1" | "G2")[];
+
+/** True when a row's own lab group survives `groups`; "" (whole class) always does and [] picks everything. */
+export const inGroups = (g: Slot["lab_group"], groups: GroupSet): boolean =>
+  !g || groups.length === 0 || groups.includes(g as "G1" | "G2");
+
+/** otherGroup for a set of groups: hides a G1/G2-only row outside a strict-subset pick (["G1","G2"] shows all). */
+export const otherGroups = (g: Group, groups: GroupSet): boolean =>
+  !!g && groups.length > 0 && groups.length < 2 && !(groups as string[]).includes(g);
+
 /** Week number, a break's label, or null outside the term. `weekStart` is a Sunday. */
 export function termWeek(weekStart: string, term: Term, breaks: TermBreak[]): number | string | null {
   if (weekStart < term.starts_on) return null;
@@ -30,16 +41,16 @@ export function slotOn(s: Slot, date: string, d: WeekData): Slot {
   return c ? { ...s, lab_group: c.lab_group ?? s.lab_group, starts_at: c.starts_at ?? s.starts_at, ends_at: c.ends_at ?? s.ends_at, online: c.online ?? s.online, room: c.room ?? s.room, agenda: c.agenda } : s;
 }
 
-/** A day's weekly classes (none in a break week) and calendar items, both for the visitor's lab group. */
-function dayParts(date: string, d: WeekData, group: Group) {
-  const hidden = (s: Slot | undefined) => !!s && otherGroup(s.lab_group, group);
+/** A day's weekly classes (none in a break week) and calendar items, for the visitor's lab group and the browse filter's groups. */
+function dayParts(date: string, d: WeekData, group: Group, groups: GroupSet = []) {
+  const hidden = (s: Slot | undefined) => !!s && (otherGroup(s.lab_group, group) || otherGroups(s.lab_group, groups));
   const isBreak = typeof termWeek(sundayOf(date), d.term, d.breaks) === "string";
   const wd = weekdayOf(date);
   const slotOf = (i: Item) => {
     const s = i.class_slot_id ? d.slots.find((x) => x.id === i.class_slot_id) : undefined;
     return s && slotOn(s, date, d);
   };
-  const items = d.items.filter((i) => i.on_date === date && !otherGroup(i.lab_group, group) && !hidden(slotOf(i)));
+  const items = d.items.filter((i) => i.on_date === date && !otherGroup(i.lab_group, group) && !otherGroups(i.lab_group, groups) && !hidden(slotOf(i)));
   const slots = (isBreak ? [] : d.slots).filter((s) => s.weekday === wd).map((s) => slotOn(s, date, d)).filter((s) => !hidden(s));
   /** The "No class" item that cancels this class on this day, if any. */
   const cancelledBy = (s: Slot) =>
@@ -49,8 +60,8 @@ function dayParts(date: string, d: WeekData, group: Group) {
 
 /** A day as one list in time order (the 9 PM summary and the course counts). A cancelled class is left out; its
  * "No class" item stands in for it at the same time. */
-export function dayEntries(date: string, d: WeekData, sel: string[], group: Group): Entry[] {
-  const { slots: daySlots, items: dayItems, slotOf, cancelledBy } = dayParts(date, d, group);
+export function dayEntries(date: string, d: WeekData, sel: string[], group: Group, groups: GroupSet = []): Entry[] {
+  const { slots: daySlots, items: dayItems, slotOf, cancelledBy } = dayParts(date, d, group, groups);
   const slots: Entry[] = daySlots
     .filter((s) => !cancelledBy(s))
     .map((s) => ({ t: "slot", slot: s, course: s.course_id, m: fromPgTime(s.starts_at) }));
@@ -74,8 +85,8 @@ export type Block = { e: Entry; start: number; end: number; lane: number; lanes:
  * shows only below) and every timed item except "No class"; a quiz or exam during its course's class replaces it. `extras`, for the row under the grid: all of the day's
  * calendar items, timed ones first by time. Minutes are from midnight.
  */
-export function dayTimetable(date: string, d: WeekData, sel: string[], group: Group): { blocks: Block[]; extras: Item[] } {
-  const { slots, items, cancelledBy } = dayParts(date, d, group);
+export function dayTimetable(date: string, d: WeekData, sel: string[], group: Group, groups: GroupSet = []): { blocks: Block[]; extras: Item[] } {
+  const { slots, items, cancelledBy } = dayParts(date, d, group, groups);
   const mine = (course: string) => !sel.length || sel.includes(course);
   const classes = slots.filter((s) => mine(s.course_id) && !cancelledBy(s)).map((s) => {
     const start = fromPgTime(s.starts_at);
@@ -122,6 +133,31 @@ export function lanes<T extends { start: number; end: number }>(xs: T[]): (T & {
   }
   close();
   return out;
+}
+
+/**
+ * `d` narrowed for the schedule's browse filter: `courses` ([] = every course) and `groups` ([] = every
+ * group) drop the rows that don't match. A slot stays when its usual group OR any one-day override's group
+ * is picked, because slotOn resolves the override per date — so pass `groups` to dayEntries/dayTimetable
+ * too, or a day switched into the other group would still draw.
+ */
+export function filterWeek(d: WeekData, courses: string[], groups: GroupSet): WeekData {
+  const courseOk = (id: string) => !courses.length || courses.includes(id);
+  const slotOk = (s: Slot) =>
+    courseOk(s.course_id) &&
+    (inGroups(s.lab_group, groups) ||
+      d.slotChanges.some((c) => c.slot_id === s.id && inGroups(c.lab_group ?? s.lab_group, groups)));
+  const slots = d.slots.filter(slotOk);
+  const kept = new Set(slots.map((s) => s.id));
+  const rowOk = (course_id: string, g: Slot["lab_group"]) => courseOk(course_id) && inGroups(g, groups);
+  return {
+    ...d,
+    slots,
+    items: d.items.filter((i) => rowOk(i.course_id, i.lab_group)),
+    linkedItems: d.linkedItems.filter((i) => rowOk(i.course_id, i.lab_group)),
+    notices: d.notices.filter((n) => rowOk(n.course_id, n.lab_group)),
+    slotChanges: d.slotChanges.filter((c) => kept.has(c.slot_id)),
+  };
 }
 
 export function nextUp(items: Item[], todayISO: string, nowMin: number, sel: string[], n = 3): Item[] {

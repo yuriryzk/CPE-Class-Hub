@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Item, Notice, Slot } from "@/lib/types";
 import {
-  dayEntries, dayTimetable, isPastNotice, slotOn, lanes, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
+  dayEntries, dayTimetable, filterWeek, inGroups, isPastNotice, otherGroups, slotOn, lanes, movedFields, nextUp, noticesByCourse, sortNotices, termWeek, type WeekData,
 } from "@/lib/week";
 
 const term = { starts_on: "2026-11-15", week_count: 18 };
@@ -18,6 +18,8 @@ const notice = (id: string, over: Partial<Notice> = {}): Notice =>
 const data = (slots: Slot[], items: Item[] = [], notices: Notice[] = []): WeekData => ({ slots, items, notices, linkedItems: [], term, breaks, slotChanges: [] });
 const ids = (es: ReturnType<typeof dayEntries>) =>
   es.map((e) => (e.t === "slot" ? e.slot.id : e.item.id));
+const placedBlocks = (t: ReturnType<typeof dayTimetable>) =>
+  t.blocks.map((b) => `${b.e.t === "slot" ? b.e.slot.id : b.e.item.id} ${b.start}-${b.end} ${b.lane}/${b.lanes}`);
 
 describe("termWeek", () => {
   it("numbers weeks, labels breaks, null outside the term", () => {
@@ -168,6 +170,80 @@ describe("dayTimetable", () => {
     const brk = dayTimetable("2026-12-22", d, [], "");
     expect(brk.blocks).toEqual([]);
     expect(brk.extras.map((i) => i.id)).toEqual(["due"]);
+  });
+});
+
+describe("inGroups / otherGroups", () => {
+  it("whole-class rows always show; a strict subset hides the other group", () => {
+    expect(inGroups("", ["G1"])).toBe(true);
+    expect(inGroups("G1", ["G1"])).toBe(true);
+    expect(inGroups("G2", ["G1"])).toBe(false);
+    expect(inGroups("G2", [])).toBe(true);
+    expect(inGroups("G2", ["G1", "G2"])).toBe(true);
+    expect(otherGroups("G2", ["G1"])).toBe(true);
+    expect(otherGroups("G2", ["G1", "G2"])).toBe(false);
+    expect(otherGroups("", ["G1"])).toBe(false);
+  });
+});
+
+describe("filterWeek", () => {
+  it("keeps [] as every course and every group", () => {
+    const d = data([slot("g2", "a", 2, "08:00:00", "G2")], [item("i", "b", "due", "2026-11-17", null, null, "G2")]);
+    const w = filterWeek(d, [], []);
+    expect(w.slots.map((s) => s.id)).toEqual(["g2"]);
+    expect(w.items.map((i) => i.id)).toEqual(["i"]);
+  });
+
+  it("drops other courses and other groups from every dated collection", () => {
+    const d = {
+      ...data(
+        [slot("sa", "a", 2, "08:00:00"), slot("sb", "b", 2, "09:00:00", "G2")],
+        [item("ia", "a", "due", "2026-11-17"), item("ib", "b", "due", "2026-11-17")],
+        [notice("na", { course_id: "a" }), notice("nb", { course_id: "b", lab_group: "G2" })],
+      ),
+      linkedItems: [item("la", "a", "due", "2026-11-17"), item("lb", "b", "due", "2026-11-17")],
+      slotChanges: [{ slot_id: "sa", on_date: "2026-11-17", lab_group: null, starts_at: null, ends_at: null, online: null, room: null, agenda: null }],
+    };
+    const w = filterWeek(d, ["a"], ["G1"]);
+    expect(w.slots.map((s) => s.id)).toEqual(["sa"]);
+    expect(w.items.map((i) => i.id)).toEqual(["ia"]);
+    expect(w.linkedItems.map((i) => i.id)).toEqual(["la"]);
+    expect(w.notices.map((n) => n.id)).toEqual(["na"]);
+    expect(w.slotChanges.map((c) => c.slot_id)).toEqual(["sa"]);
+    expect(w.term).toBe(d.term);
+  });
+
+  it("keeps a slot whose one-day override lands in a picked group, and drops changes of removed slots", () => {
+    const ch = { slot_id: "g2", on_date: "2026-11-17", lab_group: "G1" as const, starts_at: null, ends_at: null, online: null, room: null, agenda: null };
+    const gone = { ...ch, slot_id: "sb", lab_group: "G2" as const };
+    const d = { ...data([slot("g2", "a", 2, "13:00:00", "G2"), slot("sb", "b", 2, "14:00:00", "G2")]), slotChanges: [ch, gone] };
+    const w = filterWeek(d, [], ["G1"]);
+    expect(w.slots.map((s) => s.id)).toEqual(["g2"]); // usual G2, but one day runs as G1
+    expect(w.slotChanges.map((c) => c.slot_id)).toEqual(["g2"]);
+    // ...and the day it switches to G2 still hides when the groups are passed on
+    expect(placedBlocks(dayTimetable("2026-11-17", w, [], "", ["G1"]))).toEqual(["g2 780-1380 0/1"]);
+    expect(placedBlocks(dayTimetable("2026-11-24", w, [], "", ["G1"]))).toEqual([]);
+  });
+});
+
+describe("dayTimetable group sets", () => {
+  const cls = (id: string, course: string, start: string, end: string, lab_group: Slot["lab_group"] = ""): Slot =>
+    ({ ...slot(id, course, 2, start, lab_group), ends_at: end });
+  const placed = (t: ReturnType<typeof dayTimetable>) =>
+    t.blocks.map((b) => `${b.e.t === "slot" ? b.e.slot.id : b.e.item.id} ${b.start}-${b.end} ${b.lane}/${b.lanes}`);
+
+  it("narrows to the picked groups, keeping whole-class rows", () => {
+    const d = data([cls("g1", "a", "13:00:00", "16:00:00", "G1"), cls("g2", "a", "13:00:00", "16:00:00", "G2"), cls("all", "b", "09:00:00", "10:00:00")]);
+    expect(placed(dayTimetable("2026-11-17", d, [], "", ["G1"]))).toEqual(["all 540-600 0/1", "g1 780-960 0/1"]);
+    expect(placed(dayTimetable("2026-11-17", d, [], "", ["G2"]))).toEqual(["all 540-600 0/1", "g2 780-960 0/1"]);
+    expect(placed(dayTimetable("2026-11-17", d, [], "", ["G1", "G2"]))).toHaveLength(3);
+  });
+
+  it("hides a one-day group override outside the pick, on that day only", () => {
+    const d = { ...data([cls("lab", "a", "13:00:00", "16:00:00", "G1")]), slotChanges: [{ slot_id: "lab", on_date: "2026-11-17", lab_group: "G2" as const, starts_at: null, ends_at: null, online: null, room: null, agenda: null }] };
+    expect(placed(dayTimetable("2026-11-17", d, [], "", ["G1"]))).toEqual([]);
+    expect(placed(dayTimetable("2026-11-24", d, [], "", ["G1"]))).toEqual(["lab 780-960 0/1"]);
+    expect(placed(dayTimetable("2026-11-17", d, [], "", ["G2"]))).toEqual(["lab 780-960 0/1"]);
   });
 });
 

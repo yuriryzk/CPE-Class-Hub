@@ -1,5 +1,5 @@
 import type { Course } from "./types";
-import type { Group } from "./week";
+import type { Group, GroupSet } from "./week";
 
 export const PICKS_KEY = "classhub.picks";
 export const GROUP_KEY = "classhub.group";
@@ -33,3 +33,9 @@ export function codesParam(ids: string[], courses: PickCourse[]): string | null 
 }
 
 export const parseGroup = (v: string | null): Group => (v === "G1" || v === "G2" ? v : "");
+
+/** "G1,G2" → ["G1","G2"]; anything else (including both) → [] meaning every group. */
+export const parseGroupSet = (v: string | null): GroupSet => {
+  const g = new Set((v ?? "").split(",").map((s) => s.trim()).filter((s): s is "G1" | "G2" => s === "G1" || s === "G2"));
+  return g.size === 2 ? [] : ([...g] as GroupSet);
+};

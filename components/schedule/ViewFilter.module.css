@@ -1,0 +1,4 @@
+/* Two compact chip rows (courses, lab groups) that narrow the schedule grid client-side. */
+.wrap{display:flex;flex-direction:column;gap:2px;margin-bottom:var(--gap)}
+.row{margin-bottom:0}
+.tag{flex:none;align-self:center;font:800 12px/1 var(--head);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}

@@ -8,6 +8,7 @@ import DownloadPng from "./DownloadPng";
 import GroupSwitch, { useGroup } from "./GroupSwitch";
 import { FILTER_EVENT } from "./HeaderTools";
 import Legend from "./Legend";
+import ViewFilter from "./ViewFilter";
 import s from "./FilterSheet.module.css";
 
 type Props = { courses: Course[]; sel: string[]; weekParam?: string; cal: CalendarProps | null; title: string; name: string };
@@ -34,6 +35,8 @@ export default function FilterSheet({ courses, sel, weekParam, cal, title, name 
       <CourseChips multi every label="Courses" base="/" courses={courses} counts={counts} sel={sel} keep={weekParam ? { week: weekParam } : undefined} />
       <h3>Lab group</h3>
       <GroupSwitch />
+      <h3>Show only</h3>
+      <ViewFilter courses={courses} week={cal?.week} weekStart={cal?.weekStart} />
       <h3>Key</h3>
       <Legend />
       {cal && <div className={s.dl}><DownloadPng {...cal} title={title} name={name} /></div>}

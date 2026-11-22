@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { attachItems, capDots, daySummary, stripDots, swipeDir } from "@/lib/day";
 import { addDays, formatTime, formatShort, fromPgTime } from "@/lib/time";
 import { KIND, type Course, type Item } from "@/lib/types";
-import { otherGroup, type Block, type WeekData } from "@/lib/week";
+import { filterWeek, otherGroup, type Block, type WeekData } from "@/lib/week";
 import NoticeRows from "../notices/NoticeRows";
 import { LinkPending } from "../Pending";
 import type { Row } from "../notices/NoticeCard";
@@ -13,6 +13,7 @@ import { Dots, Tag, where } from "./EventCard";
 import { tabKeys } from "./tabKeys";
 import { useGroup } from "./GroupSwitch";
 import { savePicks } from "./PicksSync";
+import { useViewFilter } from "./ViewFilter";
 import s from "./DaySummary.module.css";
 
 type Props = {
@@ -53,6 +54,7 @@ function useSwipe(on: (dir: 1 | -1) => void) {
  */
 export default function DaySummary(p: Props) {
   const group = useGroup();
+  const vf = useViewFilter(); // the browse filter (ViewFilter chips): narrows this day view too
   const days = Array.from({ length: 7 }, (_, i) => addDays(p.weekStart, i));
   const todayIdx = days.indexOf(p.today);
   // Today when it is in this week, else the same weekday; kept when changing weeks.
@@ -112,15 +114,15 @@ export default function DaySummary(p: Props) {
     );
   }
 
-  const week = p.week;
-  const dots = stripDots(week, p.weekStart, p.sel, group);
-  const sum = daySummary(date, week, p.sel, group);
+  const week = filterWeek(p.week, vf.courses, vf.groups);
+  const dots = stripDots(week, p.weekStart, p.sel, group, vf.groups);
+  const sum = daySummary(date, week, p.sel, group, vf.groups);
   const dueRows = (p.upcoming ?? []).filter((i) => !otherGroup(i.lab_group, group)).slice(0, 3);
   const notices = p.notices.filter((r) => !otherGroup(r.group, group));
   const offs = sum.extras.filter((i) => i.kind === "no_class");
   const others = sum.extras.filter((i) => i.kind !== "no_class" && !i.at_time);
   const att = attachItems(sum.classes, others);
-  const nextDay = days.findIndex((d, i) => i > picked && daySummary(d, week, p.sel, group).classes.length > 0);
+  const nextDay = days.findIndex((d, i) => i > picked && daySummary(d, week, p.sel, group, vf.groups).classes.length > 0);
 
   const flank = (b: Block | null, label: string, min: (b: Block) => number) => (
     <span className={s.fl}>
@@ -160,7 +162,7 @@ export default function DaySummary(p: Props) {
    * back) is not the shown day: it is hidden from screen readers and marked data-leaving.
    */
   const page = (i: number, cls: string) => {
-    const d = days[i], pd = parts(d), sm = i === picked ? sum : daySummary(d, week, p.sel, group), old = i !== picked;
+    const d = days[i], pd = parts(d), sm = i === picked ? sum : daySummary(d, week, p.sel, group, vf.groups), old = i !== picked;
     const rel = d === p.today ? " · Today" : d === addDays(p.today, 1) ? " · Tomorrow" : "";
     return (
       <div key={d} className={`${s.sheet} ${cls}`} role={old ? undefined : "group"} aria-label={old ? undefined : `${DAY[pd.wd]} ${pd.day} ${MONTH[pd.month]}`}
@@ -215,7 +217,7 @@ export default function DaySummary(p: Props) {
             {!sum.classes.length && (
               <p className={s.none}>
                 {typeof p.tw === "string" ? `${p.tw}, no classes` : `No classes ${date === p.today ? "today" : `on ${DAY[wd]}`}`}
-                {nextDay > 0 && <> · <button type="button" className={s.link} onClick={() => go(nextDay)}>{DAY[parts(days[nextDay]).wd]} has {daySummary(days[nextDay], week, p.sel, group).classes.length} ›</button></>}
+                {nextDay > 0 && <> · <button type="button" className={s.link} onClick={() => go(nextDay)}>{DAY[parts(days[nextDay]).wd]} has {daySummary(days[nextDay], week, p.sel, group, vf.groups).classes.length} ›</button></>}
               </p>
             )}
             {offs.length > 0 && (

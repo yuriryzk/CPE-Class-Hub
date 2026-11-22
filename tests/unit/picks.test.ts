@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codesParam, parseGroup, resolvePicks, toggle } from "@/lib/picks";
+import { codesParam, parseGroup, parseGroupSet, resolvePicks, toggle } from "@/lib/picks";
 
 const courses = [
   { id: "micro", code: "MICROP", slot: 1 },
@@ -46,5 +46,16 @@ describe("parseGroup", () => {
     expect(parseGroup("G1")).toBe("G1");
     expect(parseGroup("G2")).toBe("G2");
     expect(parseGroup(null)).toBe("");
+  });
+});
+
+describe("parseGroupSet", () => {
+  it("reads a comma list, both or junk as every group", () => {
+    expect(parseGroupSet("G1")).toEqual(["G1"]);
+    expect(parseGroupSet("G2,G1")).toEqual([]);
+    expect(parseGroupSet("G1,G2")).toEqual([]);
+    expect(parseGroupSet("")).toEqual([]);
+    expect(parseGroupSet("g1, G9")).toEqual([]);
+    expect(parseGroupSet(null)).toEqual([]);
   });
 });
