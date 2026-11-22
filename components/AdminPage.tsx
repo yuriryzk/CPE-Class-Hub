@@ -11,6 +11,7 @@ const TABS = [
   ["files", "File"],
   ["courses", "Courses"],
   ["reports", "Reports"],
+  ["digest", "Digest"], // test the daily push summary
   ["officers", "Officers"], // head officer only
 ] as const;
 
