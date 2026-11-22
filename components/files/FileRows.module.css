@@ -6,3 +6,6 @@
 .f small{grid-column:1;color:var(--muted);font-size:13px}
 .go{grid-row:1/3;grid-column:2;font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
 .f:active{background:var(--soft)}
+/* Rows with a preview thumbnail: button column + the usual link filling the rest */
+.withpv{display:flex;align-items:stretch}
+.withpv .f{flex:1;min-width:0}

@@ -1,0 +1,22 @@
+.dlg{padding:0;border:var(--bw) solid var(--ink);border-radius:14px;box-shadow:6px 6px 0 var(--shc);width:min(780px,calc(100vw - 32px));max-height:calc(100vh - 48px);color:var(--ink)}
+.dlg::backdrop{background:rgba(17,17,17,.5)}
+.dh{display:flex;gap:12px;align-items:flex-start;padding:16px 20px;border-bottom:var(--bw) solid var(--ink)}
+.dh p{font-size:13px;font-weight:700;color:var(--muted)}
+.dh h2{font:800 24px/1.15 var(--head);letter-spacing:-.02em;margin-top:4px}
+.acts{margin-left:auto;display:flex;gap:12px;align-items:center;flex:none}
+.open{font-weight:700;text-underline-offset:3px;white-space:nowrap}
+.x{flex:none;width:40px;height:40px;border:var(--bw) solid var(--ink);border-radius:10px;background:var(--card);font-size:22px;line-height:1;cursor:pointer;box-shadow:2px 2px 0 var(--shc)}
+.db{padding:16px 20px 20px;display:grid;gap:12px;justify-items:center}
+.pic{display:block;max-width:100%;max-height:70vh;object-fit:contain;border:2px solid var(--ink);border-radius:8px;background:var(--soft)}
+.frame{width:100%;height:min(70vh,720px);border:2px solid var(--ink);border-radius:8px;background:var(--card)}
+.note{color:var(--muted);font-size:14px}
+/* Preview trigger: thumbnail for images, a PDF chip for documents */
+.pv{flex:none;display:flex;align-items:center;justify-content:center;width:84px;min-height:64px;padding:6px;border:0;border-right:1.5px solid var(--div);background:var(--soft);cursor:pointer}
+.pv:hover{background:var(--card)}
+.pv:active{background:var(--soft)}
+.thumb{display:block;max-width:100%;max-height:52px;width:auto;height:auto;object-fit:contain;border:2px solid var(--ink);border-radius:6px;background:var(--card)}
+.pvlabel{font-size:12px;font-weight:800;letter-spacing:.04em;border:2px solid var(--ink);border-radius:6px;padding:4px 8px;background:var(--card)}
+/* Open column in the desktop table: preview button + link side by side */
+.openCell{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.openCell .pv{width:auto;min-height:44px;border:0;border-right:0;padding:4px}
+.openCell .thumb{max-height:36px;max-width:120px}
