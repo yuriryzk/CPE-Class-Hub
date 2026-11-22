@@ -107,3 +107,17 @@ dialog[open]::backdrop{animation:fade .2s ease-out}
 .tag,.toast{--ink:#111;--card:#fff;--paper:#fff;--shc:#111;color:#111}
 /* Read by screen readers, not shown */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* Print: always light paper. Chrome (header, footer, dialogs, toasts, install strip), controls
+   (.btn, .no-print) and the phone-only copies (.ph, .v-day) drop away; .v-week is forced back on
+   because the day/week split above keys off screen width, which print paper also matches. The
+   readable schedule is PrintSchedule's table (components/schedule/PrintSchedule.tsx). */
+@media print{
+:root{--bg:#fff;--card:#fff;--ink:#111;--muted:#444;--soft:#fff;--paper:#fff;--shc:#fff;--div:#bbb;--ink2:#333;--tint:#fff;--cream:#fff;--grid:#e8e8e8;--hatch:#999;color-scheme:light}
+body{background:#fff}
+main{padding:0;max-width:none}
+header,footer,dialog,.toast,.btn,.ph,.v-day,.no-print{display:none!important}
+:root[data-view] .v-week,:root:not([data-view]) .v-week{display:block!important}
+.box{box-shadow:none}
+a{color:inherit;text-decoration:none}
+}

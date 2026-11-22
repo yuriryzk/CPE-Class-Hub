@@ -50,3 +50,11 @@
 .row:active{background:var(--soft)}
 /* Course colour: dark text and lines, day or night */
 .ch,.hero{--ink:#111;--card:#fff;--paper:#fff;--shc:#111;color:#111}
+
+/* Print: one column, no colour band or controls — the course's name, instructor and lists still show. */
+@media print{
+.cols{grid-template-columns:minmax(0,1fr)}
+.hero{background:var(--card)}
+.act{display:none}
+.list li{break-inside:avoid}
+}

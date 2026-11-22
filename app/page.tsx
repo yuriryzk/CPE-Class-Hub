@@ -16,6 +16,8 @@ import InstallStrip from "@/components/InstallStrip";
 import GroupSwitch from "@/components/schedule/GroupSwitch";
 import NextUp from "@/components/schedule/NextUp";
 import PicksSync from "@/components/schedule/PicksSync";
+import PrintButton from "@/components/schedule/PrintButton";
+import PrintSchedule from "@/components/schedule/PrintSchedule";
 import WeekDir from "@/components/schedule/WeekDir";
 import PostedThisWeek from "@/components/schedule/PostedThisWeek";
 import WeekNav from "@/components/schedule/WeekNav";
@@ -67,24 +69,26 @@ export default async function Schedule({ searchParams }: { searchParams: Promise
       <WeekDir weekStart={weekStart} />
       <DaySummary week={week} courses={list} sel={sel} today={today} weekStart={weekStart} thisWeek={sundayOf(today)}
         tw={tw} upcoming={up} notices={noticeRows(sortNotices(posted, weekItems, today), list, weekItems, today)} course={course} codes={codes} weekParam={weekParam} retry={here} />
-      <div className="title dt">
+      <div className="title dt no-print">
         <h1>{heading}</h1>
         <p className="sub">{sub}</p>
         <div className="act">
           <WeekNav weekStart={weekStart} thisWeek={sundayOf(today)} course={course} />
           <GroupSwitch />
+          <PrintButton />
           {calProps && <DownloadPng {...calProps} title={`${heading} · ${sub}`} name={typeof tw === "number" ? String(tw) : weekStart} />}
         </div>
       </div>
-      <div className="dt">{up ? <NextUp items={up} courses={list} today={today} wide /> : <Failed what="calendar" href={here} />}</div>
+      <div className="dt no-print">{up ? <NextUp items={up} courses={list} today={today} wide /> : <Failed what="calendar" href={here} />}</div>
       <div className={`swap ${s.wk}`}>
-        {courses ? <div className="dt"><CourseFilter courses={list} sel={sel} week={week} weekStart={weekStart} weekParam={weekParam} /></div> : <Failed what="courses" href={here} />}
+        {courses ? <div className="dt no-print"><CourseFilter courses={list} sel={sel} week={week} weekStart={weekStart} weekParam={weekParam} /></div> : <Failed what="courses" href={here} />}
         <div className="v-week swap">
-          <div key={weekStart} className="wk-in">{calProps ? <Calendar {...calProps} /> : <Failed what="calendar" href={here} />}</div>
+          <div key={weekStart} className="wk-in no-print">{calProps ? <Calendar {...calProps} /> : <Failed what="calendar" href={here} />}</div>
+          {calProps && <PrintSchedule week={calProps.week} courses={list} sel={sel} weekStart={weekStart} today={today} heading={heading} sub={sub} />}
           {up && <div className="ph"><NextUp items={up} courses={list} today={today} /></div>}
         </div>
       </div>
-      {week && <div className="dt"><PostedThisWeek notices={posted} items={weekItems} courses={list} today={today} /></div>}
+      {week && <div className="dt no-print"><PostedThisWeek notices={posted} items={weekItems} courses={list} today={today} /></div>}
       {/* At the end on Schedule, so it never pushes the day off the first screen */}
       <InstallStrip />
       <FilterSheet courses={list} sel={sel} weekParam={weekParam} cal={calProps || null} title={`${heading} · ${sub}`} name={typeof tw === "number" ? String(tw) : weekStart} />

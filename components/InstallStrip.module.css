@@ -7,3 +7,5 @@
 .dlg h2{font:800 22px/1.1 var(--head);margin-bottom:10px}
 .dlg p{margin-bottom:10px;font-size:15px}
 .how:active,.x:active{background:var(--soft)}
+
+@media print{.strip{display:none!important}}

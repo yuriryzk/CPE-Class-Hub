@@ -7,6 +7,7 @@ import FileRows from "@/components/files/FileRows";
 import DetailsDialog from "@/components/schedule/DetailsDialog";
 import { Tag } from "@/components/schedule/EventCard";
 import GroupSwitch from "@/components/schedule/GroupSwitch";
+import PrintButton from "@/components/schedule/PrintButton";
 import { getOfficer } from "@/lib/auth";
 import { loadCourses, loadFiles, loadItems, loadNotices, loadSlots, LoadError } from "@/lib/data";
 import { manilaToday } from "@/lib/time";
@@ -61,7 +62,7 @@ export default async function CoursePage({ params }: { params: Promise<{ code: s
           <h1>{course.name}</h1>
           {course.instructor && <p>{course.instructor}</p>}
         </div>
-        <div className={s.act}><GroupSwitch /></div>
+        <div className={s.act}><GroupSwitch /><PrintButton /></div>
       </div>
 
       <div className={s.cols}>

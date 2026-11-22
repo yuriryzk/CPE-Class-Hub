@@ -29,3 +29,8 @@
 .dots span{width:7px;height:7px;border-radius:50%;background:var(--card);border:1.5px solid var(--ink)}
 /* Course colour: dark text and lines, day or night */
 .on .top{--ink:#111;--card:#fff;--paper:#fff;--shc:#111;color:#111}
+
+/* Print: flat grey-edged card, no shadow or press transform. */
+@media print{
+.ev{box-shadow:none;border:1.5px solid #555;border-left:4px solid var(--c);break-inside:avoid}
+}
