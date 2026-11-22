@@ -52,7 +52,8 @@ You do every sign-up and paste every secret yourself. Do not commit `.env.local`
 
 Classmates can add Class Hub to their home screen, and opt in (footer, **Notifications**) to one summary a day, around
 9 PM Manila: tomorrow's classes, extra classes, quizzes and due dates (with any notice linked to a quiz or due date),
-built the same way the Schedule builds a day. They pick courses and Both / G1 / G2; no account. Nothing
+built the same way the Schedule builds a day. They pick courses, Both / G1 / G2 and what it includes (classes, or
+quizzes and due dates); no account. Nothing
 is sent when tomorrow is empty for them. The service worker (`public/sw.js`) also keeps
 the last Schedule page seen, so Schedule opens offline with a note saying so.
 

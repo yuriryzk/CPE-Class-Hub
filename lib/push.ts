@@ -2,8 +2,15 @@ import { addDays, formatShort, formatTime, fromPgTime, sundayOf } from "./time";
 import { KIND, type Course } from "./types";
 import { dayEntries, otherGroup, type Group, type WeekData } from "./week";
 
-/** One phone's daily-summary choices, as claimed by claim_push_digests. `courses` empty = every course. */
-export type PushSub = { endpoint: string; p256dh: string; auth: string; courses: string[]; lab_group: Group };
+/** What a daily summary can include: the schedule ('classes') or quizzes/exams and due dates ('quizzes_due'). */
+export type DigestKind = "classes" | "quizzes_due";
+export const DIGEST_KINDS: { kind: DigestKind; label: string }[] = [
+  { kind: "classes", label: "Classes" },
+  { kind: "quizzes_due", label: "Quizzes & deadlines" },
+];
+
+/** One phone's daily-summary choices, as claimed by claim_push_digests. `courses` empty = every course; `digest_kinds` empty/missing = everything. */
+export type PushSub = { endpoint: string; p256dh: string; auth: string; courses: string[]; lab_group: Group; digest_kinds?: DigestKind[] };
 export type Digest = { title: string; body: string; url: string };
 /** Tomorrow's data: all weekly slots, tomorrow's calendar items, the notices linked to them, the term and its breaks. */
 export type DigestData = { courses: Course[]; week: WeekData };
@@ -15,7 +22,7 @@ const MAX_LINES = 6;
  * (the same day the Schedule shows, so cancelled classes, breaks and lab groups match). "No class" items are left out,
  * and a notice only shows on the line of the quiz/exam or due date it is linked to. `today` is the Manila date.
  */
-export function buildDigest(sub: Pick<PushSub, "courses" | "lab_group">, d: DigestData, today: string): Digest | null {
+export function buildDigest(sub: Pick<PushSub, "courses" | "lab_group" | "digest_kinds">, d: DigestData, today: string): Digest | null {
   const tomorrow = addDays(today, 1);
   const code = (id: string) => d.courses.find((c) => c.id === id)?.code ?? "";
   // Picks of courses that no longer exist (a phone that saved them last semester) count as every course.
@@ -23,7 +30,14 @@ export function buildDigest(sub: Pick<PushSub, "courses" | "lab_group">, d: Dige
   const notices = d.week.notices.filter(
     (n) => !n.done && (!picks.length || picks.includes(n.course_id)) && !otherGroup(n.lab_group, sub.lab_group),
   );
-  const entries = dayEntries(tomorrow, d.week, picks, sub.lab_group).filter((e) => e.t === "slot" || e.item.kind !== "no_class");
+  // digest_kinds empty or missing (a phone saved before the choice existed) means every kind.
+  const kinds = sub.digest_kinds?.length ? sub.digest_kinds : DIGEST_KINDS.map((k) => k.kind);
+  const wants = (k: DigestKind) => kinds.includes(k);
+  const entries = dayEntries(tomorrow, d.week, picks, sub.lab_group).filter((e) => {
+    if (e.t === "slot") return wants("classes");
+    if (e.item.kind === "no_class") return false;
+    return wants(e.item.kind === "extra_class" ? "classes" : "quizzes_due");
+  });
   const noted = new Set(["quiz_exam", "due"]);
 
   const lines = entries.map((e) => {

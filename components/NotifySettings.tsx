@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { removePush, savePush } from "@/app/actions/push";
 import { toast } from "@/components/Toast";
 import { GENERAL, type Course } from "@/lib/types";
+import { DIGEST_KINDS, type DigestKind } from "@/lib/push";
 import type { Group } from "@/lib/week";
 import d from "./schedule/DetailsDialog.module.css";
 import s from "./NotifySettings.module.css";
@@ -23,6 +24,7 @@ export default function NotifySettings({ courses }: { courses: Course[] }) {
   const [state, setState] = useState<State>("checking");
   const [picked, setPicked] = useState<string[]>([]); // empty = every course
   const [group, setGroup] = useState<Group>("");
+  const [kinds, setKinds] = useState<DigestKind[]>(DIGEST_KINDS.map((k) => k.kind)); // what the summary includes
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -30,11 +32,12 @@ export default function NotifySettings({ courses }: { courses: Course[] }) {
   }, []);
 
   const check = async () => {
-    let saved = { courses: [] as string[], lab_group: "" as Group };
+    let saved: { courses: string[]; lab_group: Group; digest_kinds?: DigestKind[] } = { courses: [], lab_group: "" };
     try {
       saved = JSON.parse(localStorage.getItem(KEY) ?? "null") ?? saved;
       setPicked(saved.courses);
       setGroup(saved.lab_group);
+      if (saved.digest_kinds?.length) setKinds(saved.digest_kinds);
     } catch {}
     if (!VAPID || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window))
       return setState(isIos() && !installed() ? "ios-install" : "unsupported");
@@ -79,10 +82,10 @@ export default function NotifySettings({ courses }: { courses: Course[] }) {
     const reg = await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription())
       ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID) }));
-    const r = await savePush({ ...sub.toJSON(), courses: picked, lab_group: group });
+    const r = await savePush({ ...sub.toJSON(), courses: picked, lab_group: group, digest_kinds: kinds });
     if (!r.ok) return r.message;
     try {
-      localStorage.setItem(KEY, JSON.stringify({ courses: picked, lab_group: group }));
+      localStorage.setItem(KEY, JSON.stringify({ courses: picked, lab_group: group, digest_kinds: kinds }));
     } catch {}
     const was = state;
     setState("on");
@@ -106,6 +109,10 @@ export default function NotifySettings({ courses }: { courses: Course[] }) {
     if (next.length) setPicked(next.length === courses.length ? [] : next); // at least one course; [] means all
   };
   const choosing = state === "off" || state === "on";
+  const toggleKind = (k: DigestKind) => {
+    const next = kinds.includes(k) ? kinds.filter((x) => x !== k) : [...kinds, k];
+    if (next.length) setKinds(next); // at least one kind; none would mean no summary at all
+  };
 
   return (
     <>
@@ -145,6 +152,16 @@ export default function NotifySettings({ courses }: { courses: Course[] }) {
                   {([["", "Both"], ["G1", "G1"], ["G2", "G2"]] as const).map(([v, label]) => (
                     <label key={v} className={s.opt}>
                       <input type="radio" name="push-group" checked={group === v} onChange={() => setGroup(v)} />{label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset className={s.set}>
+                <legend>Include</legend>
+                <div className={s.row}>
+                  {DIGEST_KINDS.map(({ kind, label }) => (
+                    <label key={kind} className={s.opt}>
+                      <input type="checkbox" checked={kinds.includes(kind)} onChange={() => toggleKind(kind)} />{label}
                     </label>
                   ))}
                 </div>

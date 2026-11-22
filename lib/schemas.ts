@@ -107,6 +107,8 @@ export const pushSchema = z.object({
   }),
   courses: z.array(z.uuid()).max(9),
   lab_group: group,
+  // Which parts of tomorrow the summary includes; missing = everything (a browser from before the choice existed).
+  digest_kinds: z.array(z.enum(["classes", "quizzes_due"])).min(1).max(2).optional(),
 });
 
 export const officerSchema = z.object({ email: z.string().trim().toLowerCase().pipe(z.email()) });

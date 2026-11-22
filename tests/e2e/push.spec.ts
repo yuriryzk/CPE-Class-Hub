@@ -57,6 +57,9 @@ test("the Notifications panel offers courses, lab group and Turn on", async ({ p
   await boxes.last().click();
   await expect(boxes.last()).toBeChecked();
   await expect(dlg.getByRole("group", { name: "Lab group" }).getByRole("radio")).toHaveCount(3);
+  const kinds = dlg.getByRole("group", { name: "Include" }).getByRole("checkbox");
+  await expect(kinds).toHaveCount(2);
+  for (const b of await kinds.all()) await expect(b).toBeChecked();
   await dlg.getByRole("button", { name: "Close" }).click();
   await expect(dlg).toBeHidden();
 });

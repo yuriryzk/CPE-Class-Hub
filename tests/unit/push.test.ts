@@ -23,7 +23,8 @@ const data = (slots: Slot[] = [], items: Item[] = [], notices: Notice[] = []): D
   courses: [course("cns", "CNS"), course("mor", "MOR")],
   week: { slots, items, notices, linkedItems: [], term: TERM, breaks: BREAKS, slotChanges: [] },
 });
-const sub = (over: { courses?: string[]; lab_group?: "" | "G1" | "G2" } = {}) => ({ courses: [], lab_group: "" as const, ...over });
+const sub = (over: { courses?: string[]; lab_group?: "" | "G1" | "G2"; digest_kinds?: ("classes" | "quizzes_due")[] } = {}) =>
+  ({ courses: [], lab_group: "" as const, ...over });
 const lines = (d: ReturnType<typeof buildDigest>) => d?.body.split("\n") ?? [];
 
 describe("buildDigest", () => {
@@ -97,6 +98,19 @@ describe("buildDigest", () => {
     expect(lines(d)).toEqual(["CNS Due: Verilog"]);
   });
 
+  it("sends only the kinds the phone picked; missing or empty kinds means everything", () => {
+    const d = data(
+      [slot("s1")],
+      [item("Quiz 2"), item("Makeup", { kind: "extra_class", at_time: "17:00:00" }), item("Essay", { kind: "due", at_time: "18:00:00" })],
+    );
+    expect(lines(buildDigest(sub({ digest_kinds: ["quizzes_due"] }), d, TODAY))).toEqual(
+      ["CNS Quiz/exam: Quiz 2", "6:00 PM · CNS Due: Essay"]);
+    expect(lines(buildDigest(sub({ digest_kinds: ["classes"] }), d, TODAY))).toEqual(
+      ["9:00 AM · CNS class", "5:00 PM · CNS Extra class: Makeup"]);
+    expect(lines(buildDigest(sub({ digest_kinds: [] }), d, TODAY))).toHaveLength(4);
+    expect(buildDigest(sub({ digest_kinds: ["classes"] }), data([slot("wed", { weekday: 3 })], [item("Q", { at_time: "10:00:00" })]), TODAY)).toBeNull();
+  });
+
   it("returns null when tomorrow is empty, and caps the body at six lines", () => {
     expect(buildDigest(sub(), data([slot("wed", { weekday: 3 })]), TODAY)).toBeNull();
     const many = buildDigest(sub(), data([], ["a", "b", "c", "d", "e", "f", "g", "h"].map((t) => item(t))), TODAY);
@@ -134,6 +148,9 @@ describe("pushSchema", () => {
     for (const bad of ["https://example.com/x", "https://169.254.169.254/latest", "https://fcm.googleapis.com.evil.io/x", "https://evil.io/fcm.googleapis.com/x"])
       expect(pushSchema.safeParse({ ...ok, endpoint: bad }).success, bad).toBe(false);
     expect(pushSchema.safeParse({ ...ok, lab_group: "G3" }).success).toBe(false);
+    expect(pushSchema.safeParse({ ...ok, digest_kinds: ["classes"] }).success).toBe(true);
+    expect(pushSchema.safeParse({ ...ok, digest_kinds: [] }).success).toBe(false);
+    expect(pushSchema.safeParse({ ...ok, digest_kinds: ["notices"] }).success).toBe(false);
     expect(pushSchema.safeParse({ ...ok, courses: ["not-a-uuid"] }).success).toBe(false);
     expect(pushSchema.safeParse({ ...ok, keys: { p256dh: "<script>", auth: "a" } }).success).toBe(false);
   });

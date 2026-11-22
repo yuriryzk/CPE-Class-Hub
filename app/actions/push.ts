@@ -9,11 +9,12 @@ const FAILED: ActionResult = { ok: false, message: "Couldn't save. Try again." }
 export async function savePush(input: unknown): Promise<ActionResult> {
   const p = pushSchema.safeParse(input);
   if (!p.success) return { ok: false, message: "This browser sent an invalid subscription." };
-  const { endpoint, keys, courses, lab_group } = p.data;
+  const { endpoint, keys, courses, lab_group, digest_kinds } = p.data;
   try {
     const { error } = await adminClient()
       .from("push_subscriptions")
-      .upsert({ endpoint, p256dh: keys.p256dh, auth: keys.auth, courses, lab_group }, { onConflict: "endpoint" });
+      // digest_kinds left out keeps the saved choice (or the column default on a first save).
+      .upsert({ endpoint, p256dh: keys.p256dh, auth: keys.auth, courses, lab_group, ...(digest_kinds ? { digest_kinds } : {}) }, { onConflict: "endpoint" });
     return error ? FAILED : { ok: true };
   } catch {
     return FAILED;
