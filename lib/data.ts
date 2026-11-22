@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { SORT_COOKIE, type AdminSort } from "./sort";
 import { serverClient } from "./supabase/server";
 import { addDays } from "./time";
-import type { Course, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
+import type { Course, CourseNote, FileRow, Item, Notice, Report, Slot, SlotChange, Term, TermBreak } from "./types";
 import type { WeekData } from "./week";
 
 /** One block failed to load; the page shows "Couldn't load the {what}. Try again." for that block only. */
@@ -74,6 +74,11 @@ export async function loadNotices(): Promise<Notice[]> {
 export async function loadFiles(): Promise<FileRow[]> {
   const db = await serverClient();
   return run("files", db.from("files").select("*").order("created_at", { ascending: false }));
+}
+
+export async function loadCourseNotes(): Promise<CourseNote[]> {
+  const db = await serverClient();
+  return run("notes", db.from("course_notes").select("*").order("created_at", { ascending: false }));
 }
 
 /** The calendar items notices point at, so Notices can tell which are past. */

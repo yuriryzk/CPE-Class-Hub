@@ -67,6 +67,18 @@ export type FileRow = {
   mime_type: string | null;
 };
 
+/** A course note: kind 'note' has body text, kind 'link' has an https url. */
+export type CourseNote = {
+  created_at: string;
+  id: string;
+  course_id: string;
+  kind: 'note' | 'link';
+  title: string;
+  body: string | null;
+  url: string | null;
+  created_by: string | null;
+};
+
 export type Term = { starts_on: string; week_count: number };
 export type TermBreak = { starts_on: string; label: string };
 

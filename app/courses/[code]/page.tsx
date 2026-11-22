@@ -1,5 +1,7 @@
 import Link from "next/link";
 import FileTable from "@/components/files/FileTable";
+import NoteTable from "@/components/notes/NoteTable";
+import NoteRows from "@/components/notes/NoteRows";
 import { noticeRows } from "@/components/notices/NoticeCard";
 import NoticeList from "@/components/notices/NoticeList";
 import NoticeRows from "@/components/notices/NoticeRows";
@@ -8,7 +10,7 @@ import DetailsDialog from "@/components/schedule/DetailsDialog";
 import { Tag } from "@/components/schedule/EventCard";
 import GroupSwitch from "@/components/schedule/GroupSwitch";
 import { getOfficer } from "@/lib/auth";
-import { loadCourses, loadFiles, loadItems, loadNotices, loadSlots, LoadError } from "@/lib/data";
+import { loadCourses, loadCourseNotes, loadFiles, loadItems, loadNotices, loadSlots, LoadError } from "@/lib/data";
 import { manilaToday } from "@/lib/time";
 import { noticesByCourse } from "@/lib/week";
 import s from "../courses.module.css";
@@ -22,15 +24,15 @@ export default async function CoursePage({ params }: { params: Promise<{ code: s
   const href = `/courses/${encodeURIComponent(code)}`;
   let data;
   try {
-    const [courses, slots, items, notices, files, officer] = await Promise.all([
-      loadCourses(), loadSlots(), loadItems(), loadNotices(), loadFiles(), getOfficer().catch(() => null),
+    const [courses, slots, items, notices, files, notes, officer] = await Promise.all([
+      loadCourses(), loadSlots(), loadItems(), loadNotices(), loadFiles(), loadCourseNotes(), getOfficer().catch(() => null),
     ]);
-    data = { courses, slots, items, notices, files, officer };
+    data = { courses, slots, items, notices, files, notes, officer };
   } catch (e) {
     if (!(e instanceof LoadError)) throw e;
     return <main><div className="title"><h1>Courses</h1></div><p className="box empty">Couldn&apos;t load the {e.what}. <a href={href}>Try again.</a></p></main>;
   }
-  const { courses, slots, items, notices, files, officer } = data;
+  const { courses, slots, items, notices, files, notes, officer } = data;
   const course = courses.find((c) => c.code.toLowerCase() === decodeURIComponent(code).toLowerCase());
   // A friendly page rather than notFound(): the loading screen has already started the response.
   if (!course) {
@@ -50,6 +52,7 @@ export default async function CoursePage({ params }: { params: Promise<{ code: s
   const own = notices.filter((n) => n.course_id === course.id);
   const rows = noticeRows(noticesByCourse(own, items, today, [course.id]), courses, items, today);
   const ownFiles = files.filter((f) => f.course_id === course.id);
+  const ownNotes = notes.filter((n) => n.course_id === course.id);
   const weekly = slots.filter((x) => x.course_id === course.id);
 
   return (
@@ -80,6 +83,14 @@ export default async function CoursePage({ params }: { params: Promise<{ code: s
         <div className="ph">{ownFiles.length ? <FileRows files={ownFiles} courses={courses} grouped={false} /> : <p className="box empty">No files for {course.code} yet.</p>}</div>
         <div className={`box dt ${s.files}`}>
           {ownFiles.length ? <FileTable files={ownFiles} courses={courses} /> : <p className={s.empty}>No files for {course.code} yet.</p>}
+        </div>
+      </section>
+
+      <section aria-labelledby="notes">
+        <div className={s.sec}><h2 id="notes">Notes</h2></div>
+        <div className="ph">{ownNotes.length ? <NoteRows notes={ownNotes} /> : <p className="box empty">No notes for {course.code} yet.</p>}</div>
+        <div className={`box dt ${s.files}`}>
+          {ownNotes.length ? <NoteTable notes={ownNotes} /> : <p className={s.empty}>No notes for {course.code} yet.</p>}
         </div>
       </section>
 

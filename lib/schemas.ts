@@ -83,6 +83,20 @@ export const fileSchema = z.object({
   url: z.string().trim().regex(/^https:\/\/.+/, HTTPS_MSG),
 });
 
+/** A course note or link; the kind decides which of body/url is required. */
+export const noteSchema = z
+  .object({
+    course_id: z.string().min(1, "Pick a course"),
+    kind: z.enum(["note", "link"]),
+    title: text(1, 120),
+    body: optText(2000),
+    url: z.preprocess(blank, z.string().trim().regex(/^https:\/\/.+/, HTTPS_MSG).optional()).transform((v) => v ?? null),
+  })
+  .superRefine((n, ctx) => {
+    if (n.kind === "note" && !n.body) ctx.addIssue({ code: "custom", path: ["body"], message: "Write the note" });
+    if (n.kind === "link" && !n.url) ctx.addIssue({ code: "custom", path: ["url"], message: "Add the link" });
+  });
+
 export const courseSchema = z.object({
   name: text(1, 80),
   code: z.string().trim().regex(/^[A-Za-z0-9-]{1,8}$/, CODE_MSG),
